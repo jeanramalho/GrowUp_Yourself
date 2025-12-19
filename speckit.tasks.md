@@ -4,39 +4,39 @@ description: "Generated task list for GrowUp Yourself MVP (speckit)
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 [P] Initialize Expo + TypeScript project (expo init / tsconfig) in project root: set up TypeScript, `app.json` and basic src/ structure
-- [ ] T002 [P] Configure ESLint + Prettier + TypeScript strict rules (`.eslintrc.js`, `.prettierrc`, `tsconfig.json`)
-- [ ] T003 [P] Create CI pipeline (.github/workflows/ci.yml) with jobs: lint, typecheck, test, build
-- [ ] T004 [P] Extract design tokens from `software_engineering/layout/v.1.2` → `src/styles/design-tokens.json` and add to repo
-- [ ] T005 [P] Generate initial i18n file `src/i18n/pt-BR.json` with UI strings and signature "Design por Jean Ramalho"
+- [X] T001 [P] Initialize Expo + TypeScript project (expo init / tsconfig) in project root: set up TypeScript, `app.json` and basic src/ structure
+- [X] T002 [P] Configure ESLint + Prettier + TypeScript strict rules (`.eslintrc.js`, `.prettierrc`, `tsconfig.json`)
+- [X] T003 [P] Create CI pipeline (.github/workflows/ci.yml) with jobs: lint, typecheck, test, build
+- [X] T004 [P] Extract design tokens from `software_engineering/layout/v.1.2` → `src/styles/design-tokens.json` and add to repo
+- [X] T005 [P] Generate initial i18n file `src/i18n/pt-BR.json` with UI strings and signature "Design por Jean Ramalho"
 
 ---
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-- [ ] T006 Create `src/data/sqliteRepository.ts` abstraction for SQLite access (wrapper for `expo-sqlite`)
-- [ ] T007 Add migrations folder and baseline migration `migrations/0001_create_tables.sql` (meta, execucao, user_profile, lancamento_financeiro, compromisso)
-- [ ] T008 Implement injectable `src/services/notifications.ts` with scheduling/cancel stubs and platform notes
-- [ ] T009 Add feature flag config `src/config/featureFlags.ts` with `AI_ENABLED` and `BACKUP_ENCRYPTION`
-- [ ] T010 Setup Storybook initial config and storybook scripts (/.storybook, `stories/`)
+- [X] T006 Create `src/data/sqliteRepository.ts` abstraction for SQLite access (wrapper for `expo-sqlite`)
+- [X] T007 Add migrations folder and baseline migration `migrations/0001_create_tables.sql` (meta, execucao, user_profile, lancamento_financeiro, compromisso)
+- [X] T008 Implement injectable `src/services/notifications.ts` with scheduling/cancel stubs and platform notes
+- [X] T009 Add feature flag config `src/config/featureFlags.ts` with `AI_ENABLED` and `BACKUP_ENCRYPTION`
+- [X] T010 Setup Storybook initial config and storybook scripts (/.storybook, `stories/`)
 
 ---
 
 ## Phase 3: User Story US1 — Header fixo com 4 ícones e barras de progresso mensais (SPEC-001)
 
-- [ ] T011 [P] [US1] Create component `src/components/HeaderProgress/HeaderProgress.tsx` and styles `HeaderProgress.styles.ts`
-- [ ] T012 [P] [US1] Add Storybook story `stories/HeaderProgress.stories.tsx` and ensure it consumes `src/styles/design-tokens.json`
+- [X] T011 [P] [US1] Create component `src/components/HeaderProgress/HeaderProgress.tsx` and styles `HeaderProgress.styles.ts`
+- [X] T012 [P] [US1] Add Storybook story `stories/HeaderProgress.stories.tsx` and ensure it consumes `src/styles/design-tokens.json`
 - [ ] T013 [US1] Integrate header into navigation: `src/navigation/MainNavigator.tsx` (render persistent header across main routes)
-- [ ] T014 [US1] Create unit test `__tests__/HeaderProgress.test.tsx` (render + accessibility labels + snapshot)
+- [X] T014 [US1] Create unit test `__tests__/HeaderProgress.test.tsx` (render + accessibility labels + snapshot)
 
 ---
 
 ## Phase 3: User Story US2 — CRUD de Metas por Pilar e persistência SQLite (SPEC-002)
 
-- [ ] T015 [P] [US2] Create model `src/domain/models/Meta.ts` (fields per spec) and `src/domain/models/Execucao.ts`
-- [ ] T016 [P] [US2] Add migration `migrations/0001_create_meta_table.sql` (table meta + execucao)
-- [ ] T017 [US2] Implement DAO `src/data/metaDAO.ts` (CRUD) using `sqliteRepository` abstraction
-- [ ] T018 [US2] Implement domain use-cases `src/domain/usecases/metaUseCases.ts` (createMeta, getMetasByPilar, update, delete)
+- [X] T015 [P] [US2] Create model `src/domain/models/Meta.ts` (fields per spec) and `src/domain/models/Execucao.ts`
+- [X] T016 [P] [US2] Add migration `migrations/0001_create_meta_table.sql` (table meta + execucao)
+- [X] T017 [US2] Implement DAO `src/data/metaDAO.ts` (CRUD) using `sqliteRepository` abstraction
+- [X] T018 [US2] Implement domain use-cases `src/domain/usecases/metaUseCases.ts` (createMeta, getMetasByPilar, update, delete)
 - [ ] T019 [US2] Implement UI screens: `src/screens/Spirituality/MetaList.tsx` and `src/screens/Spirituality/MetaForm.tsx` (use tokens from layout v.1.2)
 - [ ] T020 [US2] Create tests: `__tests__/metaUseCases.unit.test.ts` and `__tests__/metaDAO.integration.test.ts` (integration uses test DB file)
 

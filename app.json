@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "GrowUp Yourself",
+    "slug": "growup-yourself",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTabletMode": true,
+      "bundleIdentifier": "com.jeanramalho.growupyourself"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.jeanramalho.growupyourself"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#4286FF"
+        }
+      ]
+    ],
+    "scheme": "growupyourself",
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#4286FF"
+    }
+  }
+}

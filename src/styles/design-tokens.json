@@ -1,0 +1,192 @@
+{
+  "colors": {
+    "primary": {
+      "50": "#F0F4FF",
+      "100": "#E6EEFF",
+      "200": "#BDD4FF",
+      "300": "#95BAFF",
+      "400": "#6CA0FF",
+      "500": "#4286FF",
+      "600": "#2E6CE0",
+      "700": "#1A52C7",
+      "800": "#0638AE",
+      "900": "#001E95"
+    },
+    "secondary": {
+      "50": "#F5F5F7",
+      "100": "#EBEBF0",
+      "200": "#D7D7E0",
+      "300": "#C3C3D0",
+      "400": "#AFAFC0",
+      "500": "#9B9BB0",
+      "600": "#7C7C8E",
+      "700": "#5D5D7A",
+      "800": "#3E3E66",
+      "900": "#1F1F52"
+    },
+    "success": {
+      "50": "#E6F9F0",
+      "100": "#CCF3E1",
+      "200": "#99E7C3",
+      "300": "#66DBA5",
+      "400": "#33CF87",
+      "500": "#00C369",
+      "600": "#00A554",
+      "700": "#008740",
+      "800": "#00692B",
+      "900": "#004B16"
+    },
+    "warning": {
+      "50": "#FFF5E6",
+      "100": "#FFECC0",
+      "200": "#FFD966",
+      "300": "#FFC629",
+      "400": "#FFB300",
+      "500": "#FF9F00",
+      "600": "#E68A00",
+      "700": "#CC7500",
+      "800": "#B36000",
+      "900": "#994B00"
+    },
+    "error": {
+      "50": "#FFE6E6",
+      "100": "#FFCCCC",
+      "200": "#FF9999",
+      "300": "#FF6666",
+      "400": "#FF3333",
+      "500": "#FF0000",
+      "600": "#E60000",
+      "700": "#CC0000",
+      "800": "#990000",
+      "900": "#660000"
+    },
+    "pillars": {
+      "espiritualidade": "#6B5B95",
+      "espiritualidade_light": "#A99CC3",
+      "saude": "#2E7D32",
+      "saude_light": "#81C784",
+      "financas": "#F57C00",
+      "financas_light": "#FFB74D",
+      "relacionamentos": "#D32F2F",
+      "relacionamentos_light": "#EF5350"
+    },
+    "grayscale": {
+      "white": "#FFFFFF",
+      "gray_50": "#F9FAFB",
+      "gray_100": "#F3F4F6",
+      "gray_200": "#E5E7EB",
+      "gray_300": "#D1D5DB",
+      "gray_400": "#9CA3AF",
+      "gray_500": "#6B7280",
+      "gray_600": "#4B5563",
+      "gray_700": "#374151",
+      "gray_800": "#1F2937",
+      "gray_900": "#111827",
+      "black": "#000000"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "base": "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+      "mono": "'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace"
+    },
+    "fontSize": {
+      "xs": 12,
+      "sm": 14,
+      "base": 16,
+      "lg": 18,
+      "xl": 20,
+      "2xl": 24,
+      "3xl": 30,
+      "4xl": 36,
+      "5xl": 48
+    },
+    "fontWeight": {
+      "thin": 100,
+      "extralight": 200,
+      "light": 300,
+      "normal": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700,
+      "extrabold": 800,
+      "black": 900
+    },
+    "lineHeight": {
+      "tight": 1.2,
+      "normal": 1.5,
+      "relaxed": 1.75,
+      "loose": 2
+    }
+  },
+  "spacing": {
+    "0": 0,
+    "1": 4,
+    "2": 8,
+    "3": 12,
+    "4": 16,
+    "5": 20,
+    "6": 24,
+    "7": 28,
+    "8": 32,
+    "9": 36,
+    "10": 40,
+    "12": 48,
+    "16": 64,
+    "20": 80,
+    "24": 96,
+    "28": 112,
+    "32": 128,
+    "36": 144,
+    "40": 160,
+    "44": 176,
+    "48": 192,
+    "52": 208,
+    "56": 224,
+    "60": 240,
+    "64": 256,
+    "72": 288,
+    "80": 320,
+    "96": 384
+  },
+  "borderRadius": {
+    "none": 0,
+    "sm": 4,
+    "base": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 20,
+    "2xl": 24,
+    "3xl": 32,
+    "full": 9999
+  },
+  "shadows": {
+    "none": "none",
+    "sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+    "base": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+    "md": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+    "xl": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+    "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+  },
+  "zIndex": {
+    "hide": -1,
+    "auto": "auto",
+    "base": 0,
+    "dropdown": 1000,
+    "sticky": 1020,
+    "fixed": 1030,
+    "modal_backdrop": 1040,
+    "modal": 1050,
+    "popover": 1060,
+    "tooltip": 1070
+  },
+  "breakpoints": {
+    "xs": 0,
+    "sm": 640,
+    "md": 768,
+    "lg": 1024,
+    "xl": 1280,
+    "2xl": 1536
+  }
+}
