@@ -2,6 +2,9 @@
 
 Auto-generated from all feature plans. Last updated: [DATE]
 
+**Constitution**: This document is generated to reflect the active project constitution (GrowUp Yourself).
+Ensure any project-wide rules (privacy, TypeScript + React Native constraints, spec-driven tests) are represented.
+
 ## Active Technologies
 
 [EXTRACTED FROM ALL PLAN.MD FILES]

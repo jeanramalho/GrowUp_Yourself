@@ -75,6 +75,15 @@
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
 
+## Constitution Compliance *(mandatory)*
+
+Each spec MUST include a short section describing how it complies with the project constitution. At minimum include:
+- Privacy impact (local vs remote data; consent requirements)
+- Storage and migration considerations (SQLite schema or explicit N/A)
+- Test mapping: unit tests and integration/e2e tests IDs/paths required by the constitution
+- Feature flags required (e.g., `AI_ENABLED`) and fallbacks
+
+
 ## Requirements *(mandatory)*
 
 <!--

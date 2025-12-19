@@ -31,7 +31,13 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Gates determined based on the project constitution (GrowUp Yourself):
+- Privacy & Offline-first: feature MUST define whether user data stays local and how consent is obtained.
+- Language & Platform: implementation MUST conform to TypeScript + React Native + Expo when applicable.
+- Testability: each spec referenced MUST map to unit and integration/e2e tests as required by the constitution.
+- Data persistence: storage choices MUST document SQLite schema/migrations when data is involved.
+
+Provide explicit evidence (links to spec.md, tests, and migration scripts) for each gate.
 
 ## Project Structure
 
