@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Perfil do Usuário - GrowUp Yourself</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3b82f6", // Blue 500
+                        "primary-dark": "#2563eb", // Blue 600
+                        "background-light": "#f8fafc", // Slate 50
+                        "background-dark": "#0f172a", // Slate 900
+                        "surface-dark": "#1e293b", // Slate 800
+                        "border-dark": "#334155", // Slate 700
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "1.5rem",
+                        "xl": "2rem",
+                        "2xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white min-h-screen pb-32">
+<header class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 transition-all">
+<div class="w-12">
+</div>
+<h2 class="text-xl font-bold tracking-tight text-center">Meu Perfil</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex items-center justify-center rounded-full h-10 w-10 text-primary hover:bg-blue-500/10 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">edit_square</span>
+</button>
+</div>
+</header>
+<main class="w-full max-w-lg mx-auto flex flex-col p-4 gap-6">
+<section class="flex flex-col items-center justify-center pt-2">
+<div class="relative group cursor-pointer">
+<div class="h-32 w-32 rounded-full p-1 border-2 border-primary/30 border-dashed group-hover:border-primary transition-colors">
+<div class="h-full w-full rounded-full bg-cover bg-center overflow-hidden" data-alt="Portrait of a young woman with a confident expression, representing the user profile" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCfnBvu2sHMwE-3SIiHqBJNcM2jH67kHJaTKdbdr-oGNNovKIagZEiXOU7Q4ykCFCEdkuGSu_bqCJRccm7J43H3myUInp9E3CboXxxunqMqCYwZlOON2tq3eLZXeUO_K-xHnkZDq7VvQL5KDtl0UlKs4lV5aPr4BgHkxuL52llUnpeNylFFuxYTSNimTN9tsWJcrXd7eO-DZ5MHoz_OB1fNvKXCxC7nZpGnqMXRGBEpPxAYVJ2ty50UCXti3_UE9ln16eqnXSAjJqBW');">
+</div>
+</div>
+<button class="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 shadow-lg hover:scale-105 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 20px;">photo_camera</span>
+</button>
+</div>
+<p class="mt-3 text-sm font-semibold text-primary/80 uppercase tracking-wider">Nível 5: Explorador</p>
+</section>
+<section class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium ml-2 text-slate-500 dark:text-slate-400">Nome Completo</label>
+<input class="form-input w-full rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary text-base px-5 py-4 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition-all" placeholder="Seu nome" type="text" value="Mariana Costa"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium ml-2 text-slate-500 dark:text-slate-400">Sexo <span class="text-slate-400 font-normal">(Opcional)</span></label>
+<div class="relative">
+<select class="form-select w-full appearance-none rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary text-base px-5 py-4 pr-10 dark:text-white outline-none transition-all">
+<option selected="" value="female">Feminino</option>
+<option value="male">Masculino</option>
+<option value="other">Outro</option>
+<option value="na">Prefiro não dizer</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-primary">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-lg font-bold mb-3 px-2">Estatísticas Físicas</h3>
+<div class="grid grid-cols-3 gap-3">
+<label class="flex flex-col gap-2 group">
+<span class="text-xs font-medium text-center text-slate-500 dark:text-slate-400 group-focus-within:text-primary transition-colors">Peso (kg)</span>
+<div class="relative">
+<input class="w-full text-center rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary h-16 text-lg font-bold dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600" inputmode="decimal" type="number" value="62.5"/>
+</div>
+</label>
+<label class="flex flex-col gap-2 group">
+<span class="text-xs font-medium text-center text-slate-500 dark:text-slate-400 group-focus-within:text-primary transition-colors">Altura (cm)</span>
+<div class="relative">
+<input class="w-full text-center rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary h-16 text-lg font-bold dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600" inputmode="numeric" type="number" value="168"/>
+</div>
+</label>
+<label class="flex flex-col gap-2 group">
+<span class="text-xs font-medium text-center text-slate-500 dark:text-slate-400 group-focus-within:text-primary transition-colors">Meta (kg)</span>
+<div class="relative">
+<input class="w-full text-center rounded-2xl bg-white dark:bg-surface-dark border-dashed border-2 border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary h-16 text-lg font-bold text-primary placeholder:text-primary/50" inputmode="decimal" type="number" value="60.0"/>
+</div>
+</label>
+</div>
+</section>
+<section class="flex flex-col gap-6">
+<div class="bg-white dark:bg-white/5 rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-sm">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<h3 class="text-lg font-bold">Notificações por Pilar</h3>
+</div>
+<div class="flex flex-col gap-5">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-medium">Espiritualidade</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Meditação e gratidão</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-medium">Saúde</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Exercícios e hidratação</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-medium">Finanças</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Controle de gastos</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-medium">Relacionamentos</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Conexão social</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-white/5 rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-sm flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400">dark_mode</span>
+<span class="font-medium">Tema Escuro</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<hr class="border-slate-100 dark:border-white/10"/>
+<button class="flex items-center justify-between w-full group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 group-hover:text-primary transition-colors">cloud_sync</span>
+<div class="flex flex-col items-start">
+<span class="font-medium group-hover:text-primary transition-colors">Gerenciar Backup</span>
+<span class="text-xs text-slate-500 dark:text-slate-400 text-left">Exportar/Importar (JSON/SQLite)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+</div>
+</section>
+<button class="w-full h-14 bg-primary hover:bg-primary-dark text-white font-bold text-lg rounded-full shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all active:scale-[0.98]">
+            Salvar Alterações
+        </button>
+<div class="h-4"></div> 
+</main>
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/5 pb-6 pt-3 px-6 shadow-2xl">
+<ul class="flex justify-between items-center max-w-lg mx-auto">
+<li>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[28px]">home</span>
+<span class="text-[10px] font-medium">Início</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[28px]">grid_view</span>
+<span class="text-[10px] font-medium">Pilares</span>
+</a>
+</li>
+<li class="-mt-8">
+<button class="h-14 w-14 rounded-full bg-primary text-white flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</button>
+</li>
+<li>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[28px]">bar_chart</span>
+<span class="text-[10px] font-medium">Metas</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[28px] fill-current">person</span>
+<span class="text-[10px] font-bold">Perfil</span>
+</a>
+</li>
+</ul>
+</nav>
+
+</body></html>

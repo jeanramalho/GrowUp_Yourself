@@ -130,5 +130,3 @@ Racional: Experiência consistente, inclusiva e com custos controlados em armaze
 Esta constituição é a fonte de verdade para decisões de arquitetura e qualidade durante o desenvolvimento.
 Alterações devem ser aprovadas via PR que inclua revisão técnica e atualização das specs relacionadas.
 
-Assinatura:
-Jean Ramalho

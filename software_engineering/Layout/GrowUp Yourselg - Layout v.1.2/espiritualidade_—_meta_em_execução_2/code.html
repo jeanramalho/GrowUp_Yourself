@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Espiritualidade — Meta em Execução</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#2bee79",
+              "background-light": "#f6f8f7",
+              "background-dark": "#102217",
+              "surface-dark": "#1c3024",
+            },
+            fontFamily: {
+              "display": ["Spline Sans", "Noto Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            boxShadow: {
+                'glow': '0 0 25px rgba(43, 238, 121, 0.25)',
+                'glow-strong': '0 0 40px rgba(43, 238, 121, 0.4)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        /* Smooth progress ring animation */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 1s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        /* Pulse animation for the active state */
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(43, 238, 121, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(43, 238, 121, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(43, 238, 121, 0); }
+        }
+        
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col font-display overflow-hidden selection:bg-primary selection:text-background-dark">
+<!-- Top App Bar -->
+<header class="flex items-center justify-between px-4 pt-12 pb-4 z-20 relative">
+<button class="flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-white/10 active:scale-95 transition-all text-white">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</button>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Espiritualidade</h2>
+<button class="flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-white/10 active:scale-95 transition-all text-white">
+<span class="material-symbols-outlined" style="font-size: 24px;">more_horiz</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col items-center relative z-10 w-full max-w-md mx-auto px-6 pt-4 pb-28 overflow-y-auto hide-scrollbar">
+<!-- Active Goal Card -->
+<div class="w-full flex flex-col items-center animate-fade-in mb-8">
+<div class="h-12 px-6 rounded-full bg-[#1c3024] border border-white/5 flex items-center justify-center gap-3 mb-4 shadow-lg">
+<span class="material-symbols-outlined text-primary text-xl">self_improvement</span>
+<span class="text-white/90 text-sm font-semibold tracking-wide">Sessão Diária</span>
+</div>
+<h1 class="text-white tracking-tight text-[28px] font-bold leading-tight text-center">Meditação Mindfulness</h1>
+</div>
+<!-- Timer Section -->
+<div class="relative flex items-center justify-center mb-8 mt-2">
+<!-- Background Decoration -->
+<div class="absolute inset-0 bg-primary/10 rounded-full blur-[60px] scale-110"></div>
+<!-- Circular Progress -->
+<div class="relative w-[280px] h-[280px]">
+<!-- Base Track -->
+<svg class="w-full h-full" viewbox="0 0 288 288">
+<circle cx="144" cy="144" fill="none" r="136" stroke="#1c3024" stroke-width="8"></circle>
+<!-- Progress Value (Static for design) -->
+<circle class="progress-ring__circle drop-shadow-[0_0_15px_rgba(43,238,121,0.6)]" cx="144" cy="144" fill="none" r="136" stroke="#2bee79" stroke-dasharray="854" stroke-dashoffset="250" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<!-- Timer Text -->
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<div class="flex items-baseline gap-1">
+<span class="text-white text-[72px] font-bold leading-none tracking-tighter drop-shadow-2xl font-variant-numeric tabular-nums">14:32</span>
+</div>
+<p class="text-primary text-sm font-semibold tracking-[0.2em] uppercase mt-2 opacity-90">Restante</p>
+</div>
+</div>
+</div>
+<!-- Microcopy Info -->
+<div class="w-full max-w-[320px] bg-[#1c3024]/50 backdrop-blur-sm rounded-2xl px-5 py-4 mb-10 border border-white/5 shadow-inner">
+<p class="text-white/70 text-sm font-normal leading-relaxed text-center">
+                Você começou às <span class="text-white font-semibold">06:10</span> — o alarme final será às <span class="text-white font-semibold">06:40</span>.
+            </p>
+</div>
+<!-- Primary Controls -->
+<div class="w-full flex items-center justify-center gap-6 mb-8">
+<!-- Pause Button -->
+<div class="flex flex-col items-center gap-2">
+<button class="flex size-14 cursor-pointer items-center justify-center rounded-full bg-[#234832] text-white hover:bg-[#2d5c40] active:scale-90 transition-all shadow-lg border border-white/5">
+<span class="material-symbols-outlined" style="font-size: 28px;">pause</span>
+</button>
+<span class="text-xs font-medium text-white/50">Pausar</span>
+</div>
+<!-- Finish Button (Primary) -->
+<div class="flex flex-col items-center gap-2 -mt-4">
+<button class="flex size-20 cursor-pointer items-center justify-center rounded-full bg-primary text-background-dark animate-pulse-ring hover:scale-105 active:scale-95 transition-all shadow-glow-strong">
+<span class="material-symbols-outlined font-bold" style="font-size: 40px; font-weight: 700;">check</span>
+</button>
+<span class="text-xs font-bold text-primary">Concluir</span>
+</div>
+<!-- Notes Button -->
+<div class="flex flex-col items-center gap-2">
+<button class="flex size-14 cursor-pointer items-center justify-center rounded-full bg-[#234832] text-white hover:bg-[#2d5c40] active:scale-90 transition-all shadow-lg border border-white/5">
+<span class="material-symbols-outlined" style="font-size: 26px;">edit_note</span>
+</button>
+<span class="text-xs font-medium text-white/50">Anotar</span>
+</div>
+</div>
+<!-- Retroactive Link -->
+<button class="text-white/40 text-xs font-medium hover:text-primary transition-colors py-2 px-4 rounded-lg hover:bg-white/5">
+            Esqueceu de iniciar? <span class="underline underline-offset-2 decoration-white/30">Registrar retroativo</span>
+</button>
+</main>
+<!-- Tab Bar -->
+<nav class="fixed bottom-0 w-full z-30 bg-[#112218]/90 backdrop-blur-xl border-t border-white/5 pb-6 pt-3 px-6">
+<div class="flex justify-between items-end max-w-md mx-auto">
+<button class="flex flex-1 flex-col items-center gap-1.5 text-white/40 group hover:text-white transition-colors">
+<span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform" style="font-size: 26px;">home</span>
+<span class="text-[10px] font-medium">Início</span>
+</button>
+<button class="flex flex-1 flex-col items-center gap-1.5 text-primary group relative">
+<span class="absolute -top-10 bg-primary/20 w-12 h-12 rounded-full blur-xl"></span>
+<span class="material-symbols-outlined fill-1" style="font-size: 26px; font-variation-settings: 'FILL' 1;">spa</span>
+<span class="text-[10px] font-bold">Espiritualidade</span>
+</button>
+<button class="flex flex-1 flex-col items-center gap-1.5 text-white/40 group hover:text-white transition-colors">
+<span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform" style="font-size: 26px;">calendar_month</span>
+<span class="text-[10px] font-medium">Agenda</span>
+</button>
+<button class="flex flex-1 flex-col items-center gap-1.5 text-white/40 group hover:text-white transition-colors">
+<span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform" style="font-size: 26px;">person</span>
+<span class="text-[10px] font-medium">Perfil</span>
+</button>
+</div>
+</nav>
+<!-- Ambient Background Elements -->
+<div class="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
+<!-- Top Right Glow -->
+<div class="absolute top-[-150px] right-[-100px] w-[400px] h-[400px] bg-primary/5 rounded-full blur-[120px]"></div>
+<!-- Bottom Left Glow -->
+<div class="absolute bottom-[10%] left-[-150px] w-[300px] h-[300px] bg-blue-600/5 rounded-full blur-[100px]"></div>
+</div>
+</body></html>
