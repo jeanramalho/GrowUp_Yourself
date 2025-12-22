@@ -31,7 +31,16 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+This project uses the GrowUp Yourself constitution. Plans MUST include a short table showing how the feature meets these checks. At minimum verify:
+
+- MVVM-first: feature design maps UI → ViewModel → Domain → Data layers (no business rules in Views).
+- Local-first: user flows that modify or read user data work offline and persist to local DB (SQLite or equivalent) via repository abstraction.
+- Design Tokens: UI uses tokens for colors, spacing, typography; tokens referenced in the plan.
+- Accessibility: AA contrast, dynamic text, touch targets ≥44px and semantic labels for interactive elements.
+- Tests: Unit tests for ViewModels/domain; integration tests for persistence, notifications, and AI inference (if applicable).
+- Privacy: confirm no data is sent off-device without explicit opt-in; backup/export formats documented.
+
+Include a short matrix (Yes/No) for the above checks in the plan header.
 
 ## Project Structure
 
