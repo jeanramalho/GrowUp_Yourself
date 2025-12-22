@@ -1,9 +1,0 @@
-{
-  "colors": {
-    "primary": "#0055FF",
-    "background": "#FFFFFF",
-    "text": "#111111"
-  },
-  "spacing": { "xs": 4, "sm": 8, "md": 16, "lg": 24 },
-  "typography": { "base": 16, "scale": 1.125 }
-}
