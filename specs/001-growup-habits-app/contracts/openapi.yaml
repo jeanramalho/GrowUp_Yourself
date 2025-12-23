@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: GrowUp Yourself — Local Persistence Contracts
+  version: 1.0.0
+  description: OpenAPI-style contracts describing local CRUD operations and payload shapes (used as internal contract/schema reference).
+servers:
+  - url: "local://"
+
+components:
+  schemas:
+    Meta:
+      type: object
+      required: [id, pilar_id, titulo, duracao_minutos, dias_semana]
+      properties:
+        id: { type: string }
+        pilar_id: { type: string }
+        titulo: { type: string }
+        descricao: { type: string }
+        dias_semana: { type: integer }
+        duracao_minutos: { type: integer }
+        horario_sugerido: { type: string }
+        notificacao_minutos_antes: { type: integer }
+        recorrente: { type: boolean }
+
+    Execucao:
+      type: object
+      required: [id, meta_id, data, status]
+      properties:
+        id: { type: string }
+        meta_id: { type: string }
+        data: { type: string, format: date }
+        horario_inicio_real: { type: string, format: date-time }
+        duracao_real: { type: integer }
+        status: { type: string }
+        observacao: { type: string }
+
+    UserProfile:
+      type: object
+      required: [id, nome]
+      properties:
+        id: { type: string }
+        nome: { type: string }
+        foto_path: { type: string }
+        sexo: { type: string }
+        peso: { type: number }
+        altura: { type: number }
+
+paths:
+  /meta:
+    get:
+      summary: List metas
+      responses:
+        '200':
+          description: array of metas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Meta'
+    post:
+      summary: Create meta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Meta'
+      responses:
+        '201': { description: created }
+
+  /meta/{id}:
+    get:
+      summary: Get meta by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { content: { application/json: { schema: { $ref: '#/components/schemas/Meta' } } } }
+    put:
+      summary: Update meta
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/Meta' } } } }
+      responses: { '200': { description: updated } }
+    delete:
+      summary: Delete meta
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '204': { description: deleted } }
+
+  /execucao:
+    post:
+      summary: Record execution
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/Execucao' } } } }
+      responses: { '201': { description: recorded } }
+
+  /profile:
+    get:
+      summary: Get profile
+      responses: { '200': { content: { application/json: { schema: { $ref: '#/components/schemas/UserProfile' } } } } }
+    put:
+      summary: Update profile
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/UserProfile' } } } }
+      responses: { '200': { description: updated } }

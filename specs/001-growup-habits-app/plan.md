@@ -7,7 +7,7 @@
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Implement an Expo + React Native + TypeScript MVP named "GrowUp Yourself" that provides a TabBar of four pillars (Espiritualidade, Saúde, Finanças, Relacionamentos) plus Profile. Core features: create/execute/record weekly metas, local scheduling of reminders, monthly progress aggregation (header), finance planning vs reals, and an on-device-ready architecture for later AI integration. The technical approach favors Expo-managed workflow, `expo-sqlite` persistence behind a Repository abstraction, `expo-notifications` for scheduling, `react-native-paper` for accessible UI components, and a small ViewModel layer (MVVM) implemented with simple `zustand` stores or lightweight ViewModel wrappers.
 
 ## Technical Context
 
@@ -17,30 +17,34 @@
   the iteration process.
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: TypeScript (>=4.9), React Native via Expo (SDK 49+ recommended)
+**Primary Dependencies**: React Native, Expo, Expo Router, @expo/vector-icons, react-native-paper, react-native-svg, victory-native, zustand (or mobx alternative), jest, @testing-library/react-native
+**Storage**: On-device SQLite (expo-sqlite) via a Repository abstraction (migrations supported)
+**Testing**: Jest + React Native Testing Library for unit/component tests; integration scripts for DB and notifications; E2E with Detox or Expo E2E in Phase 2
+**Target Platform**: Mobile — iOS and Android (phones primary, tablet responsive)
+**Project Type**: Mobile app (single-project Expo-managed)
+**Performance Goals**: App cold start < 2s on modern devices; smooth UI 60fps for primary flows; DB reads/writes < 50ms typical for small datasets
+**Constraints**: Offline-first, single-user per device, package size kept modest (MVP under ~100MB), permissions-aware notifications
+**Scale/Scope**: MVP: ~8–12 screens, core modules for 4 pillars, profile, backups
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-This project uses the GrowUp Yourself constitution. Plans MUST include a short table showing how the feature meets these checks. At minimum verify:
+This project uses the GrowUp Yourself constitution. The plan below verifies each gate requirement.
 
-- MVVM-first: feature design maps UI → ViewModel → Domain → Data layers (no business rules in Views).
-- Local-first: user flows that modify or read user data work offline and persist to local DB (SQLite or equivalent) via repository abstraction.
-- Design Tokens: UI uses tokens for colors, spacing, typography; tokens referenced in the plan.
-- Accessibility: AA contrast, dynamic text, touch targets ≥44px and semantic labels for interactive elements.
-- Tests: Unit tests for ViewModels/domain; integration tests for persistence, notifications, and AI inference (if applicable).
-- Privacy: confirm no data is sent off-device without explicit opt-in; backup/export formats documented.
+Constitution Check Matrix:
 
-Include a short matrix (Yes/No) for the above checks in the plan header.
+| Check | Result | Notes |
+|---|---:|---|
+| MVVM-first | Yes | Views will be thin; ViewModels in `src/viewmodels` expose typed state and commands |
+| Local-first | Yes | All user flows persist locally via Repository abstraction over `expo-sqlite` |
+| Design Tokens | Yes | `src/theme/tokens.ts` will hold colors, spacing, typography; `react-native-paper` theme wired to tokens |
+| Accessibility | Yes | Use `react-native-paper` accessible components; enforce AA contrast & targets >=44px |
+| Tests | Yes (required) | Unit tests for ViewModels + integration scripts for DB and notifications required before merge |
+| Privacy | Yes | Single-user local-first; backups require explicit export action; no network by default |
+
+Include these checks as part of PR template and CI gating.
 
 ## Project Structure
 
@@ -100,8 +104,26 @@ ios/ or android/
 └── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Single Expo-managed mobile project with MVVM folders. Concrete layout below.
+
+### Chosen Source Layout (concrete)
+
+```
+src/
+  screens/           # React components (Views)
+  viewmodels/        # ViewModel classes or hooks (observable state, orchestration)
+  components/        # Reusable UI components (MetaCard, HeaderProgress...)
+  repositories/      # DB access + migrations (SQLite wrapper)
+  services/          # NotificationService, ChartService, BackupService, AI Adapter
+  theme/             # design tokens and theme wiring
+  models/            # TypeScript interfaces shared across layers
+tests/
+  unit/
+  integration/
+e2e/                 # optional E2E harness later
+```
+
+Reference files created in `specs/001-growup-habits-app/` (this plan, research.md, data-model.md, contracts/openapi.yaml, quickstart.md).
 
 ## Complexity Tracking
 
