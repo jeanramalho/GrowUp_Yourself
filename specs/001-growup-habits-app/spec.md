@@ -1,10 +1,17 @@
+<<<<<<< HEAD
 ```markdown
+=======
+>>>>>>> 001-growup-habits-app
 # Feature Specification: GrowUp Yourself — MVP (Gestão de Hábitos)
 
 **Feature Branch**: `001-growup-habits-app`  
 **Created**: 2025-12-23  
 **Status**: Draft  
+<<<<<<< HEAD
 **Input**: User description: "construa uma aplicação que ajude no desenvolvimento pessoal das pessoas, baseada nos arquivos que estão dentro da pasta software_engineering tanto o layout como a arquitetura, fluxo de funcionamento e tecnologias, pode acrescentar também e usar elementos e bibliotecas de terceiros caso necessário." 
+=======
+**Input**: User description: "construa uma aplicação que ajude no desenvolvimento pessoal das pessoas, baseada nos arquivos que estão dentro da pasta software_engineering tanto o layout como a arquitetura, fluxo de funcionamento e tecnologias, pode acrescentar também e usar elementos e bibliotecas de terceiros caso necessário."
+>>>>>>> 001-growup-habits-app
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -131,6 +138,7 @@ Usuário cria compromisso recorrente (ex.: toda quinta-feira encontro com famíl
 - **SC-006**: Backup export gera arquivo legível (JSON/SQLite) que pode ser importado novamente preservando as tabelas principais em pelo menos 95% dos campos.
 
 ---
+<<<<<<< HEAD
 
 ```
 # Feature Specification: [FEATURE NAME]
@@ -248,3 +256,5 @@ Usuário cria compromisso recorrente (ex.: toda quinta-feira encontro com famíl
 - **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
 - **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
 - **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+=======
+>>>>>>> 001-growup-habits-app

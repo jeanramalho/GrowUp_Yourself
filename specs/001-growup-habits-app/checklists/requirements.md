@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 # Specification Quality Checklist: GrowUp Yourself — MVP
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2025-12-23
 **Feature**: [spec.md](specs/001-growup-habits-app/spec.md)
+=======
+# Requirements Checklist: GrowUp Yourself — MVP
+
+**Purpose**: Validate specification completeness and quality before proceeding to planning
+**Created**: 2025-12-26
+**Feature**: [spec.md](../spec.md)
+>>>>>>> 001-growup-habits-app
 
 ## Content Quality
 
@@ -31,5 +39,9 @@
 
 ## Notes
 
+<<<<<<< HEAD
 - All checklist items pass for the current spec version (2025-12-23). No [NEEDS CLARIFICATION] markers detected.
 
+=======
+- All checklist items pass for the current spec version (2025-12-26). No [NEEDS CLARIFICATION] markers detected.
+>>>>>>> 001-growup-habits-app

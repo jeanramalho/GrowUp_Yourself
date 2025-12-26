@@ -1,0 +1,58 @@
+# Expo
+.expo/
+.expo-shared/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-error.log
+*.log
+.npm/
+
+# TypeScript
+*.tsbuildinfo
+.tsbuildinfo
+
+# Testing
+coverage/
+*.lcov
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python/Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build output
+build/
+dist/
+out/
+.next/
+.turbo/
+
+# OS
+Thumbs.db
+.DS_Store

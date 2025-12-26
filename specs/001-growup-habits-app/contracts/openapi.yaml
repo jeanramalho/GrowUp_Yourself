@@ -2,9 +2,13 @@ openapi: 3.0.3
 info:
   title: GrowUp Yourself — Local Persistence Contracts
   version: 1.0.0
+<<<<<<< HEAD
   description: OpenAPI-style contracts describing local CRUD operations and payload shapes (used as internal contract/schema reference).
 servers:
   - url: "local://"
+=======
+  description: OpenAPI-style contracts describing local CRUD operations
+>>>>>>> 001-growup-habits-app
 
 components:
   schemas:
@@ -44,6 +48,7 @@ components:
         sexo: { type: string }
         peso: { type: number }
         altura: { type: number }
+<<<<<<< HEAD
 
 paths:
   /meta:
@@ -103,3 +108,5 @@ paths:
       summary: Update profile
       requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/UserProfile' } } } }
       responses: { '200': { description: updated } }
+=======
+>>>>>>> 001-growup-habits-app

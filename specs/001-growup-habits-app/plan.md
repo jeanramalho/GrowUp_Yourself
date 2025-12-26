@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 # Implementation Plan: [FEATURE]
 
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+=======
+# Implementation Plan: GrowUp Yourself — MVP
+
+**Branch**: `001-growup-habits-app` | **Date**: 2025-12-26 | **Spec**: [spec.md](spec.md)
+>>>>>>> 001-growup-habits-app
 
 ## Summary
 
@@ -11,6 +17,7 @@ Implement an Expo + React Native + TypeScript MVP named "GrowUp Yourself" that p
 
 ## Technical Context
 
+<<<<<<< HEAD
 <!--
   ACTION REQUIRED: Replace the content in this section with the technical details
   for the project. The structure here is presented in advisory capacity to guide
@@ -25,14 +32,27 @@ Implement an Expo + React Native + TypeScript MVP named "GrowUp Yourself" that p
 **Project Type**: Mobile app (single-project Expo-managed)
 **Performance Goals**: App cold start < 2s on modern devices; smooth UI 60fps for primary flows; DB reads/writes < 50ms typical for small datasets
 **Constraints**: Offline-first, single-user per device, package size kept modest (MVP under ~100MB), permissions-aware notifications
+=======
+**Language/Version**: TypeScript (>=4.9), React Native via Expo (SDK 49+ recommended)  
+**Primary Dependencies**: React Native, Expo, Expo Router, @expo/vector-icons, react-native-paper, react-native-svg, victory-native, zustand, jest, @testing-library/react-native  
+**Storage**: On-device SQLite (expo-sqlite) via a Repository abstraction (migrations supported)  
+**Testing**: Jest + React Native Testing Library for unit/component tests; integration scripts for DB and notifications; E2E with Detox optional in Phase 2  
+**Target Platform**: Mobile — iOS and Android (phones primary, tablet responsive)  
+**Project Type**: Mobile app (single-project Expo-managed)  
+**Performance Goals**: App cold start < 2s on modern devices; smooth UI 60fps for primary flows; DB reads/writes < 50ms typical for small datasets  
+**Constraints**: Offline-first, single-user per device, package size kept modest (MVP under ~100MB), permissions-aware notifications  
+>>>>>>> 001-growup-habits-app
 **Scale/Scope**: MVP: ~8–12 screens, core modules for 4 pillars, profile, backups
 
 ## Constitution Check
 
+<<<<<<< HEAD
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 This project uses the GrowUp Yourself constitution. The plan below verifies each gate requirement.
 
+=======
+>>>>>>> 001-growup-habits-app
 Constitution Check Matrix:
 
 | Check | Result | Notes |
@@ -44,6 +64,7 @@ Constitution Check Matrix:
 | Tests | Yes (required) | Unit tests for ViewModels + integration scripts for DB and notifications required before merge |
 | Privacy | Yes | Single-user local-first; backups require explicit export action; no network by default |
 
+<<<<<<< HEAD
 Include these checks as part of PR template and CI gating.
 
 ## Project Structure
@@ -107,6 +128,11 @@ ios/ or android/
 **Structure Decision**: Single Expo-managed mobile project with MVVM folders. Concrete layout below.
 
 ### Chosen Source Layout (concrete)
+=======
+## Project Structure
+
+### Chosen Source Layout
+>>>>>>> 001-growup-habits-app
 
 ```
 src/
@@ -117,6 +143,7 @@ src/
   services/          # NotificationService, ChartService, BackupService, AI Adapter
   theme/             # design tokens and theme wiring
   models/            # TypeScript interfaces shared across layers
+<<<<<<< HEAD
 tests/
   unit/
   integration/
@@ -133,3 +160,26 @@ Reference files created in `specs/001-growup-habits-app/` (this plan, research.m
 |-----------|------------|-------------------------------------|
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
 | [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+=======
+
+tests/
+  unit/
+  integration/
+
+e2e/                 # optional E2E harness later
+```
+
+### Documentation
+
+```
+specs/001-growup-habits-app/
+├── spec.md              # Feature specification with user stories
+├── plan.md              # This file
+├── research.md          # Phase 0 technical decisions
+├── data-model.md        # Phase 1 entities and schemas
+├── quickstart.md        # Getting started instructions
+├── contracts/           # Contract definitions (OpenAPI-style)
+└── checklists/          # Quality checklists
+    └── requirements.md
+```
+>>>>>>> 001-growup-habits-app
