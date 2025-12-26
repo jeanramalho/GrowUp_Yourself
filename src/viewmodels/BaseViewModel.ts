@@ -4,7 +4,6 @@
  */
 
 import { create, StateCreator } from 'zustand';
-import { devtools } from 'zustand/middleware';
 
 /**
  * Generic ViewModel state interface
@@ -48,7 +47,7 @@ export function createViewModel<T extends ViewModelState>(
   name: string,
   stateCreator: StateCreator<T>
 ) {
-  return create<T>(devtools(stateCreator, { name }));
+  return create<T>(stateCreator);
 }
 
 /**

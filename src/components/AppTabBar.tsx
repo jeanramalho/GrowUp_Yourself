@@ -63,7 +63,7 @@ export const AppTabBar: React.FC<AppTabBarProps> = ({
         >
           <View style={styles.tabContent}>
             <MaterialCommunityIcons
-              name={tab.icon}
+              name={tab.icon as any}
               size={24}
               color={
                 activeTab === tab.id

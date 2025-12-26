@@ -6,22 +6,6 @@ Describe entities, TypeScript interfaces and suggested SQLite table schemas for 
 ## Entities (TypeScript interfaces)
 
 ```ts
-<<<<<<< HEAD
-// user profile
-export interface UserProfile {
-  id: string; // uuid
-  nome: string;
-  foto_path?: string | null;
-  sexo?: 'male' | 'female' | 'other' | null;
-  peso?: number | null; // kg
-  altura?: number | null; // meters
-  meta_peso?: number | null;
-  preferencias?: Record<string, any> | null;
-  updated_at: string; // ISO timestamp
-}
-
-export interface Pilar { id: string; nome: string; icone?: string | null; ordem: number }
-=======
 export interface UserProfile {
   id: string;
   nome: string;
@@ -40,22 +24,15 @@ export interface Pilar {
   icone?: string | null;
   ordem: number;
 }
->>>>>>> 001-growup-habits-app
 
 export interface Meta {
   id: string;
   pilar_id: string;
   titulo: string;
   descricao?: string | null;
-<<<<<<< HEAD
-  dias_semana: number; // bitmask 0-127
-  duracao_minutos: number;
-  horario_sugerido?: string | null; // HH:MM
-=======
   dias_semana: number;
   duracao_minutos: number;
   horario_sugerido?: string | null;
->>>>>>> 001-growup-habits-app
   notificacao_minutos_antes?: number | null;
   recorrente: boolean;
   peso?: number;
@@ -67,15 +44,9 @@ export type ExecucaoStatus = 'concluida' | 'falhou' | 'pulou';
 export interface Execucao {
   id: string;
   meta_id: string;
-<<<<<<< HEAD
-  data: string; // ISO date (day)
-  horario_inicio_real?: string | null; // ISO timestamp
-  duracao_real?: number | null; // minutes
-=======
   data: string;
   horario_inicio_real?: string | null;
   duracao_real?: number | null;
->>>>>>> 001-growup-habits-app
   status: ExecucaoStatus;
   observacao?: string | null;
   created_at: string;
@@ -86,19 +57,12 @@ export interface LancamentoFinanceiro {
   tipo: 'receita' | 'despesa';
   categoria?: string | null;
   valor: number;
-<<<<<<< HEAD
-  data: string; // ISO date
-=======
   data: string;
->>>>>>> 001-growup-habits-app
   nota?: string | null;
   planejado: boolean;
   created_at: string;
 }
 
-<<<<<<< HEAD
-export interface Investimento { id: string; nome: string; principal: number; taxa_juros_ano?: number; data_inicio?: string; notas?: string }
-=======
 export interface Investimento {
   id: string;
   nome: string;
@@ -107,34 +71,21 @@ export interface Investimento {
   data_inicio?: string;
   notas?: string;
 }
->>>>>>> 001-growup-habits-app
 
 export interface Compromisso {
   id: string;
   titulo: string;
   com_quem?: string | null;
-<<<<<<< HEAD
-  data_hora: string; // ISO timestamp for occurrence
-  recorrencia_rule?: string | null; // iCal RRULE or simple enum
-  preparacao?: string | null; // JSON checklist text
-  lembretes?: string | null; // JSON
-=======
   data_hora: string;
   recorrencia_rule?: string | null;
   preparacao?: string | null;
   lembretes?: string | null;
->>>>>>> 001-growup-habits-app
   status?: string;
 }
 ```
 
 ## Suggested SQLite table schemas
 
-<<<<<<< HEAD
-Create tables with simple indices on `pilar_id`, `meta_id`, and date columns for performance.
-
-=======
->>>>>>> 001-growup-habits-app
 ```sql
 CREATE TABLE user_profile (id TEXT PRIMARY KEY, nome TEXT, foto_path TEXT, sexo TEXT, peso REAL, altura REAL, meta_peso REAL, preferencias TEXT, updated_at TEXT);
 CREATE TABLE pilar (id TEXT PRIMARY KEY, nome TEXT, icone TEXT, ordem INTEGER);
@@ -144,23 +95,7 @@ CREATE TABLE execucao (id TEXT PRIMARY KEY, meta_id TEXT, data TEXT, horario_ini
 CREATE INDEX idx_execucao_meta ON execucao(meta_id);
 CREATE TABLE lancamento_financeiro (id TEXT PRIMARY KEY, tipo TEXT, categoria TEXT, valor REAL, data TEXT, nota TEXT, planejado INTEGER, created_at TEXT);
 CREATE TABLE investimento (id TEXT PRIMARY KEY, nome TEXT, principal REAL, taxa_juros_ano REAL, data_inicio TEXT, notas TEXT);
-CREATE TABLE compromisso (id TEXT PRIMARY KEY, titulo TEXT, com_quem TEXT, data_hora TEXT, recorrencia_rule TEXT, preparacao_text TEXT, lembretes TEXT, status TEXT);
-<<<<<<< HEAD
-CREATE TABLE audit_log (id TEXT PRIMARY KEY, entidade TEXT, acao TEXT, payload TEXT, created_at TEXT);
-```
-
-## Validation rules / Domain invariants
-
-- `meta.duracao_minutos` > 0
-- `meta.dias_semana` bitmask maps to at least one weekday for recurring weekly metas
-- `execucao.status` in {concluida, falhou, pulou}
-- Financial `lancamento_financeiro.valor` must be non-negative for `receita` (positive) and positive for `despesa` (positive)
-
-## Example mock data (short)
-
-- UserProfile: Jean, peso 78, altura 1.78, meta 75
-- Meta: Leitura (pilar Espiritualidade) — dias seg/qua/sex (bitmask), duracao 30, horario_sugerido 06:00
-=======
+CREATE TABLE compromisso (id TEXT PRIMARY KEY, titulo TEXT, com_quem TEXT, data_hora TEXT, recorrencia_rule TEXT, preparacao TEXT, lembretes TEXT, status TEXT);
 ```
 
 ## Validation rules
@@ -168,4 +103,3 @@ CREATE TABLE audit_log (id TEXT PRIMARY KEY, entidade TEXT, acao TEXT, payload T
 - `meta.duracao_minutos` > 0
 - `meta.dias_semana` bitmask maps to at least one weekday
 - `execucao.status` in {concluida, falhou, pulou}
->>>>>>> 001-growup-habits-app

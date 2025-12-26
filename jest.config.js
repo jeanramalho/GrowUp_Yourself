@@ -1,6 +1,6 @@
 module.exports = {
   preset: 'jest-expo',
-  testEnvironment: 'jsdom',
+  testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -14,4 +14,7 @@ module.exports = {
   },
   testMatch: ['**/__tests__/**/*.test.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
   collectCoverageFrom: ['src/**/*.ts?(x)', '!src/**/*.d.ts'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-native|@react-native|expo|@expo|react-native-paper|react-native-svg|victory-native)/)',
+  ],
 };

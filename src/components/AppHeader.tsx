@@ -115,7 +115,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ progress, onPress }) => {
                 style={[styles.iconContainer, { backgroundColor: pillar.color }]}
               >
                 <MaterialCommunityIcons
-                  name={pillar.icon}
+                  name={pillar.icon as any}
                   size={24}
                   color={theme.colors.white}
                 />

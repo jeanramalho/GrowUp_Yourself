@@ -90,7 +90,7 @@ export default function RootLayout() {
           title: 'Relacionamentos',
           tabBarLabel: 'Relacionamentos',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="people" color={color} size={size} />
+            <MaterialCommunityIcons name={'people' as any} color={color} size={size} />
           ),
           headerTitle: 'Relacionamentos',
         }}

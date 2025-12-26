@@ -107,19 +107,15 @@ export class NotificationService {
       let triggerInput: Notifications.NotificationTriggerInput;
 
       if (trigger instanceof Date) {
-        triggerInput = {
-          type: 'date' as const,
-          date: trigger,
-        };
+        triggerInput = trigger;
       } else if (typeof trigger === 'string') {
-        // Parse HH:MM format
+        // Parse HH:MM format - use seconds since midnight for daily trigger
         const [hours, minutes] = trigger.split(':').map(Number);
+        const secondsSinceMidnight = hours * 3600 + minutes * 60;
         triggerInput = {
-          type: 'time' as const,
-          hour: hours,
-          minute: minutes,
-          repeats: false,
-        };
+          seconds: secondsSinceMidnight,
+          repeats: true,
+        } as any;
       } else {
         throw new Error('Invalid trigger format');
       }
@@ -162,10 +158,9 @@ export class NotificationService {
           badge: 1,
         },
         trigger: {
-          type: 'interval' as const,
-          intervalMillis: intervalMinutes * 60 * 1000,
+          seconds: intervalMinutes * 60,
           repeats: true,
-        },
+        } as any,
       });
 
       console.log(`Recurring notification scheduled: ${notificationId}`);
