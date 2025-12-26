@@ -9,12 +9,12 @@
 
 **Purpose**: Project initialization and Expo-managed React Native structure
 
-- [ ] T001 Create Expo project with TypeScript template via `npx create-expo-app GrowUpYourself --template expo-template-blank-typescript`
-- [ ] T002 Install core dependencies: expo-sqlite, expo-notifications, expo-router, react-native-paper, zustand, victory-native, @expo/vector-icons in `package.json`
-- [ ] T003 [P] Setup TypeScript configuration (tsconfig.json) with strict mode
-- [ ] T004 [P] Create folder structure: `src/{screens,viewmodels,components,repositories,services,theme,models}` and `tests/{unit,integration}`
-- [ ] T005 [P] Setup ESLint and Prettier for code consistency
-- [ ] T006 Create app configuration file with app name, colors, and design tokens at `src/config/constants.ts`
+- [x] T001 Create Expo project with TypeScript template via `npx create-expo-app GrowUpYourself --template expo-template-blank-typescript`
+- [x] T002 Install core dependencies: expo-sqlite, expo-notifications, expo-router, react-native-paper, zustand, victory-native, @expo/vector-icons in `package.json`
+- [x] T003 [P] Setup TypeScript configuration (tsconfig.json) with strict mode
+- [x] T004 [P] Create folder structure: `src/{screens,viewmodels,components,repositories,services,theme,models}` and `tests/{unit,integration}`
+- [x] T005 [P] Setup ESLint and Prettier for code consistency
+- [x] T006 Create app configuration file with app name, colors, and design tokens at `src/config/constants.ts`
 
 ---
 
@@ -24,16 +24,16 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Implement Repository abstraction for SQLite in `src/repositories/Repository.ts` with CRUD methods
-- [ ] T008 [P] Implement database initialization and migrations framework in `src/repositories/migrations/`
-- [ ] T009 [P] Create TypeScript models (interfaces) in `src/models/index.ts`: UserProfile, Pilar, Meta, Execucao, LancamentoFinanceiro, Investimento, Compromisso
-- [ ] T010 [P] Implement NotificationService wrapper in `src/services/NotificationService.ts` for expo-notifications
-- [ ] T011 [P] Create design tokens and theme file at `src/theme/tokens.ts` with colors, spacing, typography (blue palette per spec)
-- [ ] T012 Create root navigation structure with Expo Router in `src/screens/_layout.tsx`
-- [ ] T013 [P] Implement base ViewModel pattern (zustand stores) example in `src/viewmodels/BaseViewModel.ts`
+- [x] T007 Implement Repository abstraction for SQLite in `src/repositories/Repository.ts` with CRUD methods
+- [x] T008 [P] Implement database initialization and migrations framework in `src/repositories/migrations/`
+- [x] T009 [P] Create TypeScript models (interfaces) in `src/models/index.ts`: UserProfile, Pilar, Meta, Execucao, LancamentoFinanceiro, Investimento, Compromisso
+- [x] T010 [P] Implement NotificationService wrapper in `src/services/NotificationService.ts` for expo-notifications
+- [x] T011 [P] Create design tokens and theme file at `src/theme/tokens.ts` with colors, spacing, typography (blue palette per spec)
+- [x] T012 Create root navigation structure with Expo Router in `src/screens/_layout.tsx`
+- [x] T013 [P] Implement base ViewModel pattern (zustand stores) example in `src/viewmodels/BaseViewModel.ts`
 - [ ] T014 Setup Jest and React Native Testing Library configuration in `jest.config.js` and `tests/`
-- [ ] T015 Create AppHeader fixed component in `src/components/AppHeader.tsx` with 4 pillar icons and progress bars (placeholder state)
-- [ ] T016 Create AppTabBar component in `src/components/AppTabBar.tsx` with 4 pillar tabs + Profile tab (placeholder state)
+- [x] T015 Create AppHeader fixed component in `src/components/AppHeader.tsx` with 4 pillar icons and progress bars (placeholder state)
+- [x] T016 Create AppTabBar component in `src/components/AppTabBar.tsx` with 4 pillar tabs + Profile tab (placeholder state)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
