@@ -10,10 +10,10 @@ import { MD3LightTheme } from 'react-native-paper';
  * Blue-based palette from specification
  */
 export const colors = {
-  // Primary colors (blue palette)
-  primary: '#1E88E5',
-  primaryDark: '#1565C0',
-  primaryLight: '#42A5F5',
+  // Primary colors (blue palette from specification)
+  primary: '#0A6CF0', // Primary Blue 1
+  primaryDark: '#0B3D91', // Navy (escuro)
+  primaryLight: '#2B8AF7', // Primary Blue 2
   primaryLighter: '#BBDEFB',
 
   // Secondary/accent colors
@@ -21,23 +21,23 @@ export const colors = {
   secondaryDark: '#FFA000',
   secondaryLight: '#FFD54F',
 
-  // Neutral colors
+  // Neutral colors (from specification)
   white: '#FFFFFF',
   black: '#000000',
-  gray100: '#F5F5F5',
+  gray100: '#F3F6FA', // Neutral Gray 1
   gray200: '#EEEEEE',
   gray300: '#E0E0E0',
   gray400: '#BDBDBD',
-  gray500: '#9E9E9E',
+  gray500: '#A9B3C7', // Neutral Gray 2
   gray600: '#757575',
   gray700: '#616161',
   gray800: '#424242',
   gray900: '#212121',
 
-  // Semantic colors
-  success: '#4CAF50',
+  // Semantic colors (from specification)
+  success: '#2ECC71', // Success from spec
   warning: '#FF9800',
-  error: '#F44336',
+  error: '#E24B4B', // Alert / Critical from spec
   info: '#2196F3',
 
   // Pillar-specific colors

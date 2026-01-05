@@ -33,10 +33,11 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#1E88E5"
+          "color": "#0A6CF0"
         }
       ]
     ],
+    "scheme": "growup-yourself",
     "extra": {
       "eas": {
         "projectId": "growup-yourself"
