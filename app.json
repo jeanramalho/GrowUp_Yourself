@@ -37,11 +37,6 @@
         }
       ]
     ],
-    "scheme": "growup-yourself",
-    "extra": {
-      "eas": {
-        "projectId": "growup-yourself"
-      }
-    }
+    "scheme": "growup-yourself"
   }
 }
