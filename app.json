@@ -4,12 +4,10 @@
     "slug": "growup-yourself",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0A6CF0"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -20,22 +18,19 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0A6CF0"
       },
       "package": "com.growupyourself.app"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
           "color": "#0A6CF0"
         }
-      ]
+      ],
+      "expo-router",
+      "expo-sqlite"
     ],
     "scheme": "growup-yourself"
   }
