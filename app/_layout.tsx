@@ -3,19 +3,65 @@
  * Uses Expo Router for tab-based navigation
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Platform, View, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { PaperProvider } from 'react-native-paper';
 
 import { theme } from '@/theme/tokens';
 import { AppHeader } from '@/components/AppHeader';
+import { notificationService } from '@/services/NotificationService';
+import { Database } from '@/repositories/Repository';
+import { MigrationRunner } from '@/repositories/migrations';
+import * as SQLite from 'expo-sqlite';
+
+/**
+ * Initialize database
+ */
+async function initializeDatabase(): Promise<Database> {
+  try {
+    const db = await SQLite.openDatabaseAsync('growup_yourself.db');
+    const database = new Database();
+    await database.initialize(db);
+
+    // Run migrations
+    const migrationRunner = new MigrationRunner(db);
+    await migrationRunner.runMigrations();
+
+    console.log('Database initialized successfully');
+    return database;
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    throw error;
+  }
+}
 
 /**
  * Root layout with tab navigation
  * Provides main navigation structure for all pillars + profile
  */
 export default function RootLayout() {
+  useEffect(() => {
+    // Initialize services
+    const initApp = async () => {
+      try {
+        // Initialize database
+        await initializeDatabase();
+
+        // Initialize notifications
+        await notificationService.initialize();
+        await notificationService.requestPermissions();
+
+        console.log('GrowUp Yourself app started successfully');
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+      }
+    };
+
+    initApp();
+  }, []);
+
   // Placeholder progress data - will be replaced with real data from ViewModel
   const progress = {
     'pilar-1': 0,
@@ -25,9 +71,10 @@ export default function RootLayout() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Fixed Header with Progress */}
-      <AppHeader progress={progress} />
+    <PaperProvider theme={theme.paperTheme}>
+      <View style={styles.container}>
+        {/* Fixed Header with Progress */}
+        <AppHeader progress={progress} />
 
       {/* Tab Navigation */}
       <Tabs
@@ -110,7 +157,8 @@ export default function RootLayout() {
           }}
         />
       </Tabs>
-    </View>
+      </View>
+    </PaperProvider>
   );
 }
 
