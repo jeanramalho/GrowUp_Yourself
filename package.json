@@ -16,9 +16,12 @@
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",
     "expo": "~54.0.0",
+    "expo-constants": "~18.0.12",
+    "expo-linking": "~8.0.11",
     "expo-notifications": "^0.32.15",
     "expo-router": "^6.0.21",
     "expo-sqlite": "^16.0.10",
+    "expo-status-bar": "~3.0.9",
     "react": "^19.2.3",
     "react-native": "^0.83.1",
     "react-native-paper": "^5.11.0",
