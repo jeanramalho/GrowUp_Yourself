@@ -1,116 +1,82 @@
-/**
- * Root navigation layout for GrowUp Yourself
- * Uses Expo Router for tab-based navigation
- */
-
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Platform, View, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { theme } from '@/theme/tokens';
-import { AppHeader } from '@/components/AppHeader';
+import { theme } from '@/theme';
 
-/**
- * Root layout with tab navigation
- * Provides main navigation structure for all pillars + profile
- */
 export default function RootLayout() {
-  // Placeholder progress data - will be replaced with real data from ViewModel
-  const progress = {
-    'pilar-1': 0,
-    'pilar-2': 0,
-    'pilar-3': 0,
-    'pilar-4': 0,
-  };
-
   return (
     <View style={styles.container}>
-      {/* Fixed Header with Progress */}
-      <AppHeader progress={progress} />
-
-      {/* Tab Navigation */}
       <Tabs
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: theme.colors.primary,
-          tabBarInactiveTintColor: theme.colors.gray500,
+          tabBarInactiveTintColor: theme.colors.gray400,
+          tabBarShowLabel: false,
           tabBarStyle: {
-            backgroundColor: theme.colors.white,
-            borderTopColor: theme.colors.gray300,
-            borderTopWidth: 1,
-            paddingBottom: Platform.OS === 'ios' ? 20 : 8,
-            paddingTop: 8,
-            height: Platform.OS === 'ios' ? 80 : 56,
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            elevation: 0,
+            backgroundColor: 'transparent',
+            borderTopWidth: 0,
+            height: 80,
           },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '500',
-            marginTop: -4,
-          },
+          tabBarBackground: () => (
+            <View style={styles.tabBarBackground}>
+              <View style={styles.floatingTabBar} />
+            </View>
+          ),
         }}
       >
-        {/* Spirituality Tab */}
+        <Tabs.Screen
+          name="home"
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="view-dashboard" color={color} size={28} />
+            ),
+          }}
+        />
         <Tabs.Screen
           name="spirituality"
           options={{
-            title: 'Espiritualidade',
-            tabBarLabel: 'Espiritualidade',
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="meditation" color={color} size={size} />
+              <MaterialCommunityIcons name="meditation" color={color} size={28} />
             ),
           }}
         />
-
-        {/* Health Tab */}
         <Tabs.Screen
           name="health"
           options={{
-            title: 'Saúde',
-            tabBarLabel: 'Saúde',
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="heart" color={color} size={size} />
+              <MaterialCommunityIcons name="heart" color={color} size={28} />
             ),
           }}
         />
-
-        {/* Finance Tab */}
         <Tabs.Screen
           name="finance"
           options={{
-            title: 'Finanças',
-            tabBarLabel: 'Finanças',
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="trending-up" color={color} size={size} />
+              <MaterialCommunityIcons name="wallet" color={color} size={28} />
             ),
           }}
         />
-
-        {/* Relationships Tab */}
         <Tabs.Screen
           name="relationships"
           options={{
-            title: 'Relacionamentos',
-            tabBarLabel: 'Relacionamentos',
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="account-group" color={color} size={size} />
+              <MaterialCommunityIcons name="account-group" color={color} size={28} />
             ),
           }}
         />
-
-        {/* Profile Tab */}
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Perfil',
-            tabBarLabel: 'Perfil',
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="account" color={color} size={size} />
-            ),
+            href: null,
           }}
         />
-
-        {/* Index Route (Hidden) */}
         <Tabs.Screen
           name="index"
           options={{
@@ -125,6 +91,26 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.background,
+  },
+  tabBarBackground: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  floatingTabBar: {
+    width: '100%',
+    height: 64,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 32,
+    borderWidth: 1,
+    borderColor: theme.colors.gray200,
+    ...theme.shadows.lg,
   },
 });
