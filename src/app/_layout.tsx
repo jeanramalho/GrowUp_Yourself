@@ -109,6 +109,14 @@ export default function RootLayout() {
             ),
           }}
         />
+
+        {/* Index Route (Hidden) */}
+        <Tabs.Screen
+          name="index"
+          options={{
+            href: null,
+          }}
+        />
       </Tabs>
     </View>
   );

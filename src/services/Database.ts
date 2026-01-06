@@ -3,8 +3,8 @@ import * as SQLite from 'expo-sqlite';
 const db = SQLite.openDatabaseSync('growup.db');
 
 export const initDatabase = async () => {
-    try {
-        await db.execAsync(`
+  try {
+    await db.execAsync(`
       PRAGMA journal_mode = WAL;
       CREATE TABLE IF NOT EXISTS user_profile (
         id INTEGER PRIMARY KEY NOT NULL,
@@ -23,8 +23,8 @@ export const initDatabase = async () => {
         display_order INTEGER
       );
       CREATE TABLE IF NOT EXISTS goals (
-        id INTEGER PRIMARY KEY NOT NULL,
         pillar_id INTEGER,
+        category TEXT,
         title TEXT NOT NULL,
         description TEXT,
         days_mask INTEGER,
@@ -67,10 +67,17 @@ export const initDatabase = async () => {
         status TEXT
       );
     `);
-        console.log('Database initialized successfully');
-    } catch (error) {
-        console.error('Error initializing database:', error);
+    console.log('Database initialized successfully');
+
+    // Migration for category column (safe add)
+    try {
+      await db.execAsync('ALTER TABLE goals ADD COLUMN category TEXT');
+    } catch (e) {
+      // Column likely already exists
     }
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
 };
 
 export const getDB = () => db;

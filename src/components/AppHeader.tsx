@@ -63,7 +63,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ progress, onPress }) => {
       'pilar-1': 'meditation',
       'pilar-2': 'heart',
       'pilar-3': 'trending-up',
-      'pilar-4': 'people',
+      'pilar-4': 'account-group',
     };
     return iconMap[pillarId] || 'star';
   };

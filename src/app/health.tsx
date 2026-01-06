@@ -1,98 +1,174 @@
-/**
- * Health pillar main screen
- * Shows health-related metas and chat with AI
- */
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { theme } from '../theme';
 
-import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Surface, Button } from 'react-native-paper';
-
-import { theme } from '@/theme/tokens';
-
-export default function HealthScreen() {
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Surface style={styles.card}>
-        <Text variant="headlineSmall" style={styles.title}>
-          Saúde
-        </Text>
-        <Text variant="bodyMedium" style={styles.subtitle}>
-          Acompanhe sua saúde com IA e gestão de hábitos saudáveis
-        </Text>
-
-        <View style={styles.section}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>
-            Áreas de Acompanhamento
-          </Text>
-          <Text variant="bodyMedium" style={styles.item}>• 8 Remédios Naturais</Text>
-          <Text variant="bodyMedium" style={styles.item}>• Exames e Avaliação Física</Text>
-          <Text variant="bodyMedium" style={styles.item}>• Acompanhamento de Peso</Text>
-          <Text variant="bodyMedium" style={styles.item}>• Exercícios Físicos</Text>
-        </View>
-
-        <Button
-          mode="contained"
-          onPress={() => {
-            // TODO: Implementar chat com IA
-            console.log('Abrir chat com IA');
-          }}
-          style={styles.button}
-          buttonColor={theme.colors.pillar.health}
-        >
-          Chat com IA
-        </Button>
-
-        <Text variant="bodySmall" style={styles.placeholder}>
-          Chat de saúde em breve...
-        </Text>
-      </Surface>
-    </ScrollView>
-  );
+interface Message {
+  id: string;
+  text: string;
+  sender: 'user' | 'ai';
+  timestamp: Date;
 }
+
+const HealthScreen = () => {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      text: 'Olá! Sou seu assistente de saúde. Posso ajudar com cálculos de IMC, dicas de dieta e exercícios. Como posso ajudar hoje?',
+      sender: 'ai',
+      timestamp: new Date(),
+    },
+  ]);
+  const [inputText, setInputText] = useState('');
+  const flatListRef = useRef<FlatList>(null);
+
+  const sendMessage = () => {
+    if (inputText.trim().length === 0) return;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text: inputText,
+      sender: 'user',
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setInputText('');
+
+    // Mock AI response
+    setTimeout(() => {
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: 'Entendi. Estou processando sua solicitação... (IA Offline em breve)',
+        sender: 'ai',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiResponse]);
+    }, 1000);
+  };
+
+  useEffect(() => {
+    flatListRef.current?.scrollToEnd({ animated: true });
+  }, [messages]);
+
+  const renderMessage = ({ item }: { item: Message }) => (
+    <View
+      style={[
+        styles.messageBubble,
+        item.sender === 'user' ? styles.userBubble : styles.aiBubble,
+      ]}
+    >
+      <Text
+        style={[
+          styles.messageText,
+          item.sender === 'user' ? styles.userText : styles.aiText,
+        ]}
+      >
+        {item.text}
+      </Text>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Saúde & Bem-estar</Text>
+      </View>
+
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        renderItem={renderMessage}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.chatContainer}
+      />
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={100}
+        style={styles.inputContainer}
+      >
+        <TextInput
+          style={styles.input}
+          value={inputText}
+          onChangeText={setInputText}
+          placeholder="Digite sua mensagem..."
+          placeholderTextColor={theme.colors.textSecondary}
+        />
+        <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+          <Ionicons name="send" size={24} color={theme.colors.primary} />
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.gray100,
+    backgroundColor: theme.colors.background,
   },
-  content: {
-    padding: theme.spacing.lg,
+  header: {
+    padding: theme.spacing.m,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.surface,
   },
-  card: {
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
-    backgroundColor: theme.colors.white,
-    ...theme.shadows.md,
+  headerTitle: {
+    fontSize: theme.typography.sizes.h1,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.text,
   },
-  title: {
-    marginBottom: theme.spacing.sm,
-    color: theme.colors.pillar.health,
-    fontWeight: 'bold',
+  chatContainer: {
+    padding: theme.spacing.m,
+    gap: theme.spacing.s,
   },
-  subtitle: {
-    marginBottom: theme.spacing.lg,
-    color: theme.colors.gray600,
+  messageBubble: {
+    maxWidth: '80%',
+    padding: theme.spacing.m,
+    borderRadius: theme.spacing.m,
+    marginBottom: theme.spacing.s,
   },
-  section: {
-    marginBottom: theme.spacing.lg,
+  userBubble: {
+    alignSelf: 'flex-end',
+    backgroundColor: theme.colors.primary,
+    borderBottomRightRadius: 0,
   },
-  sectionTitle: {
-    marginBottom: theme.spacing.md,
-    color: theme.colors.gray900,
-    fontWeight: '600',
+  aiBubble: {
+    alignSelf: 'flex-start',
+    backgroundColor: theme.colors.surface,
+    borderBottomLeftRadius: 0,
   },
-  item: {
-    marginBottom: theme.spacing.sm,
-    color: theme.colors.gray700,
-    paddingLeft: theme.spacing.md,
+  messageText: {
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamily.regular,
   },
-  button: {
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
+  userText: {
+    color: theme.colors.textLight,
   },
-  placeholder: {
-    color: theme.colors.gray500,
-    textAlign: 'center',
-    fontStyle: 'italic',
+  aiText: {
+    color: theme.colors.text,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: theme.spacing.m,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.surface,
+    backgroundColor: theme.colors.background,
+    alignItems: 'center',
+  },
+  input: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.spacing.l,
+    paddingHorizontal: theme.spacing.m,
+    paddingVertical: theme.spacing.s,
+    marginRight: theme.spacing.s,
+    color: theme.colors.text,
+    fontFamily: theme.typography.fontFamily.regular,
+  },
+  sendButton: {
+    padding: theme.spacing.s,
   },
 });
+
+export default HealthScreen;
