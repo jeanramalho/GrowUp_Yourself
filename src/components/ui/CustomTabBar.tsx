@@ -2,18 +2,19 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { theme } from '@/theme';
+import { useAppTheme } from '@/theme';
 
 export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
+    const { colors, isDarkMode, shadows } = useAppTheme();
 
     // Icon mapping
     const getIcon = (routeName: string, isFocused: boolean) => {
-        const color = isFocused ? theme.colors.primary : theme.colors.gray400;
+        const color = isFocused ? colors.primary : colors.textSecondary;
         const size = isFocused ? 24 : 20;
 
         switch (routeName) {
             case 'home': return <MaterialCommunityIcons name="home" size={size} color={color} />;
-            case 'spirituality': return <MaterialCommunityIcons name="sparkles" size={size} color={color} />;
+            case 'spirituality': return <MaterialCommunityIcons name="creation" size={size} color={color} />;
             case 'health': return <MaterialCommunityIcons name="heart-pulse" size={size} color={color} />;
             case 'finance': return <MaterialCommunityIcons name="wallet" size={size} color={color} />;
             case 'relationships': return <MaterialCommunityIcons name="account-group" size={size} color={color} />;
@@ -32,16 +33,23 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, 
         }
     };
 
+    // Dynamic Styles for Theming
+    const dynamicStyles = {
+        content: {
+            backgroundColor: isDarkMode ? colors.surface : 'rgba(255,255,255,0.95)',
+            borderColor: colors.border,
+            shadowColor: isDarkMode ? '#000' : colors.text,
+        },
+        labelFocused: { color: colors.primary },
+        labelInactive: { color: colors.textSecondary },
+    };
+
     return (
         <View style={styles.container}>
-            <View style={styles.content}>
+            <View style={[styles.content, dynamicStyles.content, shadows.lg]}>
                 {state.routes.map((route, index) => {
                     const { options } = descriptors[route.key];
 
-                    // Skip if href is null (hidden tabs)
-                    // Note: In expo-router, we might not see href: null here directly in the same way, 
-                    // but we can check if it's one of our main tabs.
-                    // Filtering logic based on known tabs:
                     if (['index', 'profile', '_sitemap', '+not-found'].includes(route.name)) return null;
 
                     const isFocused = state.index === index;
@@ -71,13 +79,12 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, 
                             accessibilityRole="button"
                             accessibilityState={isFocused ? { selected: true } : {}}
                             accessibilityLabel={options.tabBarAccessibilityLabel}
-                            testID={options.tabBarTestID}
                             onPress={onPress}
                             onLongPress={onLongPress}
                             style={[styles.tabItem, isFocused && styles.tabItemFocused]}
                         >
                             {getIcon(route.name, isFocused)}
-                            <Text style={[styles.label, isFocused ? styles.labelFocused : styles.labelInactive]}>
+                            <Text style={[styles.label, isFocused ? dynamicStyles.labelFocused : dynamicStyles.labelInactive]}>
                                 {getLabel(route.name)}
                             </Text>
                         </TouchableOpacity>
@@ -103,15 +110,11 @@ const styles = StyleSheet.create({
         width: '90%',
         maxWidth: 400,
         height: 80,
-        backgroundColor: 'rgba(255,255,255,0.95)',
-        borderRadius: 40, // Increased for a more pill-like shape if needed, or stick to design
+        borderRadius: 40,
         borderWidth: 1,
-        borderColor: theme.colors.slate100,
         justifyContent: 'space-around',
         alignItems: 'center',
         paddingHorizontal: 8,
-        ...theme.shadows.lg,
-        shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowRadius: 30,
         shadowOffset: { width: 0, height: -10 },
@@ -131,12 +134,5 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
-    },
-    labelFocused: {
-        color: theme.colors.primary,
-        fontWeight: '700',
-    },
-    labelInactive: {
-        color: theme.colors.gray400,
     },
 });

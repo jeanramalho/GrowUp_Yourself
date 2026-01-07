@@ -1,415 +1,305 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../theme';
-import { getDB } from '../services/Database';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAppTheme } from '@/theme';
 
-const SpiritualityScreen = () => {
-  const [goals, setGoals] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [newGoalTitle, setNewGoalTitle] = useState('');
-  const [newGoalDescription, setNewGoalDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+export default function SpiritualityScreen() {
+  const { colors, isDarkMode, shadows } = useAppTheme();
 
-  const db = getDB();
+  // Timer State
+  const [timerActive, setTimerActive] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(1800); // 30 mins
+  const [startTime, setStartTime] = useState<string | null>(null);
+  const [endTime, setEndTime] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchGoals();
-  }, []);
-
-  const fetchGoals = async () => {
-    try {
-      const result = await db.getAllAsync('SELECT * FROM goals WHERE pillar_id = 1 ORDER BY id DESC');
-      setGoals(result);
-    } catch (error) {
-      console.error('Error fetching goals:', error);
+    let interval: NodeJS.Timeout;
+    if (timerActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setTimerActive(false);
     }
+    return () => clearInterval(interval);
+  }, [timerActive, timeLeft]);
+
+  const handleStart = () => {
+    if (!timerActive && !startTime) {
+      const now = new Date();
+      const end = new Date(now.getTime() + timeLeft * 1000);
+      setStartTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      setEndTime(end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }
+    setTimerActive(!timerActive);
   };
 
-  const handleAddGoal = async () => {
-    if (!newGoalTitle.trim()) {
-      Alert.alert('Erro', 'Por favor, insira um título para a meta.');
-      return;
-    }
-    if (!selectedCategory) {
-      Alert.alert('Erro', 'Por favor, selecione uma categoria.');
-      return;
-    }
-
-    try {
-      await db.runAsync(
-        'INSERT INTO goals (pillar_id, title, description, category, created_at) VALUES (?, ?, ?, ?, ?)',
-        [1, newGoalTitle, newGoalDescription, selectedCategory, new Date().toISOString()]
-      );
-      setModalVisible(false);
-      setNewGoalTitle('');
-      setNewGoalDescription('');
-      setSelectedCategory('');
-      fetchGoals();
-    } catch (error) {
-      console.error('Error adding goal:', error);
-      Alert.alert('Erro', 'Não foi possível salvar a meta.');
-    }
+  const handleReset = () => {
+    setTimeLeft(1800);
+    setStartTime(null);
+    setEndTime(null);
+    setTimerActive(false);
   };
 
-  const handleDeleteGoal = async (id: number) => {
-    Alert.alert(
-      'Excluir Meta',
-      'Tem certeza que deseja excluir esta meta?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await db.runAsync('DELETE FROM goals WHERE id = ?', [id]);
-              fetchGoals();
-            } catch (error) {
-              console.error('Error deleting goal:', error);
-            }
-          },
-        },
-      ]
-    );
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const sections = [
-    { id: 'reading', title: 'Leitura', icon: 'book-outline' },
-    { id: 'prayer', title: 'Oração/Meditação', icon: 'sunny-outline' },
-    { id: 'community', title: 'Vida em Comunidade', icon: 'people-outline' },
-    { id: 'service', title: 'Serviço Voluntário', icon: 'heart-outline' },
+  const scheduleItems = [
+    { id: '1', title: 'Leitura Reflexiva', status: 'Ativa', progress: '30 min • Seg/Qua/Sex', completed: false },
+    { id: '2', title: 'Oração Matinal', status: 'Concluído', progress: '10 min • Diário', completed: true },
   ];
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.headerTitle}>Espiritualidade</Text>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header Section */}
+      <View style={styles.headerSection}>
+        <Text style={[styles.title, { color: colors.text }]}>Conexão Interior</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Pratique a presença e a gratidão.</Text>
+      </View>
 
-        <View style={styles.sectionsGrid}>
-          {sections.map((section) => (
-            <TouchableOpacity
-              key={section.id}
-              style={[
-                styles.sectionCard,
-                selectedCategory === section.title && styles.selectedSectionCard
-              ]}
-              onPress={() => {
-                setSelectedCategory(section.title);
-                setModalVisible(true);
-              }}
-            >
-              <Ionicons
-                name={section.icon as any}
-                size={32}
-                color={selectedCategory === section.title ? theme.colors.white : theme.colors.primary}
-              />
-              <Text style={[
-                styles.sectionTitle,
-                selectedCategory === section.title && styles.selectedSectionTitle
-              ]}>{section.title}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+      {/* Timer Card */}
+      <View style={[styles.timerCard, shadows.lg]}>
+        {/* Decorative Blur Circle (Simulated) */}
+        <View style={styles.blurCircle} />
 
-        <View style={styles.listHeader}>
-          <Text style={styles.subHeader}>Minhas Metas</Text>
+        <Text style={styles.timerLabel}>LEITURA — SALMO 23</Text>
+
+        <Text style={styles.timerDisplay}>
+          {formatTime(timeLeft)}
+        </Text>
+
+        {startTime && (
+          <View style={styles.timeInfoContainer}>
+            <View style={styles.timeInfoItem}>
+              <MaterialCommunityIcons name="clock-outline" size={12} color="rgba(255,255,255,0.8)" />
+              <Text style={styles.timeInfoText}>Início: {startTime}</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.timeInfoItem}>
+              <Text style={[styles.timeInfoText, { color: '#DBEAFE', fontWeight: 'bold' }]}>Alarme: {endTime}</Text>
+            </View>
+          </View>
+        )}
+
+        <View style={styles.controlsContainer}>
           <TouchableOpacity
-            style={styles.addButtonSmall}
-            onPress={() => setModalVisible(true)}
+            onPress={handleStart}
+            activeOpacity={0.8}
+            style={styles.playButton}
           >
-            <Ionicons name="add" size={24} color={theme.colors.white} />
+            <MaterialCommunityIcons
+              name={timerActive ? "pause" : "play"}
+              size={32}
+              color="#2563EB"
+              style={{ marginLeft: timerActive ? 0 : 4 }}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleReset}
+            activeOpacity={0.8}
+            style={styles.resetButton}
+          >
+            <MaterialCommunityIcons name="refresh" size={24} color="white" />
           </TouchableOpacity>
         </View>
+      </View>
 
-        {goals.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>Nenhuma meta cadastrada.</Text>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => setModalVisible(true)}
-            >
-              <Text style={styles.addButtonText}>Criar Nova Meta</Text>
-            </TouchableOpacity>
+      {/* Schedule Section */}
+      <View style={styles.scheduleSection}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionTitleRow}>
+            <MaterialCommunityIcons name="book-open-page-variant" size={20} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Cronograma Semanal</Text>
           </View>
-        ) : (
-          goals.map((goal: any) => (
-            <View key={goal.id} style={styles.goalCard}>
-              <View style={styles.goalHeader}>
-                <View style={styles.goalCategoryBadge}>
-                  <Text style={styles.goalCategoryText}>{goal.category || 'Geral'}</Text>
-                </View>
-                <TouchableOpacity onPress={() => handleDeleteGoal(goal.id)}>
-                  <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.goalTitle}>{goal.title}</Text>
-              {goal.description ? <Text style={styles.goalDescription}>{goal.description}</Text> : null}
-            </View>
-          ))
-        )}
-      </ScrollView>
+          <Text style={[styles.sectionBadge, { color: colors.textSecondary }]}>3 CONCLUÍDAS</Text>
+        </View>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
-        >
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Nova Meta</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color={theme.colors.text} />
+        <View style={styles.listContainer}>
+          {scheduleItems.map((item) => (
+            <View
+              key={item.id}
+              style={[
+                styles.listItem,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border
+                }
+              ]}
+            >
+              <View>
+                <Text style={[styles.itemTitle, { color: colors.text }]}>{item.title}</Text>
+                <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{item.progress}</Text>
+              </View>
+              <TouchableOpacity>
+                <MaterialCommunityIcons
+                  name={item.completed ? "check-circle" : "check-circle-outline"}
+                  size={24}
+                  color={item.completed ? colors.success : colors.border}
+                />
               </TouchableOpacity>
             </View>
-
-            <Text style={styles.label}>Categoria</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-              {sections.map((section) => (
-                <TouchableOpacity
-                  key={section.id}
-                  style={[
-                    styles.categoryChip,
-                    selectedCategory === section.title && styles.selectedCategoryChip
-                  ]}
-                  onPress={() => setSelectedCategory(section.title)}
-                >
-                  <Text style={[
-                    styles.categoryChipText,
-                    selectedCategory === section.title && styles.selectedCategoryChipText
-                  ]}>{section.title}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <Text style={styles.label}>Título</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ex: Ler 1 capítulo da Bíblia"
-              value={newGoalTitle}
-              onChangeText={setNewGoalTitle}
-            />
-
-            <Text style={styles.label}>Descrição (Opcional)</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Detalhes adicionais..."
-              value={newGoalDescription}
-              onChangeText={setNewGoalDescription}
-              multiline
-              numberOfLines={3}
-            />
-
-            <TouchableOpacity style={styles.saveButton} onPress={handleAddGoal}>
-              <Text style={styles.saveButtonText}>Salvar Meta</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-    </View>
+          ))}
+        </View>
+      </View>
+    </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
   },
-  scrollContent: {
-    padding: theme.spacing.m,
+  contentContainer: {
+    padding: 24,
     paddingBottom: 100,
   },
-  headerTitle: {
-    fontSize: theme.typography.sizes.h1,
-    fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.l,
-  },
-  sectionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.m,
-    marginBottom: theme.spacing.l,
-  },
-  sectionCard: {
-    width: '47%',
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.m,
-    borderRadius: theme.spacing.s,
+  headerSection: {
     alignItems: 'center',
-    gap: theme.spacing.s,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    marginBottom: 32,
   },
-  selectedSectionCard: {
-    backgroundColor: theme.colors.primary,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
-  sectionTitle: {
-    fontSize: theme.typography.sizes.small,
-    fontFamily: theme.typography.fontFamily.medium,
-    color: theme.colors.text,
-    textAlign: 'center',
+  subtitle: {
+    fontSize: 14,
   },
-  selectedSectionTitle: {
-    color: theme.colors.white,
-  },
-  listHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  timerCard: {
+    backgroundColor: '#0A6CF0', // Blue 500/600ish
+    borderRadius: 48, // rounded-[3rem]
+    padding: 32,
     alignItems: 'center',
-    marginBottom: theme.spacing.m,
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: 32,
+    shadowColor: '#3B82F6',
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
   },
-  subHeader: {
-    fontSize: theme.typography.sizes.h2,
-    fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.text,
+  blurCircle: {
+    position: 'absolute',
+    top: -40,
+    right: -40,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  addButtonSmall: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: 20,
-    width: 32,
-    height: 32,
+  timerLabel: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 12,
+    fontWeight: 'bold',
+    letterSpacing: 2,
+    marginBottom: 16,
+    textTransform: 'uppercase',
+  },
+  timerDisplay: {
+    fontSize: 64,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 24,
+    fontVariant: ['tabular-nums'],
+    letterSpacing: -2,
+  },
+  timeInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+    marginBottom: 32,
+    gap: 12,
+  },
+  timeInfoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  timeInfoText: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  divider: {
+    width: 1,
+    height: 12,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  controlsContainer: {
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'center',
+  },
+  playButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  resetButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(96, 165, 250, 0.3)', // blue-400/30
     justifyContent: 'center',
     alignItems: 'center',
   },
-  emptyState: {
-    alignItems: 'center',
-    padding: theme.spacing.l,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.spacing.s,
+  scheduleSection: {
+    gap: 16,
   },
-  emptyStateText: {
-    color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.m,
-  },
-  addButton: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.l,
-    paddingVertical: theme.spacing.s,
-    borderRadius: theme.spacing.s,
-  },
-  addButtonText: {
-    color: theme.colors.textLight,
-    fontFamily: theme.typography.fontFamily.bold,
-  },
-  goalCard: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.m,
-    borderRadius: theme.spacing.s,
-    marginBottom: theme.spacing.s,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.primary,
-  },
-  goalHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.s,
   },
-  goalCategoryBadge: {
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  goalCategoryText: {
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  sectionBadge: {
     fontSize: 10,
-    color: theme.colors.textSecondary,
-    textTransform: 'uppercase',
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
-  goalTitle: {
-    fontSize: theme.typography.sizes.body,
-    fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.text,
+  listContainer: {
+    gap: 12,
+  },
+  listItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+  },
+  itemTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
     marginBottom: 4,
   },
-  goalDescription: {
-    color: theme.colors.textSecondary,
-    fontSize: theme.typography.sizes.small,
-  },
-
-  // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: theme.colors.background,
-    borderTopLeftRadius: theme.spacing.l,
-    borderTopRightRadius: theme.spacing.l,
-    padding: theme.spacing.l,
-    maxHeight: '80%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.l,
-  },
-  modalTitle: {
-    fontSize: theme.typography.sizes.h2,
-    fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.text,
-  },
-  label: {
-    fontSize: theme.typography.sizes.body,
-    fontFamily: theme.typography.fontFamily.medium,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.s,
-  },
-  input: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.spacing.s,
-    padding: theme.spacing.m,
-    marginBottom: theme.spacing.m,
-    fontSize: theme.typography.sizes.body,
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  categoryScroll: {
-    marginBottom: theme.spacing.m,
-    maxHeight: 50,
-  },
-  categoryChip: {
-    paddingHorizontal: theme.spacing.m,
-    paddingVertical: theme.spacing.s,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 20,
-    marginRight: theme.spacing.s,
-    borderWidth: 1,
-    borderColor: theme.colors.gray300,
-  },
-  selectedCategoryChip: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  categoryChipText: {
-    color: theme.colors.text,
-    fontSize: theme.typography.sizes.small,
-  },
-  selectedCategoryChipText: {
-    color: theme.colors.white,
-  },
-  saveButton: {
-    backgroundColor: theme.colors.primary,
-    padding: theme.spacing.m,
-    borderRadius: theme.spacing.s,
-    alignItems: 'center',
-    marginTop: theme.spacing.s,
-  },
-  saveButtonText: {
-    color: theme.colors.white,
-    fontFamily: theme.typography.fontFamily.bold,
-    fontSize: theme.typography.sizes.body,
+  itemSubtitle: {
+    fontSize: 12,
   },
 });
-
-export default SpiritualityScreen;
