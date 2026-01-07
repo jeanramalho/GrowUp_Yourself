@@ -1,363 +1,217 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../theme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { theme } from '@/theme';
 import { useRouter } from 'expo-router';
+
+// Helper to get formatted date string similar to design "Segunda, 24 Out"
+const getFormattedDate = () => {
+    return "Segunda, 24 Out";
+};
 
 export default function HomeScreen() {
     const router = useRouter();
 
+    const activeHabits = [
+        { id: '1', title: 'Leitura Reflexiva', pillar: 'spirituality', time: '30 min', icon: 'creation', color: theme.colors.primary, bg: 'bg-blue-500' }, // Mapping logic
+        { id: '2', title: 'Treino Hiit', pillar: 'health', time: '40 min', icon: 'heart-pulse', color: theme.colors.sky500, bg: 'bg-sky-500' },
+    ];
+
+    const pillars = [
+        { type: 'spirituality', icon: 'creation', label: "Espírito", progress: 65, color: theme.colors.indigo600 },
+        { type: 'health', icon: 'heart-pulse', label: "Saúde", progress: 42, color: theme.colors.sky500 },
+        { type: 'finance', icon: 'wallet', label: "Finanças", progress: 91, color: theme.colors.blue900 }, // navy mapped
+        { type: 'relationships', icon: 'account-group', label: "Relações", progress: 30, color: theme.colors.blue300 },
+    ];
+
+    const handlePillarPress = (pillar: string) => {
+        // Navigate to pillar screen
+        router.push(`/${pillar}`);
+    };
+
     return (
-        <View style={styles.container}>
-            {/* Header */}
-            <SafeAreaView edges={['top']} style={styles.headerSafeArea}>
-                <View style={styles.header}>
-                    <View>
-                        <Text style={styles.greeting}>Bom dia,</Text>
-                        <Text style={styles.userName}>Carlos Silva</Text>
-                    </View>
-                    <View style={styles.headerActions}>
-                        <TouchableOpacity style={styles.notificationButton}>
-                            <Ionicons name="notifications-outline" size={26} color={theme.colors.gray600} />
-                            <View style={styles.notificationBadge} />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => router.push('/profile')} style={styles.avatarContainer}>
-                            {/* Placeholder Avatar */}
-                            <View style={styles.avatarPlaceholder}>
-                                <Ionicons name="person" size={20} color={theme.colors.primary} />
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </SafeAreaView>
-
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                {/* Pillars Section */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillarsContainer}>
-                    <PillarItem
-                        icon="meditation"
-                        label="Espírito"
-                        color={theme.colors.pillar.spirituality}
-                        bg={theme.colors.gray100} // Approximate Indigo-50
-                        progress={75}
-                    />
-                    <PillarItem
-                        icon="heart"
-                        label="Saúde"
-                        color={theme.colors.pillar.health}
-                        bg="#EFF6FF" // Blue-50
-                        progress={50}
-                    />
-                    <PillarItem
-                        icon="wallet"
-                        label="Finanças"
-                        color={theme.colors.pillar.finance}
-                        bg="#ECFDF5" // Emerald-50
-                        progress={20}
-                    />
-                    <PillarItem
-                        icon="handshake"
-                        label="Social"
-                        color={theme.colors.pillar.relationships}
-                        bg="#F0F9FF" // Sky-50
-                        progress={90}
-                    />
-                </ScrollView>
-
-                {/* Today's Goals Section */}
+        <ScrollView
+            style={styles.container}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+        >
+            {/* Metas de Hoje Section */}
+            <View style={styles.section}>
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>Metas de Hoje</Text>
-                    <TouchableOpacity>
-                        <Text style={styles.seeAllButton}>Ver todas</Text>
-                    </TouchableOpacity>
+                    <Text style={styles.dateBadge}>{getFormattedDate()}</Text>
                 </View>
 
-                <View style={styles.goalsContainer}>
-                    {/* Goal Card 1 - Spirituality */}
-                    <View style={styles.goalCard}>
-                        <View style={styles.goalCardContent}>
-                            <View style={[styles.goalImage, { backgroundColor: theme.colors.gray200 }]}>
-                                <MaterialCommunityIcons name="meditation" size={24} color={theme.colors.gray500} />
-                            </View>
-                            <View style={styles.goalInfo}>
-                                <View style={styles.goalHeader}>
-                                    <View style={[styles.categoryBadge, { backgroundColor: '#EEF2FF' }]}>
-                                        <Text style={[styles.categoryText, { color: theme.colors.pillar.spirituality }]}>Espiritualidade</Text>
-                                    </View>
-                                    <Text style={styles.timeLeft}>2h restantes</Text>
+                <View style={styles.habitsList}>
+                    {activeHabits.map((habit) => (
+                        <View key={habit.id} style={styles.habitCard}>
+                            <View style={styles.habitContent}>
+                                <View style={[styles.habitIconBox, { backgroundColor: habit.color }]}>
+                                    {/* @ts-ignore icon name string */}
+                                    <MaterialCommunityIcons name={habit.icon} size={20} color="white" />
                                 </View>
-                                <Text style={styles.goalTitle}>Meditação Matinal</Text>
-                                <View style={styles.streakContainer}>
-                                    <MaterialCommunityIcons name="fire" size={16} color={theme.colors.warning} />
-                                    <Text style={styles.streakText}>12 dias seguidos</Text>
+                                <View>
+                                    <Text style={styles.habitTitle}>{habit.title}</Text>
+                                    <Text style={styles.habitSubtitle}>{habit.time} • Restante</Text>
                                 </View>
                             </View>
+                            <TouchableOpacity
+                                style={styles.playButton}
+                                onPress={() => handlePillarPress(habit.pillar)}
+                            >
+                                <MaterialCommunityIcons name="play" size={18} color={theme.colors.primary} />
+                            </TouchableOpacity>
                         </View>
-                        <TouchableOpacity style={styles.actionButton}>
-                            <Ionicons name="play" size={20} color={theme.colors.white} />
-                            <Text style={styles.actionButtonText}>Iniciar</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Goal Card 2 - Finance */}
-                    <View style={styles.goalCard}>
-                        <View style={styles.goalCardContent}>
-                            <View style={[styles.goalImage, { backgroundColor: theme.colors.gray200 }]}>
-                                <MaterialCommunityIcons name="piggy-bank" size={24} color={theme.colors.gray500} />
-                            </View>
-                            <View style={styles.goalInfo}>
-                                <View style={styles.goalHeader}>
-                                    <View style={[styles.categoryBadge, { backgroundColor: '#ECFDF5' }]}>
-                                        <Text style={[styles.categoryText, { color: theme.colors.pillar.finance }]}>Finanças</Text>
-                                    </View>
-                                    <Text style={styles.timeLeft}>Dia todo</Text>
-                                </View>
-                                <Text style={styles.goalTitle}>Economizar R$ 10</Text>
-                                <View style={styles.streakContainer}>
-                                    <MaterialCommunityIcons name="fire" size={16} color={theme.colors.gray300} />
-                                    <Text style={styles.streakText}>4 dias seguidos</Text>
-                                </View>
-                            </View>
-                        </View>
-                        <TouchableOpacity style={[styles.actionButton, styles.secondaryButton]}>
-                            <Ionicons name="checkmark" size={20} color={theme.colors.pillar.finance} />
-                            <Text style={[styles.actionButtonText, { color: theme.colors.pillar.finance }]}>Marcar Feito</Text>
-                        </TouchableOpacity>
-                    </View>
+                    ))}
                 </View>
-            </ScrollView>
+            </View>
 
-            {/* FAB */}
-            <TouchableOpacity style={styles.fab}>
-                <Ionicons name="add" size={32} color={theme.colors.white} />
-            </TouchableOpacity>
-        </View>
+            {/* Visão dos Pilares Section */}
+            <View style={[styles.section, { marginBottom: 100 }]}>
+                <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>Visão dos Pilares</Text>
+                <View style={styles.grid}>
+                    {pillars.map((p) => (
+                        <TouchableOpacity
+                            key={p.type}
+                            style={styles.pillarCard}
+                            onPress={() => handlePillarPress(p.type)}
+                        >
+                            <View style={[styles.pillarIconBox, { backgroundColor: p.color }]}>
+                                {/* @ts-ignore icon name string */}
+                                <MaterialCommunityIcons name={p.icon} size={20} color="white" />
+                            </View>
+                            <Text style={styles.pillarLabel}>{p.label}</Text>
+
+                            <View style={styles.pillarProgressBg}>
+                                <View style={[styles.pillarProgressFill, { width: `${p.progress}%`, backgroundColor: p.color }]} />
+                            </View>
+                            <Text style={styles.pillarProgressText}>{p.progress}% Completo</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+        </ScrollView>
     );
 }
-
-const PillarItem = ({ icon, label, color, bg, progress }: any) => (
-    <View style={styles.pillarItem}>
-        <View style={[styles.pillarIconContainer, { backgroundColor: bg }]}>
-            <MaterialCommunityIcons name={icon} size={28} color={color} />
-            {/* Circular Progress Placeholder - In real app use SVG */}
-            <View style={[styles.circularProgress, { borderColor: color, borderStyle: 'dashed' }]} />
-        </View>
-        <Text style={styles.pillarLabel}>{label}</Text>
-    </View>
-);
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: theme.colors.background,
     },
-    headerSafeArea: {
-        backgroundColor: theme.colors.background,
-        zIndex: 10,
+    contentContainer: {
+        padding: 24,
     },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: theme.spacing.l,
-        paddingVertical: theme.spacing.m,
-    },
-    greeting: {
-        fontSize: theme.typography.sizes.small,
-        color: theme.colors.gray500,
-        fontWeight: '500',
-    },
-    userName: {
-        fontSize: theme.typography.sizes.h1,
-        color: theme.colors.text,
-        fontFamily: theme.typography.fontFamily.bold,
-    },
-    headerActions: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: theme.spacing.m,
-    },
-    notificationButton: {
-        padding: 8,
-        borderRadius: theme.borderRadius.full,
-        position: 'relative',
-    },
-    notificationBadge: {
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: theme.colors.primary,
-        borderWidth: 2,
-        borderColor: theme.colors.background,
-    },
-    avatarContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: theme.borderRadius.full,
-        borderWidth: 2,
-        borderColor: theme.colors.primaryLight, // approximate primary/30
-        padding: 2,
-    },
-    avatarPlaceholder: {
-        flex: 1,
-        borderRadius: theme.borderRadius.full,
-        backgroundColor: theme.colors.gray200,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    scrollContent: {
-        paddingBottom: 100,
-    },
-    pillarsContainer: {
-        paddingHorizontal: theme.spacing.l,
-        gap: theme.spacing.m,
-        marginBottom: theme.spacing.l,
-    },
-    pillarItem: {
-        alignItems: 'center',
-        gap: theme.spacing.s,
-    },
-    pillarIconContainer: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative',
-    },
-    circularProgress: {
-        position: 'absolute',
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        borderWidth: 2,
-        opacity: 0.5,
-    },
-    pillarLabel: {
-        fontSize: theme.typography.sizes.caption,
-        fontWeight: '600',
-        color: theme.colors.gray600,
+    section: {
+        marginBottom: 32,
     },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'baseline',
-        paddingHorizontal: theme.spacing.l,
-        marginBottom: theme.spacing.m,
+        alignItems: 'center',
+        marginBottom: 16,
     },
     sectionTitle: {
-        fontSize: 26,
-        fontFamily: theme.typography.fontFamily.bold,
+        fontSize: 18,
+        fontWeight: 'bold',
         color: theme.colors.text,
     },
-    seeAllButton: {
-        fontSize: theme.typography.sizes.small,
-        fontWeight: '600',
+    dateBadge: {
+        fontSize: 10,
+        fontWeight: 'bold',
         color: theme.colors.primary,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
-    goalsContainer: {
-        paddingHorizontal: theme.spacing.m,
-        gap: theme.spacing.m,
+    habitsList: {
+        gap: 16,
     },
-    goalCard: {
+    habitCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         backgroundColor: theme.colors.surface,
-        borderRadius: theme.borderRadius.xl,
-        padding: 4, // p-1 in tailwind
+        padding: 20,
+        borderRadius: 32,
         borderWidth: 1,
-        borderColor: theme.colors.gray200,
+        borderColor: theme.colors.slate100,
         ...theme.shadows.sm,
     },
-    goalCardContent: {
+    habitContent: {
         flexDirection: 'row',
-        padding: theme.spacing.s, // p-3
-        gap: theme.spacing.m,
+        alignItems: 'center',
+        gap: 16,
     },
-    goalImage: {
-        width: 96, // w-24
-        aspectRatio: 3 / 4,
-        borderRadius: theme.borderRadius.s,
+    habitIconBox: {
+        width: 44,
+        height: 44,
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    goalInfo: {
-        flex: 1,
-        justifyContent: 'space-between',
-        paddingVertical: 4,
+    habitTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: theme.colors.text,
     },
-    goalHeader: {
+    habitSubtitle: {
+        fontSize: 12,
+        color: theme.colors.gray400,
+        marginTop: 2,
+    },
+    playButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: theme.colors.blue50,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    grid: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
+        flexWrap: 'wrap',
+        gap: 16,
     },
-    categoryBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 6,
+    pillarCard: {
+        width: '47%', // roughly half - gap
+        backgroundColor: theme.colors.surface,
+        padding: 20,
+        borderRadius: 32,
+        borderWidth: 1,
+        borderColor: theme.colors.slate100,
+        ...theme.shadows.sm,
     },
-    categoryText: {
-        fontSize: 12,
-        fontWeight: '500',
+    pillarIconBox: {
+        width: 44,
+        height: 44,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+        alignSelf: 'flex-start',
     },
-    timeLeft: {
-        fontSize: 12,
+    pillarLabel: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: theme.colors.text,
+        marginBottom: 8,
+    },
+    pillarProgressBg: {
+        height: 6,
+        backgroundColor: theme.colors.slate100,
+        borderRadius: 999,
+        width: '100%',
+        overflow: 'hidden',
+        marginBottom: 8,
+    },
+    pillarProgressFill: {
+        height: '100%',
+        borderRadius: 999,
+    },
+    pillarProgressText: {
+        fontSize: 10,
         fontWeight: 'bold',
         color: theme.colors.gray400,
-    },
-    goalTitle: {
-        fontSize: 18,
-        fontFamily: theme.typography.fontFamily.bold,
-        color: theme.colors.text,
-        marginTop: 4,
-    },
-    streakContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        marginTop: 4,
-    },
-    streakText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: theme.colors.gray500,
-    },
-    actionButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: theme.colors.primary,
-        paddingVertical: 10,
-        borderRadius: theme.borderRadius.full,
-        marginHorizontal: theme.spacing.s,
-        marginBottom: theme.spacing.s,
-        gap: 8,
-        ...theme.shadows.md,
-    },
-    secondaryButton: {
-        backgroundColor: theme.colors.background,
-        borderWidth: 1,
-        borderColor: theme.colors.gray200,
-        shadowOpacity: 0,
-        elevation: 0,
-    },
-    actionButtonText: {
-        color: theme.colors.white,
-        fontWeight: 'bold',
-        fontSize: 14,
-    },
-    fab: {
-        position: 'absolute',
-        bottom: 100, // Above tab bar
-        right: 24,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: theme.colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        ...theme.shadows.lg,
+        textTransform: 'uppercase',
     },
 });

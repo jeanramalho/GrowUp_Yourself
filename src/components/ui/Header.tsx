@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '@/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -38,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
             <View style={styles.pillarsContainer}>
                 {/* Spirituality */}
                 <View style={styles.pillarItem}>
-                    <MaterialCommunityIcons name="sparkles" size={16} color={theme.colors.pillar.spirituality} />
+                    <MaterialCommunityIcons name="creation" size={16} color={theme.colors.pillar.spirituality} />
                     <View style={styles.progressBarBg}>
                         <View style={[styles.progressBarFill, { width: `${pillarProgress.spirituality * 100}%`, backgroundColor: theme.colors.primary }]} />
                     </View>
