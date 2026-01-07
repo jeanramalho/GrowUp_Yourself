@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Espiritualidade — Meta em Execução</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#3b82f6", // Blue 500
+              "primary-hover": "#2563eb", // Blue 600
+              "primary-light": "#60a5fa", // Blue 400
+              "background-light": "#f0f9ff", // Sky 50
+              "background-dark": "#0f172a", // Slate 900
+              "surface-dark": "#1e293b", // Slate 800
+              "surface-highlight": "#334155", // Slate 700
+              "text-secondary": "#94a3b8", // Slate 400
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            boxShadow: {
+                'glow': '0 0 25px rgba(59, 130, 246, 0.25)',
+                'glow-strong': '0 0 50px rgba(59, 130, 246, 0.5)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .progress-ring__circle {
+            transition: stroke-dashoffset 1s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col font-display overflow-hidden selection:bg-primary selection:text-white">
+<header class="fixed top-0 left-0 w-full z-50 bg-background-dark/90 backdrop-blur-md border-b border-white/5 pt-12 pb-4 px-4 transition-all duration-300">
+<div class="flex items-center justify-between max-w-md mx-auto">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full text-white/80 hover:bg-white/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</button>
+<h2 class="text-white text-base font-semibold tracking-wide flex-1 text-center uppercase text-opacity-90">Espiritualidade</h2>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full text-white/80 hover:bg-white/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-size: 24px;">more_vert</span>
+</button>
+</div>
+</header>
+<main class="flex-1 flex flex-col items-center relative z-10 w-full max-w-md mx-auto px-6 pt-32 pb-32 overflow-y-auto hide-scrollbar">
+<div class="w-full flex flex-col items-center animate-fade-in mb-6">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-dark border border-white/5 mb-4 shadow-sm">
+<span class="material-symbols-outlined text-primary text-sm">self_improvement</span>
+<span class="text-blue-100/90 text-xs font-semibold tracking-wide uppercase">Sessão em Andamento</span>
+</div>
+<h1 class="text-white tracking-tight text-3xl font-bold leading-tight text-center">Meditação Mindfulness</h1>
+<p class="text-text-secondary text-sm mt-2 text-center">Foco na respiração e presença.</p>
+</div>
+<div class="relative flex items-center justify-center mb-10 mt-4">
+<div class="absolute inset-0 bg-primary/10 rounded-full blur-[50px] scale-110"></div>
+<div class="relative w-[260px] h-[260px]">
+<svg class="w-full h-full" viewBox="0 0 288 288">
+<circle cx="144" cy="144" fill="none" r="130" stroke="#1e293b" stroke-linecap="round" stroke-width="12"></circle>
+<circle class="progress-ring__circle drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]" cx="144" cy="144" fill="none" r="130" stroke="#3b82f6" stroke-dasharray="816" stroke-dashoffset="200" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center z-10">
+<span class="text-white text-[64px] font-bold leading-none tracking-tighter font-variant-numeric tabular-nums">14:32</span>
+<p class="text-text-secondary text-xs font-semibold tracking-[0.2em] uppercase mt-2">Restante</p>
+</div>
+</div>
+</div>
+<div class="w-full bg-surface-dark/40 backdrop-blur-md rounded-2xl px-6 py-5 mb-10 border border-white/5 shadow-sm">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5" style="font-size: 20px;">schedule</span>
+<p class="text-blue-100/80 text-sm font-normal leading-relaxed">
+                Início às <span class="text-white font-semibold">06:10</span>. O término está previsto para <span class="text-white font-semibold">06:40</span>.
+            </p>
+</div>
+</div>
+<div class="w-full flex items-end justify-center gap-4 mb-8">
+<div class="flex flex-col items-center gap-2">
+<button class="flex size-14 cursor-pointer items-center justify-center rounded-full bg-surface-highlight hover:bg-slate-600 active:scale-95 transition-all shadow-lg border border-white/5 text-white group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" style="font-size: 28px;">pause</span>
+</button>
+<span class="text-[11px] font-medium text-text-secondary uppercase tracking-wide">Pausar</span>
+</div>
+<div class="flex flex-col items-center gap-2 -translate-y-2 mx-2">
+<button class="flex size-20 cursor-pointer items-center justify-center rounded-full bg-primary text-white animate-pulse-ring hover:bg-primary-hover active:scale-95 transition-all shadow-glow-strong z-10">
+<span class="material-symbols-outlined" style="font-size: 40px; font-weight: 600;">check</span>
+</button>
+<span class="text-xs font-bold text-primary tracking-wide">Concluir</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<button class="flex size-14 cursor-pointer items-center justify-center rounded-full bg-surface-highlight hover:bg-slate-600 active:scale-95 transition-all shadow-lg border border-white/5 text-white group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" style="font-size: 26px;">edit_note</span>
+</button>
+<span class="text-[11px] font-medium text-text-secondary uppercase tracking-wide">Observação</span>
+</div>
+</div>
+<button class="text-blue-200/40 text-xs font-medium hover:text-primary transition-colors py-2 px-4 rounded-lg hover:bg-white/5">
+        Esqueceu de iniciar? <span class="underline underline-offset-2 decoration-blue-200/30 hover:decoration-primary">Registrar retroativo</span>
+</button>
+</main>
+<nav class="fixed bottom-0 w-full z-40 bg-slate-900/95 backdrop-blur-xl border-t border-white/10 pb-6 pt-3 px-6">
+<div class="flex justify-between items-end max-w-md mx-auto">
+<button class="flex flex-1 flex-col items-center gap-1.5 text-blue-200/40 group hover:text-white transition-colors">
+<span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform filled-icon" style="font-size: 24px;">home</span>
+<span class="text-[10px] font-medium">Início</span>
+</button>
+<button class="flex flex-1 flex-col items-center gap-1.5 text-primary group relative">
+<span class="absolute -top-8 bg-primary/20 w-10 h-10 rounded-full blur-xl"></span>
+<span class="material-symbols-outlined fill-1" style="font-size: 24px; font-variation-settings: 'FILL' 1;">spa</span>
+<span class="text-[10px] font-bold">Espiritualidade</span>
+</button>
+<button class="flex flex-1 flex-col items-center gap-1.5 text-blue-200/40 group hover:text-white transition-colors">
+<span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform" style="font-size: 24px;">calendar_month</span>
+<span class="text-[10px] font-medium">Agenda</span>
+</button>
+<button class="flex flex-1 flex-col items-center gap-1.5 text-blue-200/40 group hover:text-white transition-colors">
+<span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform" style="font-size: 24px;">person</span>
+<span class="text-[10px] font-medium">Perfil</span>
+</button>
+</div>
+</nav>
+<div class="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
+<div class="absolute top-[-20%] right-[-20%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen"></div>
+<div class="absolute bottom-[0] left-[-20%] w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[100px] mix-blend-screen"></div>
+</div>
+
+</body></html>

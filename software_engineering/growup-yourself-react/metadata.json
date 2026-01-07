@@ -1,0 +1,7 @@
+{
+  "name": "GrowUp Yourself",
+  "description": "A high-fidelity habit management app focused on personal development across four pillars: Spirituality, Health, Finances, and Relationships. Designed by Jean Ramalho.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

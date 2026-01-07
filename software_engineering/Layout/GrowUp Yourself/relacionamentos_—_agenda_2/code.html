@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GrowUp Yourself - Agenda Relacionamentos</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#3B82F6", // Modern Blue
+                    "primary-dark": "#2563EB", // Darker Blue for hover
+                    "secondary": "#64748B", // Slate 500
+                    "background-light": "#F8FAFC", // Slate 50
+                    "background-dark": "#0F172A", // Slate 900
+                    "surface-light": "#FFFFFF",
+                    "surface-dark": "#1E293B", // Slate 800
+                },
+                fontFamily: {
+                    "sans": ["Inter", "sans-serif"],
+                    "display": ["Inter", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "2.5rem", "full": "9999px"},
+                boxShadow: {
+                    'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                    'glow': '0 0 15px rgba(59, 130, 246, 0.3)',
+                }
+            },
+        },
+    }
+</script>
+<style>.pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+    .pt-safe {
+        padding-top: env(safe-area-inset-top, 20px);
+    }.no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-50 antialiased min-h-screen flex flex-col relative overflow-x-hidden selection:bg-primary selection:text-white">
+<header class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-4 py-3 border-b border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-center pt-safe">
+<button class="absolute left-4 size-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</button>
+<div class="flex flex-col items-center">
+<h2 class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Agenda</h2>
+<h1 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Relacionamentos</h1>
+</div>
+<button class="absolute right-4 size-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined" style="font-size: 24px;">more_vert</span>
+</button>
+</header>
+<section class="flex flex-col items-center px-4 pt-4 pb-2 bg-background-light dark:bg-background-dark z-40">
+<div class="w-full max-w-sm">
+<div class="flex items-center justify-between mb-4 px-2">
+<button class="size-8 flex items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500">
+<span class="material-symbols-outlined" style="font-size: 20px;">chevron_left</span>
+</button>
+<span class="text-base font-bold capitalize text-slate-800 dark:text-slate-100">Outubro 2023</span>
+<button class="size-8 flex items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500">
+<span class="material-symbols-outlined" style="font-size: 20px;">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-7 gap-1 mb-2">
+<div class="text-[10px] font-bold text-center text-slate-400 dark:text-slate-500 uppercase py-1">D</div>
+<div class="text-[10px] font-bold text-center text-slate-400 dark:text-slate-500 uppercase py-1">S</div>
+<div class="text-[10px] font-bold text-center text-slate-400 dark:text-slate-500 uppercase py-1">T</div>
+<div class="text-[10px] font-bold text-center text-slate-400 dark:text-slate-500 uppercase py-1">Q</div>
+<div class="text-[10px] font-bold text-center text-slate-400 dark:text-slate-500 uppercase py-1">Q</div>
+<div class="text-[10px] font-bold text-center text-slate-400 dark:text-slate-500 uppercase py-1">S</div>
+<div class="text-[10px] font-bold text-center text-slate-400 dark:text-slate-500 uppercase py-1">S</div>
+<button class="flex items-center justify-center h-10 w-full text-sm rounded-full text-slate-400 dark:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800/50">22</button>
+<button class="flex items-center justify-center h-10 w-full text-sm rounded-full text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50">23</button>
+<button class="flex items-center justify-center h-10 w-full relative">
+<div class="size-9 flex items-center justify-center bg-primary text-white rounded-full shadow-glow font-bold text-sm">
+                    24
+                </div>
+<div class="absolute -bottom-1 size-1 bg-primary rounded-full"></div>
+</button>
+<button class="flex items-center justify-center h-10 w-full text-sm rounded-full text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50">25</button>
+<button class="flex items-center justify-center h-10 w-full text-sm rounded-full text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50">26</button>
+<button class="flex items-center justify-center h-10 w-full text-sm rounded-full text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50">27</button>
+<button class="flex items-center justify-center h-10 w-full text-sm rounded-full text-slate-400 dark:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800/50">28</button>
+</div>
+<div class="flex justify-center py-1">
+<div class="h-1 w-10 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
+</div>
+</div>
+</section>
+<main class="flex-1 px-4 pb-32 flex flex-col gap-4 overflow-y-auto pt-2">
+<div>
+<div class="flex items-baseline justify-between mb-3 px-2">
+<h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Hoje</h3>
+<span class="text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">3 eventos</span>
+</div>
+<div class="flex flex-col gap-3">
+<article class="group relative flex flex-col sm:flex-row sm:items-center p-4 gap-4 bg-surface-light dark:bg-surface-dark rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700/50 active:scale-[0.99] transition-all">
+<div class="absolute left-0 top-6 bottom-6 w-1 rounded-r-full bg-primary shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+<div class="flex items-start gap-4 w-full">
+<div class="shrink-0 relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-2xl size-14 shadow-sm ring-1 ring-slate-100 dark:ring-slate-700" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCMkRt_D3ti_cfT0jjxjF3Sz0ck782O2WJ94D4EDdJPKEgrEMfyc0OuCdj5W0uLF0qyJt2wRM77V0ejNcfb_FXuccTAz0uUqzBrwX4Vk1PUXCdjFt_c4Rm2Y9w-_xSPkRpSUo5qRIp73IVpc0YDZU4qk5kqvHRDRzN87VA_OUZLf9YP-vBRW7Rk9-KeXOeUmp1JIWPzl4M0YLepErykBcjFgRUy83h53huKYWy-7a0nWp9kvI_S5uhymkhDS9vpbElA_NdPEJUF1V8w");'></div>
+<div class="absolute -bottom-1 -right-1 bg-surface-light dark:bg-surface-dark p-0.5 rounded-full">
+<div class="bg-primary text-white rounded-full p-1 shadow-sm">
+<span class="material-symbols-outlined block" style="font-size: 12px;">cake</span>
+</div>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start gap-2">
+<h4 class="text-base font-bold text-slate-900 dark:text-white truncate leading-tight">Jantar de Aniversário</h4>
+<span class="shrink-0 text-xs font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20">19:00</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate font-medium">Com Ana Silva</p>
+<div class="flex items-center gap-3 mt-2.5 flex-wrap">
+<div class="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-primary" style="font-size: 14px;">repeat</span>
+<span>Anual</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-primary" style="font-size: 14px;">location_on</span>
+<span>Le Jardin</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+<article class="group flex items-center p-4 gap-4 bg-surface-light dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-slate-800 active:bg-slate-50 dark:active:bg-slate-800/80 transition-colors">
+<div class="shrink-0 relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-2xl size-12 grayscale opacity-90 group-hover:grayscale-0 transition-all duration-300" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC-JA6k9LD8RlTDuIsw-vS5EPVHJhEQBQRMP82aibtlzrI5LzK-MfxQpoc8DZuzQ_HP_vHlSJynMazG4T4sALA_-f-i0gz3AO-sTWZOKuRoE-rYEvy9f_439NemSbfQLQf4VByJtJJNfvG_J6a1Bw8DMRQ0oUfIXV_s7yL2peQ_4nIl1P4s05P4zkesF4K3PV9pPQvaCqMCS1L5wVhMvUgi4vSuUX9cJXYcZny84YDgSqwTqNwc_HfyKGLaorJKQb-ZC6PzBw3qsmmG");'></div>
+<div class="absolute -bottom-1 -right-1 bg-surface-light dark:bg-surface-dark p-0.5 rounded-full">
+<div class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full p-1">
+<span class="material-symbols-outlined block" style="font-size: 10px;">call</span>
+</div>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<h4 class="text-base font-semibold text-slate-700 dark:text-slate-200 truncate">Ligar para mãe</h4>
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">20:30</span>
+</div>
+<div class="flex items-center gap-2">
+<p class="text-sm text-slate-500 dark:text-slate-400 truncate">Com Maria Oliveira</p>
+<span class="size-1 bg-slate-300 dark:bg-slate-600 rounded-full"></span>
+<div class="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
+<span class="material-symbols-outlined" style="font-size: 12px;">repeat</span>
+<span>Semanal</span>
+</div>
+</div>
+</div>
+</article>
+</div>
+</div>
+<div class="mt-2">
+<h3 class="text-lg font-bold tracking-tight text-slate-500 dark:text-slate-400 px-2 mb-3">Amanhã</h3>
+<article class="flex items-center p-4 gap-4 bg-surface-light/60 dark:bg-surface-dark/40 rounded-2xl border border-transparent dark:border-slate-800/50 hover:bg-white dark:hover:bg-surface-dark transition-colors">
+<div class="shrink-0 relative">
+<div class="flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-2xl size-12 text-sm font-bold border border-blue-100 dark:border-blue-900/30">
+                    JP
+                </div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<h4 class="text-base font-semibold text-slate-700 dark:text-slate-200 truncate">Almoço de Negócios</h4>
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">12:30</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 truncate">Com João Paulo</p>
+</div>
+</article>
+</div>
+</main>
+<button class="fixed right-5 bottom-28 z-50 bg-primary hover:bg-primary-dark text-white rounded-2xl p-4 shadow-lg shadow-blue-500/30 transition-all active:scale-95 flex items-center gap-2 pr-5 group animate-in fade-in zoom-in duration-300">
+<span class="material-symbols-outlined" style="font-size: 24px;">add</span>
+<span class="font-bold text-sm tracking-wide">Novo</span>
+</button>
+<nav class="fixed bottom-0 left-0 w-full bg-surface-light/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 z-50 pb-safe">
+<div class="flex justify-around items-center h-[60px] px-2">
+<button class="group flex flex-col items-center justify-center gap-1 w-16 h-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" style="font-size: 24px;">self_improvement</span>
+<span class="text-[10px] font-medium">Espírito</span>
+</button>
+<button class="group flex flex-col items-center justify-center gap-1 w-16 h-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" style="font-size: 24px;">fitness_center</span>
+<span class="text-[10px] font-medium">Saúde</span>
+</button>
+<button class="group flex flex-col items-center justify-center gap-1 w-16 h-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" style="font-size: 24px;">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Finanças</span>
+</button>
+<button class="relative group flex flex-col items-center justify-center gap-1 w-16 h-full text-primary">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-b-lg shadow-glow"></div>
+<span class="material-symbols-outlined scale-110 transition-transform" style="font-size: 24px; font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="text-[10px] font-bold">Relações</span>
+</button>
+</div>
+</nav>
+
+</body></html>

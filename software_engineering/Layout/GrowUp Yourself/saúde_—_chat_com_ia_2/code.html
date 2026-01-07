@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Saúde — Chat com IA</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                            950: '#172554',
+                        },
+                        slate: {
+                            850: '#151e2e', 
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }body {
+            height: 100vh;
+            height: 100dvh;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased overflow-hidden selection:bg-primary-500 selection:text-white">
+<div class="relative flex h-full w-full flex-col max-w-md mx-auto bg-slate-50 dark:bg-slate-950 shadow-2xl overflow-hidden">
+<header class="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 pt-12 pb-4 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h1 class="text-base font-semibold text-slate-900 dark:text-white tracking-tight">Saúde — Chat com IA</h1>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[24px]">more_vert</span>
+</button>
+</header>
+<main class="flex-1 overflow-y-auto no-scrollbar pt-[88px] pb-[160px]"> 
+<section class="px-4 py-4">
+<div class="grid grid-cols-3 gap-3">
+<div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
+<div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full mb-2">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[20px]">monitor_weight</span>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">70kg</p>
+<p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Peso</p>
+</div>
+<div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
+<div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full mb-2">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[20px]">height</span>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">1.75m</p>
+<p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Altura</p>
+</div>
+<div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
+<div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full mb-2">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[20px]">calculate</span>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">22.9</p>
+<p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">IMC</p>
+</div>
+</div>
+</section>
+<div class="px-4 mb-6">
+<div class="flex gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[20px] shrink-0 mt-0.5">info</span>
+<p class="text-xs text-blue-800 dark:text-blue-200 leading-relaxed font-medium">
+                    As sugestões da IA são baseadas em dados gerais. Este recurso não substitui avaliação médica profissional.
+                </p>
+</div>
+</div>
+<div class="flex flex-col gap-6 px-4">
+<div class="flex justify-center">
+<span class="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-100 dark:bg-slate-900 px-3 py-1 rounded-full">Hoje, 10:23</span>
+</div>
+<div class="flex items-end gap-3">
+<div class="size-8 shrink-0 rounded-full bg-cover bg-center ring-2 ring-white dark:ring-slate-800 shadow-sm" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuChqrbX8Po_5F7I17Thw8Eb3LxLAmUccWuSRL7Uk6tVIvYL7mfNu8dWcBgMXDY0RLMHTxGsp-yvtCw5LUx-epTTFzY5I5_hTsyjncGnaeleIJOUHfH59K5wioc7bUw0XXiEWtU5bMk1Ihr6ylyYLJgK9MmXygwyIrnoyJF7rlw4LxEqnXaEOIJ1HzUZQFUCwLQcd8ZQ8JXRBRCmRAZQ_C0bQLJgxHIhJxgPqCdueg_o7giUnm2_3A6hbBM6jhEKZ4jgDGXupXYFRP6Q");'></div>
+<div class="flex flex-col gap-1 max-w-[85%]">
+<span class="text-[11px] text-slate-500 font-medium ml-1">Assistente GrowUp</span>
+<div class="p-4 rounded-2xl rounded-bl-none bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[15px] leading-relaxed shadow-sm border border-slate-100 dark:border-slate-700">
+<p>Bom dia, Alex! ☀️ Como você está se sentindo hoje? Pelos meus registros, hoje é dia de treino de cardio.</p>
+</div>
+</div>
+</div>
+<div class="flex items-end gap-3 justify-end">
+<div class="flex flex-col gap-1 max-w-[85%] items-end">
+<div class="p-4 rounded-2xl rounded-br-none bg-blue-600 text-white text-[15px] leading-relaxed shadow-md shadow-blue-500/10">
+<p>Oi! Estou bem. Acabei de voltar do parque, corri 5km.</p>
+</div>
+<span class="text-[10px] text-slate-400 dark:text-slate-500 mr-1 flex items-center gap-1">
+                        10:25 
+                        <span class="material-symbols-outlined text-[12px]">done_all</span>
+</span>
+</div>
+</div>
+<div class="flex items-end gap-3">
+<div class="size-8 shrink-0 rounded-full bg-cover bg-center ring-2 ring-white dark:ring-slate-800 shadow-sm" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBk1jwo0ssIC0WWn-OcSAO9IolpS2khV2bIKunBbESMHMwUBBxxNLvrj9AiZOs5NuB7AppByae7sPTP0WAtfEnEOzXz085kChlSaxTBJMjztzWGUU-XrZWMsoGAoxbUxMuOSZzzg-9dbYHaCtM-NWISjpIvP6D0tnBQTzyLJJuw_4j0SGpIgQiv2q2S1zPLIbNAkCJf6rY6wDc797jbyOtjZp8gNZRW-zJ5O314X_PorSkVA_7pDTVfW05y43-mhUZnTiVInAwYCqae");'></div>
+<div class="flex flex-col gap-1 max-w-[85%]">
+<span class="text-[11px] text-slate-500 font-medium ml-1">Assistente GrowUp</span>
+<div class="p-4 rounded-2xl rounded-bl-none bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[15px] leading-relaxed shadow-sm border border-slate-100 dark:border-slate-700">
+<p>Isso é excelente! 🏃‍♂️ Parabéns pela consistência. Quer que eu registre essa atividade no seu histórico agora?</p>
+</div>
+<div class="flex flex-wrap gap-2 mt-1">
+<button class="px-4 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-300 text-xs font-semibold transition-colors border border-blue-100 dark:border-blue-800">
+                            Registrar 5km
+                        </button>
+<button class="px-4 py-2 rounded-xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 text-xs font-medium transition-colors border border-slate-200 dark:border-slate-700">
+                            Agora não
+                        </button>
+</div>
+</div>
+</div>
+<div class="h-4"></div>
+</div>
+</main>
+<div class="absolute bottom-[140px] left-0 right-0 z-20 pointer-events-none">
+<div class="w-full overflow-x-auto no-scrollbar px-4 pointer-events-auto">
+<div class="flex gap-2 w-max pb-2">
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20 hover:border-blue-400 transition-colors">
+<span class="material-symbols-outlined text-blue-500 text-[18px]">add</span>
+<span class="text-xs font-medium text-slate-700 dark:text-slate-300">Exercício</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20 hover:border-blue-400 transition-colors">
+<span class="material-symbols-outlined text-blue-500 text-[18px]">medical_services</span>
+<span class="text-xs font-medium text-slate-700 dark:text-slate-300">Exame</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20 hover:border-blue-400 transition-colors">
+<span class="material-symbols-outlined text-blue-500 text-[18px]">water_drop</span>
+<span class="text-xs font-medium text-slate-700 dark:text-slate-300">Água</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20 hover:border-blue-400 transition-colors">
+<span class="material-symbols-outlined text-blue-500 text-[18px]">restaurant</span>
+<span class="text-xs font-medium text-slate-700 dark:text-slate-300">Refeição</span>
+</button>
+</div>
+</div>
+</div>
+<div class="absolute bottom-[70px] left-0 right-0 z-30 bg-slate-50 dark:bg-slate-950 px-4 pt-2 pb-4 border-t border-slate-200/50 dark:border-slate-800">
+<div class="flex items-center gap-2 bg-white dark:bg-slate-900 p-1.5 rounded-[24px] border border-slate-200 dark:border-slate-700 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500/20 transition-all shadow-sm">
+<button class="p-2 text-slate-400 hover:text-blue-500 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined text-[22px]">mic</span>
+</button>
+<input class="flex-1 bg-transparent border-none text-slate-900 dark:text-white placeholder-slate-400 text-[15px] focus:ring-0 p-0 leading-normal" placeholder="Digite algo sobre sua saúde..." type="text"/>
+<button class="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20 active:scale-95 transform">
+<span class="material-symbols-outlined text-[20px] translate-x-[1px]">send</span>
+</button>
+</div>
+</div>
+<nav class="absolute bottom-0 left-0 right-0 z-40 h-[70px] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pb-safe">
+<div class="grid grid-cols-4 h-full items-center">
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:-translate-y-0.5 transition-transform">self_improvement</span>
+<span class="text-[10px] font-medium">Espiritual</span>
+</a>
+<a class="relative flex flex-col items-center gap-1 text-blue-600 dark:text-blue-500" href="#">
+<span class="absolute -top-[17px] w-12 h-1 bg-blue-600 rounded-b-lg shadow-[0_2px_8px_rgba(37,99,235,0.4)]"></span>
+<span class="material-symbols-outlined text-[24px] filled-icon drop-shadow-sm">ecg_heart</span>
+<span class="text-[10px] font-bold">Saúde</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:-translate-y-0.5 transition-transform">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Finanças</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:-translate-y-0.5 transition-transform">diversity_3</span>
+<span class="text-[10px] font-medium">Relações</span>
+</a>
+</div>
+</nav>
+</div>
+
+</body></html>

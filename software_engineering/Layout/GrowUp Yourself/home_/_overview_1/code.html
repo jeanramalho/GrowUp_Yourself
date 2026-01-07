@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GrowUp Yourself - Home / Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0066FF", // Modern vibrant Blue
+              "primary-hover": "#0052CC",
+              "background-light": "#F0F5FA", // Cool blue-grey tone
+              "background-dark": "#0B1120", // Deep blue-black
+              "surface-dark": "#162032",
+              "surface-light": "#FFFFFF",
+              "success": "#10B981", 
+              "warning": "#F59E0B", 
+              "error": "#EF4444",
+            },
+            fontFamily: {
+              "sans": ["Inter", "sans-serif"],
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "2.5rem", "3xl": "3rem", "full": "9999px"},
+            boxShadow: {
+              'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+              'glow': '0 0 15px rgba(0, 102, 255, 0.3)',
+            }
+          },
+        },
+      }
+    </script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: "Inter", sans-serif;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 1,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-200 antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-28 max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark border-x border-slate-200 dark:border-slate-800">
+<header class="flex items-center px-6 pt-10 pb-4 justify-between bg-background-light/90 dark:bg-background-dark/90 sticky top-0 z-40 backdrop-blur-xl border-b border-slate-100/50 dark:border-slate-800/50">
+<div class="flex flex-col">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Bom dia,</p>
+<h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Carlos Silva</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2.5 rounded-full hover:bg-white dark:hover:bg-slate-800 transition-all active:scale-95 shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300" style="font-size: 24px;">notifications</span>
+<span class="absolute top-2.5 right-2.5 size-2 bg-error rounded-full ring-2 ring-background-light dark:ring-background-dark"></span>
+</button>
+<div class="size-11 rounded-full border-2 border-primary/20 p-0.5 cursor-pointer transition-transform hover:scale-105">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-full w-full" data-alt="portrait of a smiling young man in casual clothes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD0N0gxrz6kQIJzDcGlNYkgCxu2u1wmkgvRhF1clCUmHorAp8NQj4sBaJnFg4qHidwzUmTtvtV1gefgXjGpjXMgqVLFUbFkWEUjKK7Aha_quFVVMXOKytRQiO3A_OtlQO8wdHUcwn34hbI_yyiyKmsKl4lrJLlPkT-KbShcEzSC2ah4NJKvBI6KYHmEBjUh7xQcAJHmQ4CStyNFgPQga4SuN1ZTlZNALBH6QIMDxsxzBDeHMVbfVYOWpFrMcqz4jkb6xBXgnTt_ECqA");'></div>
+</div>
+</div>
+</header>
+<section class="w-full overflow-x-auto hide-scrollbar pl-6 pr-2 mb-8 pt-4">
+<div class="flex gap-5 w-max pr-6">
+<div class="flex flex-col items-center gap-2.5 group">
+<div class="relative flex items-center justify-center size-[4.5rem] rounded-[1.8rem] bg-white dark:bg-surface-dark text-indigo-500 dark:text-indigo-400 cursor-pointer transition-all active:scale-95 shadow-soft border border-slate-100 dark:border-slate-700/50">
+<span class="material-symbols-outlined z-10" style="font-size: 30px;">self_improvement</span>
+<svg class="absolute inset-0 size-full -rotate-90 p-1" viewBox="0 0 36 36">
+<path class="text-slate-100 dark:text-slate-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-indigo-500 drop-shadow-sm" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="75, 100" stroke-linecap="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<span class="text-xs font-semibold text-slate-600 dark:text-slate-300 group-hover:text-indigo-500 transition-colors">Espiritualidade</span>
+</div>
+<div class="flex flex-col items-center gap-2.5 group">
+<div class="relative flex items-center justify-center size-[4.5rem] rounded-[1.8rem] bg-white dark:bg-surface-dark text-primary dark:text-blue-400 cursor-pointer transition-all active:scale-95 shadow-soft border border-slate-100 dark:border-slate-700/50">
+<span class="material-symbols-outlined z-10" style="font-size: 30px;">ecg_heart</span>
+<svg class="absolute inset-0 size-full -rotate-90 p-1" viewBox="0 0 36 36">
+<path class="text-slate-100 dark:text-slate-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-primary drop-shadow-sm" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="50, 100" stroke-linecap="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<span class="text-xs font-semibold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">Saúde</span>
+</div>
+<div class="flex flex-col items-center gap-2.5 group">
+<div class="relative flex items-center justify-center size-[4.5rem] rounded-[1.8rem] bg-white dark:bg-surface-dark text-emerald-500 dark:text-emerald-400 cursor-pointer transition-all active:scale-95 shadow-soft border border-slate-100 dark:border-slate-700/50">
+<span class="material-symbols-outlined z-10" style="font-size: 30px;">account_balance_wallet</span>
+<svg class="absolute inset-0 size-full -rotate-90 p-1" viewBox="0 0 36 36">
+<path class="text-slate-100 dark:text-slate-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-emerald-500 drop-shadow-sm" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="30, 100" stroke-linecap="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<span class="text-xs font-semibold text-slate-600 dark:text-slate-300 group-hover:text-emerald-500 transition-colors">Finanças</span>
+</div>
+<div class="flex flex-col items-center gap-2.5 group">
+<div class="relative flex items-center justify-center size-[4.5rem] rounded-[1.8rem] bg-white dark:bg-surface-dark text-sky-500 dark:text-sky-400 cursor-pointer transition-all active:scale-95 shadow-soft border border-slate-100 dark:border-slate-700/50">
+<span class="material-symbols-outlined z-10" style="font-size: 30px;">group</span>
+<svg class="absolute inset-0 size-full -rotate-90 p-1" viewBox="0 0 36 36">
+<path class="text-slate-100 dark:text-slate-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path class="text-sky-500 drop-shadow-sm" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="85, 100" stroke-linecap="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<span class="text-xs font-semibold text-slate-600 dark:text-slate-300 group-hover:text-sky-500 transition-colors">Relações</span>
+</div>
+</div>
+</section>
+<div class="px-6 pb-4 pt-2 flex items-center justify-between">
+<h2 class="text-slate-900 dark:text-white tracking-tight text-xl font-bold leading-tight flex items-center gap-2">
+            Metas de Hoje
+            <span class="flex items-center justify-center size-5 rounded-full bg-slate-200 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-400 font-bold">3</span>
+</h2>
+<button class="text-sm font-medium text-primary hover:text-primary-hover transition-colors">Ver todas</button>
+</div>
+<div class="flex flex-col gap-4 px-6 pb-20">
+<div class="group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark p-1 shadow-soft transition-all hover:shadow-lg hover:-translate-y-0.5 border border-slate-100 dark:border-slate-700/50">
+<div class="absolute right-0 top-0 h-full w-2/5 bg-gradient-to-l from-indigo-50 to-transparent dark:from-indigo-900/10 pointer-events-none"></div>
+<div class="flex items-stretch gap-4 p-4 relative z-10">
+<div class="w-20 shrink-0 bg-center bg-no-repeat bg-cover rounded-xl aspect-[3/4] shadow-inner" data-alt="peaceful morning meditation" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQtdXHrI0V9DMcg1dQWdYVz4eKJ-SPJRPVO20NpaxwIr7kuXIbVWJHBqcVS_dhUDc4ThBTQc03fiBCyrZQfa0BjELytqxfebdHPpNh_F2MFJgHcGmKtO243xME-RZh4RCs94a0_d5aymswfHEKmt9a6zc9Nyjazeqzeh-b9LwJARvoMkEr7vNMvOfJVE9bPCtO-xHjQOz6Sn_LLOXPBdNQYQmTx1lhyv-IY14Nd6B7Ug10pZK6Ab0ISU7p4a8nV7gKFn7duxmwab91");'>
+<div class="h-full w-full bg-black/10 rounded-xl flex items-start justify-start p-1.5">
+<div class="bg-white/20 backdrop-blur-md rounded-md p-1">
+<span class="material-symbols-outlined text-white" style="font-size: 16px;">self_improvement</span>
+</div>
+</div>
+</div>
+<div class="flex flex-1 flex-col justify-between py-0.5">
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<span class="inline-flex items-center rounded-lg bg-indigo-50 dark:bg-indigo-500/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-300">Espiritualidade</span>
+<span class="text-xs font-semibold text-slate-400 dark:text-slate-500">2h restantes</span>
+</div>
+<h3 class="text-slate-900 dark:text-white text-base font-bold leading-tight">Meditação Matinal</h3>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-warning" style="font-size: 16px; font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">12 dias seguidos</p>
+</div>
+</div>
+<button class="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary py-2.5 px-4 text-white text-sm font-semibold transition-all active:scale-[0.98] hover:bg-primary-hover hover:shadow-glow">
+<span class="material-symbols-outlined" style="font-size: 18px;">play_arrow</span>
+<span>Iniciar</span>
+</button>
+</div>
+</div>
+</div>
+<div class="group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark p-1 shadow-soft transition-all hover:shadow-lg hover:-translate-y-0.5 border border-slate-100 dark:border-slate-700/50">
+<div class="absolute right-0 top-0 h-full w-2/5 bg-gradient-to-l from-emerald-50 to-transparent dark:from-emerald-900/10 pointer-events-none"></div>
+<div class="flex items-stretch gap-4 p-4 relative z-10">
+<div class="w-20 shrink-0 bg-center bg-no-repeat bg-cover rounded-xl aspect-[3/4] shadow-inner" data-alt="piggy bank" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB8zpkWWPblCCMFIvccxAzIQnaF09tNgfhamk6vlexO07KStnDSgvqF7kGpDTyEs8UqU7bvm3h5l98rEkVjz5IDnWeAskw06EQgizwjScXXYL-tuKLoqapVeU79mUuWRlq5uQ98J7teMWo_WU1cfzATK9f54uVwpJtTpAsXCUko8Cj7uALbK2ouukPJ85Hc6UhMzn_MoiGzu_kQe_bg3UK8js88TdQ3uKI4HgheYnJbUPowZEnIBdH0ROX6jQfGOyBaL10hUFVy1ej9");'>
+<div class="h-full w-full bg-black/10 rounded-xl flex items-start justify-start p-1.5">
+<div class="bg-white/20 backdrop-blur-md rounded-md p-1">
+<span class="material-symbols-outlined text-white" style="font-size: 16px;">savings</span>
+</div>
+</div>
+</div>
+<div class="flex flex-1 flex-col justify-between py-0.5">
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<span class="inline-flex items-center rounded-lg bg-emerald-50 dark:bg-emerald-500/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300">Finanças</span>
+<span class="text-xs font-semibold text-slate-400 dark:text-slate-500">Dia todo</span>
+</div>
+<h3 class="text-slate-900 dark:text-white text-base font-bold leading-tight">Economizar R$ 10</h3>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600" style="font-size: 16px; font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">4 dias seguidos</p>
+</div>
+</div>
+<button class="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white dark:bg-slate-800 py-2.5 px-4 text-slate-700 dark:text-slate-300 text-sm font-semibold transition-all active:scale-[0.98] border border-slate-200 dark:border-slate-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-300">
+<span class="material-symbols-outlined" style="font-size: 18px;">check</span>
+<span>Marcar Feito</span>
+</button>
+</div>
+</div>
+</div>
+<div class="group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark p-1 shadow-sm transition-all border border-slate-100 dark:border-slate-700/50 opacity-90">
+<div class="absolute right-0 top-0 h-full w-2/5 bg-gradient-to-l from-blue-50 to-transparent dark:from-blue-900/10 pointer-events-none"></div>
+<div class="flex items-stretch gap-4 p-4 relative z-10">
+<div class="w-20 shrink-0 bg-center bg-no-repeat bg-cover rounded-xl aspect-[3/4] grayscale" data-alt="running shoes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBLjnJmEA4eXt7tJF6RQBYtA-KxasVA6llmZfJDPmwLegVdc-oyjdINv54LwGIHcSAydp07gH6K7UnpIN8Lib8Y3mvbbalvG5nHTUtH4002XLtWwmgwUsfieyEe9-rCxGllR7H63g3NJKS8LOn4y8B_rQNf02B_NktMzUuBwCEYify4OhdqSzgEe26Rl2oDfrM-J59MCWLGNCLKLyAOB46D7dFFsRO2nT4NYxEIrP6N3hpYR01EtF7EF8Mrb81gEu4SaBPQ0jv6egz7");'>
+<div class="h-full w-full bg-black/40 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-white drop-shadow-md" style="font-size: 28px;">check_circle</span>
+</div>
+</div>
+<div class="flex flex-1 flex-col justify-between py-0.5">
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<span class="inline-flex items-center rounded-lg bg-blue-50 dark:bg-blue-500/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-primary dark:text-blue-300">Saúde</span>
+<span class="text-xs font-bold text-success">Concluído</span>
+</div>
+<h3 class="text-slate-500 dark:text-white/50 text-base font-bold leading-tight line-through decoration-slate-400">Corrida 30min</h3>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-warning" style="font-size: 16px; font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">21 dias seguidos</p>
+</div>
+</div>
+<div class="mt-3 flex items-center gap-2 text-primary text-sm font-semibold animate-pulse">
+<span class="material-symbols-outlined" style="font-size: 18px;">thumb_up</span>
+<span>Bom trabalho!</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<button class="fixed bottom-24 right-6 size-16 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-transform hover:scale-105 hover:bg-primary-hover active:scale-90 z-40 group">
+<span class="material-symbols-outlined transition-transform group-hover:rotate-90" style="font-size: 32px;">add</span>
+</button>
+<nav class="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-0 max-w-md mx-auto pointer-events-none">
+<div class="pointer-events-auto flex items-center justify-between px-2 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 shadow-2xl rounded-3xl h-[4.5rem] w-full">
+<button class="flex flex-1 flex-col items-center justify-center h-full gap-1 group relative">
+<div class="absolute inset-x-3 top-2 bottom-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-primary relative z-10" style="font-size: 26px; font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-semibold text-primary relative z-10">Visão Geral</span>
+</button>
+<button class="flex flex-1 flex-col items-center justify-center h-full gap-1 group relative">
+<div class="absolute inset-x-3 top-2 bottom-2 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"></div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-indigo-500 transition-colors relative z-10" style="font-size: 26px;">self_improvement</span>
+</button>
+<button class="flex flex-1 flex-col items-center justify-center h-full gap-1 group relative">
+<div class="absolute inset-x-3 top-2 bottom-2 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"></div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-blue-500 transition-colors relative z-10" style="font-size: 26px;">ecg_heart</span>
+</button>
+<button class="flex flex-1 flex-col items-center justify-center h-full gap-1 group relative">
+<div class="absolute inset-x-3 top-2 bottom-2 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"></div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-emerald-500 transition-colors relative z-10" style="font-size: 26px;">account_balance_wallet</span>
+</button>
+<button class="flex flex-1 flex-col items-center justify-center h-full gap-1 group relative">
+<div class="absolute inset-x-3 top-2 bottom-2 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"></div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-sky-500 transition-colors relative z-10" style="font-size: 26px;">group</span>
+</button>
+</div>
+</nav>
+</div>
+
+</body></html>
