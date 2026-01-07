@@ -1,230 +1,237 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { VictoryPie, VictoryChart, VictoryTheme, VictoryLine } from 'victory-native';
-import { theme } from '../theme';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAppTheme } from '@/theme';
 
-const FinanceScreen = () => {
-  const [activeTab, setActiveTab] = useState<'planning' | 'transactions' | 'investments'>('planning');
+const { width } = Dimensions.get('window');
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'planning':
-        return <PlanningView />;
-      case 'transactions':
-        return <TransactionsView />;
-      case 'investments':
-        return <InvestmentsView />;
-      default:
-        return <PlanningView />;
-    }
-  };
+export default function FinanceScreen() {
+  const { colors, isDarkMode, shadows } = useAppTheme();
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Gestão Financeira</Text>
-      </View>
-
-      <View style={styles.tabContainer}>
-        <TabButton title="Planejamento" isActive={activeTab === 'planning'} onPress={() => setActiveTab('planning')} />
-        <TabButton title="Lançamentos" isActive={activeTab === 'transactions'} onPress={() => setActiveTab('transactions')} />
-        <TabButton title="Investimentos" isActive={activeTab === 'investments'} onPress={() => setActiveTab('investments')} />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {renderContent()}
-      </ScrollView>
-    </View>
-  );
-};
-
-const TabButton = ({ title, isActive, onPress }: { title: string; isActive: boolean; onPress: () => void }) => (
-  <TouchableOpacity
-    style={[styles.tabButton, isActive && styles.activeTabButton]}
-    onPress={onPress}
-  >
-    <Text style={[styles.tabButtonText, isActive && styles.activeTabButtonText]}>{title}</Text>
-  </TouchableOpacity>
-);
-
-const PlanningView = () => {
-  const data = [
-    { x: 'Moradia', y: 35 },
-    { x: 'Alimentação', y: 25 },
-    { x: 'Transporte', y: 15 },
-    { x: 'Lazer', y: 10 },
-    { x: 'Outros', y: 15 },
+  const chartData = [
+    { name: 'Seg', val: 120, height: 40 },
+    { name: 'Ter', val: 45, height: 15 },
+    { name: 'Qua', val: 200, height: 70 },
+    { name: 'Qui', val: 80, height: 25 },
+    { name: 'Sex', val: 150, height: 50 },
+    { name: 'Sab', val: 300, height: 100 },
+    { name: 'Dom', val: 100, height: 35 },
   ];
 
   return (
-    <View>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Resumo do Mês</Text>
-        <View style={styles.chartContainer}>
-          <VictoryPie
-            data={data}
-            width={300}
-            height={300}
-            colorScale={[theme.colors.primary, theme.colors.primaryLight, theme.colors.primaryDark, theme.colors.textSecondary, theme.colors.surfaceDark]}
-            innerRadius={50}
-            style={{
-              labels: { fill: theme.colors.text, fontSize: 12, padding: 10 },
-            }}
-          />
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={[styles.title, { color: colors.text }]}>Finanças</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Gestão de Prosperidade</Text>
         </View>
-        <View style={styles.summaryRow}>
-          <SummaryItem label="Planejado" value="R$ 5.000,00" color={theme.colors.primary} />
-          <SummaryItem label="Gasto" value="R$ 3.250,00" color={theme.colors.error} />
-          <SummaryItem label="Restante" value="R$ 1.750,00" color={theme.colors.success} />
+        <View style={[styles.iconBox, { backgroundColor: isDarkMode ? 'rgba(30, 58, 138, 0.3)' : '#E0E7FF' }]}>
+          <MaterialCommunityIcons name="currency-usd" size={28} color={isDarkMode ? '#60A5FA' : '#1E3A8A'} />
         </View>
       </View>
-    </View>
+
+      {/* Alert Banner */}
+      <View style={[styles.alertBanner, { backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)' }]}>
+        <View style={styles.alertIconBox}>
+          <MaterialCommunityIcons name="alert-circle-outline" size={24} color="white" />
+        </View>
+        <View style={styles.alertTextContainer}>
+          <Text style={[styles.alertTitle, { color: isDarkMode ? '#F87171' : '#DC2626' }]}>Atenção ao Planejamento</Text>
+          <Text style={styles.alertDesc}>Você utilizou 91% do orçamento de R$ 3.000 planejado para este mês.</Text>
+        </View>
+      </View>
+
+      {/* Stats Grid */}
+      <View style={styles.statsGrid}>
+        <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.statHeader}>
+            <MaterialCommunityIcons name="trending-up" size={16} color={colors.success} />
+            <Text style={styles.statLabel}>ENTRADAS</Text>
+          </View>
+          <Text style={[styles.statValue, { color: colors.text }]}>R$ 5.400</Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.statHeader}>
+            <MaterialCommunityIcons name="trending-down" size={16} color={colors.error} />
+            <Text style={styles.statLabel}>GASTO REAL</Text>
+          </View>
+          <Text style={[styles.statValue, { color: colors.text }]}>R$ 2.750</Text>
+        </View>
+      </View>
+
+      {/* Chart Section */}
+      <View style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.border }, shadows.sm]}>
+        <View style={styles.chartHeader}>
+          <Text style={[styles.chartTitle, { color: isDarkMode ? colors.text : '#334155' }]}>Gastos Diários</Text>
+          <Text style={styles.chartBadge}>OUTUBRO</Text>
+        </View>
+
+        <View style={styles.chartContainer}>
+          {chartData.map((item, index) => (
+            <View key={index} style={styles.barContainer}>
+              <View style={[
+                styles.bar,
+                {
+                  height: `${item.height}%`,
+                  backgroundColor: item.val > 200 ? '#0A6CF0' : '#2B8AF7',
+                  borderRadius: 4
+                }
+              ]} />
+              <Text style={[styles.barLabel, { color: colors.textSecondary }]}>{item.name}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <TouchableOpacity style={[styles.actionButton, shadows.md]}>
+        <Text style={styles.actionButtonText}>Lançar Nova Movimentação</Text>
+      </TouchableOpacity>
+
+    </ScrollView>
   );
-};
-
-const TransactionsView = () => (
-  <View style={styles.card}>
-    <Text style={styles.cardTitle}>Últimos Lançamentos</Text>
-    <TransactionItem category="Supermercado" date="Hoje" amount="- R$ 450,00" type="expense" />
-    <TransactionItem category="Salário" date="Ontem" amount="+ R$ 5.000,00" type="income" />
-    <TransactionItem category="Uber" date="Ontem" amount="- R$ 25,90" type="expense" />
-  </View>
-);
-
-const InvestmentsView = () => (
-  <View style={styles.card}>
-    <Text style={styles.cardTitle}>Carteira de Investimentos</Text>
-    <View style={styles.chartContainer}>
-      <VictoryChart width={300} height={200} theme={VictoryTheme.material}>
-        <VictoryLine
-          style={{
-            data: { stroke: theme.colors.primary },
-            parent: { border: "1px solid #ccc" }
-          }}
-          data={[
-            { x: 1, y: 1000 },
-            { x: 2, y: 1050 },
-            { x: 3, y: 1120 },
-            { x: 4, y: 1200 },
-          ]}
-        />
-      </VictoryChart>
-    </View>
-    <TransactionItem category="Tesouro Direto" date="Rendimento +1.2%" amount="R$ 12.450,00" type="neutral" />
-  </View>
-);
-
-const SummaryItem = ({ label, value, color }: { label: string; value: string; color: string }) => (
-  <View style={styles.summaryItem}>
-    <Text style={styles.summaryLabel}>{label}</Text>
-    <Text style={[styles.summaryValue, { color }]}>{value}</Text>
-  </View>
-);
-
-const TransactionItem = ({ category, date, amount, type }: { category: string; date: string; amount: string; type: 'income' | 'expense' | 'neutral' }) => (
-  <View style={styles.transactionItem}>
-    <View>
-      <Text style={styles.transactionCategory}>{category}</Text>
-      <Text style={styles.transactionDate}>{date}</Text>
-    </View>
-    <Text style={[
-      styles.transactionAmount,
-      type === 'income' ? { color: theme.colors.success } : type === 'expense' ? { color: theme.colors.error } : { color: theme.colors.text }
-    ]}>{amount}</Text>
-  </View>
-);
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+  },
+  contentContainer: {
+    padding: 24,
+    paddingBottom: 100,
   },
   header: {
-    padding: theme.spacing.m,
-  },
-  headerTitle: {
-    fontSize: theme.typography.sizes.h1,
-    fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.text,
-  },
-  tabContainer: {
     flexDirection: 'row',
-    paddingHorizontal: theme.spacing.m,
-    marginBottom: theme.spacing.m,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
   },
-  tabButton: {
-    paddingVertical: theme.spacing.s,
-    paddingHorizontal: theme.spacing.m,
-    borderRadius: theme.spacing.l,
-    marginRight: theme.spacing.s,
-    backgroundColor: theme.colors.surface,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
-  activeTabButton: {
-    backgroundColor: theme.colors.primary,
+  subtitle: {
+    fontSize: 14,
   },
-  tabButtonText: {
-    color: theme.colors.textSecondary,
-    fontFamily: theme.typography.fontFamily.medium,
+  iconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  activeTabButtonText: {
-    color: theme.colors.textLight,
+  alertBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    borderRadius: 32,
+    borderWidth: 1,
+    gap: 16,
+    marginBottom: 16,
   },
-  scrollContent: {
-    padding: theme.spacing.m,
+  alertIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.spacing.m,
-    padding: theme.spacing.m,
-    marginBottom: theme.spacing.m,
+  alertTextContainer: {
+    flex: 1,
   },
-  cardTitle: {
-    fontSize: theme.typography.sizes.h2,
-    fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.m,
+  alertTitle: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  alertDesc: {
+    fontSize: 12,
+    color: '#EF4444',
+    opacity: 0.8,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 16,
+  },
+  statCard: {
+    flex: 1,
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+  },
+  statHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  statLabel: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#10B981', // we override color in render based on type
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  chartCard: {
+    padding: 24,
+    borderRadius: 40,
+    borderWidth: 1,
+    marginBottom: 24,
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  chartTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  chartBadge: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#3B82F6',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   chartContainer: {
-    alignItems: 'center',
-    marginBottom: theme.spacing.m,
-  },
-  summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: theme.spacing.m,
+    alignItems: 'flex-end',
+    height: 150,
   },
-  summaryItem: {
+  barContainer: {
     alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    height: '100%',
+    justifyContent: 'flex-end',
   },
-  summaryLabel: {
-    fontSize: theme.typography.sizes.caption,
-    color: theme.colors.textSecondary,
+  bar: {
+    width: 12, // slightly thinner than web due to space
+    minHeight: 4,
   },
-  summaryValue: {
-    fontSize: theme.typography.sizes.body,
-    fontFamily: theme.typography.fontFamily.bold,
+  barLabel: {
+    fontSize: 10,
   },
-  transactionItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  actionButton: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 16,
+    borderRadius: 16,
     alignItems: 'center',
-    paddingVertical: theme.spacing.s,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.background,
+    width: '100%',
   },
-  transactionCategory: {
-    fontSize: theme.typography.sizes.body,
-    fontFamily: theme.typography.fontFamily.medium,
-    color: theme.colors.text,
-  },
-  transactionDate: {
-    fontSize: theme.typography.sizes.caption,
-    color: theme.colors.textSecondary,
-  },
-  transactionAmount: {
-    fontSize: theme.typography.sizes.body,
-    fontFamily: theme.typography.fontFamily.bold,
+  actionButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });
-
-export default FinanceScreen;

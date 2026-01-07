@@ -1,165 +1,243 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../theme';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAppTheme } from '@/theme';
 
-const RelationshipsScreen = () => {
-  const [commitments, setCommitments] = useState([
-    {
-      id: '1',
-      title: 'Jantar com a Família',
-      withWho: 'Esposa e Filhos',
-      date: 'Hoje, 19:00',
-      recurrence: 'Semanal (Quinta)',
-      status: 'pending',
-    },
-    {
-      id: '2',
-      title: 'Ligação para os Pais',
-      withWho: 'Pai e Mãe',
-      date: 'Amanhã, 10:00',
-      recurrence: 'Semanal (Sexta)',
-      status: 'pending',
-    },
-  ]);
+export default function RelationshipScreen() {
+  const { colors, isDarkMode, shadows } = useAppTheme();
+
+  const events = [
+    { icon: 'coffee', title: 'Café com Mentoria', person: 'André S.', time: 'Amanhã, 10:00', type: 'Semanal', color: colors.blue500 },
+    { icon: 'heart', title: 'Jantar Romântico', person: 'Luiza', time: 'Sexta, 20:00', type: 'Mensal', color: '#EF4444' }, // Red for heart
+    { icon: 'gift', title: 'Aniversário', person: 'Maria Eduarda', time: '24 Out', type: 'Anual', color: '#F59E0B' },
+  ];
+
+  const calendarDays = [
+    { d: '22', day: 'D' },
+    { d: '23', day: 'S' },
+    { d: '24', day: 'T', active: true },
+    { d: '25', day: 'Q' },
+    { d: '26', day: 'Q' },
+  ];
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Relacionamentos</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Vínculos & Convivência</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Fortaleça suas conexões humanas.</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Próximos Compromissos</Text>
-          <TouchableOpacity style={styles.addButton}>
-            <Ionicons name="add" size={24} color={theme.colors.textLight} />
+      {/* Calendar Strip */}
+      <View style={[styles.calendarStrip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        {calendarDays.map((date, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.calendarItem,
+              date.active && styles.calendarItemActive
+            ]}
+          >
+            <Text style={[
+              styles.calendarDay,
+              { color: date.active ? 'white' : colors.textSecondary }
+            ]}>{date.day}</Text>
+            <Text style={[
+              styles.calendarDate,
+              { color: date.active ? 'white' : colors.text, fontWeight: date.active ? 'bold' : 'normal' }
+            ]}>{date.d}</Text>
           </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Upcoming Events */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionTitleRow}>
+            <MaterialCommunityIcons name="calendar-month-outline" size={20} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Próximos Encontros</Text>
+          </View>
+          <Text style={[styles.viewAllBadge, { color: colors.primary }]}>VER TODOS</Text>
         </View>
 
-        {commitments.map((item) => (
-          <View key={item.id} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <View style={styles.recurrenceTag}>
-                <Ionicons name="repeat" size={12} color={theme.colors.primary} />
-                <Text style={styles.recurrenceText}>{item.recurrence}</Text>
+        {events.map((ev, i) => (
+          <View key={i} style={[styles.eventCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.eventIconBox, { backgroundColor: isDarkMode ? colors.gray800 : colors.blue50 }]}>
+              {/* @ts-ignore icon name */}
+              <MaterialCommunityIcons name={ev.icon} size={24} color={ev.icon === 'heart' ? '#EF4444' : colors.primary} />
+            </View>
+            <View style={styles.eventInfo}>
+              <View style={styles.eventHeader}>
+                <Text style={[styles.eventTitle, { color: colors.text }]}>{ev.title}</Text>
+                <View style={[styles.eventTypeBadge, { backgroundColor: 'rgba(59, 130, 246, 0.1)' }]}>
+                  <Text style={[styles.eventTypeText, { color: colors.primary }]}>{ev.type}</Text>
+                </View>
               </View>
-            </View>
-
-            <View style={styles.cardRow}>
-              <Ionicons name="people-outline" size={16} color={theme.colors.textSecondary} />
-              <Text style={styles.cardText}>{item.withWho}</Text>
-            </View>
-
-            <View style={styles.cardRow}>
-              <Ionicons name="time-outline" size={16} color={theme.colors.textSecondary} />
-              <Text style={styles.cardText}>{item.date}</Text>
-            </View>
-
-            <View style={styles.actions}>
-              <TouchableOpacity style={styles.actionButton}>
-                <Text style={styles.actionButtonText}>Concluir</Text>
-              </TouchableOpacity>
+              <Text style={[styles.eventSubtitle, { color: colors.textSecondary }]}>{ev.person} • {ev.time}</Text>
             </View>
           </View>
         ))}
-      </ScrollView>
-    </View>
+      </View>
+
+      {/* Quick Action Banner */}
+      <View style={[styles.banner, shadows.md]}>
+        <Text style={styles.bannerTitle}>Crie memórias</Text>
+        <Text style={styles.bannerDesc}>Mande uma mensagem para alguém que você não fala há algum tempo.</Text>
+        <TouchableOpacity style={styles.bannerButton}>
+          <Text style={styles.bannerButtonText}>Sugerir contato</Text>
+        </TouchableOpacity>
+      </View>
+
+    </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+  },
+  contentContainer: {
+    padding: 24,
+    paddingBottom: 100,
   },
   header: {
-    padding: theme.spacing.m,
+    alignItems: 'center',
+    marginBottom: 32,
   },
-  headerTitle: {
-    fontSize: theme.typography.sizes.h1,
-    fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.text,
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  scrollContent: {
-    padding: theme.spacing.m,
+  subtitle: {
+    fontSize: 14,
+  },
+  calendarStrip: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginBottom: 32,
+  },
+  calendarItem: {
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 16,
+    width: 44,
+    gap: 4,
+  },
+  calendarItemActive: {
+    backgroundColor: '#2563EB',
+    shadowColor: '#2563EB',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  calendarDay: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  calendarDate: {
+    fontSize: 16,
+  },
+  section: {
+    marginBottom: 32,
+    gap: 12,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.m,
+    marginBottom: 8,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   sectionTitle: {
-    fontSize: theme.typography.sizes.h2,
-    fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.text,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  addButton: {
-    backgroundColor: theme.colors.primary,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  viewAllBadge: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+  eventCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    gap: 16,
+  },
+  eventIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.spacing.m,
-    padding: theme.spacing.m,
-    marginBottom: theme.spacing.m,
+  eventInfo: {
+    flex: 1,
+    gap: 4,
   },
-  cardHeader: {
+  eventHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.s,
   },
-  cardTitle: {
-    fontSize: theme.typography.sizes.body,
-    fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.text,
+  eventTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
   },
-  recurrenceTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: theme.spacing.s,
-    paddingVertical: 4,
-    borderRadius: theme.spacing.s,
-    gap: 4,
+  eventTypeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
   },
-  recurrenceText: {
-    fontSize: theme.typography.sizes.caption,
-    color: theme.colors.primary,
+  eventTypeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
   },
-  cardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s,
+  eventSubtitle: {
+    fontSize: 12,
+  },
+  banner: {
+    padding: 24,
+    borderRadius: 24,
+    backgroundColor: '#60A5FA', // fallback if gradient not available, mimicking from-blue-300 to-blue-500
+    // To approximate gradient: Just blue.
+  },
+  bannerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
     marginBottom: 4,
   },
-  cardText: {
-    color: theme.colors.textSecondary,
-    fontSize: theme.typography.sizes.small,
+  bannerDesc: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: 16,
+    lineHeight: 20,
   },
-  actions: {
-    marginTop: theme.spacing.m,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+  bannerButton: {
+    backgroundColor: 'white',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
   },
-  actionButton: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.m,
-    paddingVertical: theme.spacing.s,
-    borderRadius: theme.spacing.s,
-  },
-  actionButtonText: {
-    color: theme.colors.textLight,
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.sizes.small,
+  bannerButtonText: {
+    color: '#3B82F6',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
 });
-
-export default RelationshipsScreen;
