@@ -1,89 +1,49 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
-import { Platform, View, StyleSheet } from 'react-native';
+import { Tabs, useRouter } from 'expo-router';
+import { View, StyleSheet } from 'react-native';
+import { theme } from '@/theme';
+import { CustomTabBar } from '@/components/ui/CustomTabBar';
+import { Header } from '@/components/ui/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { theme } from '@/theme';
-
 export default function RootLayout() {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
+      <Header onProfilePress={() => router.push('/profile')} />
       <Tabs
+        tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: theme.colors.primary,
-          tabBarInactiveTintColor: theme.colors.gray400,
-          tabBarShowLabel: false,
-          tabBarStyle: {
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            elevation: 0,
-            backgroundColor: 'transparent',
-            borderTopWidth: 0,
-            height: 80,
-          },
-          tabBarBackground: () => (
-            <View style={styles.tabBarBackground}>
-              <View style={styles.floatingTabBar} />
-            </View>
-          ),
+          // Background color for screens
+          sceneStyle: { backgroundColor: theme.colors.background },
         }}
       >
-        <Tabs.Screen
-          name="home"
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="view-dashboard" color={color} size={28} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="spirituality"
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="meditation" color={color} size={28} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="health"
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="heart" color={color} size={28} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="finance"
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="wallet" color={color} size={28} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="relationships"
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="account-group" color={color} size={28} />
-            ),
-          }}
-        />
+        <Tabs.Screen name="home" />
+        <Tabs.Screen name="spirituality" />
+        <Tabs.Screen name="health" />
+        <Tabs.Screen name="finance" />
+        <Tabs.Screen name="relationships" />
+
+        {/* Hidden Screens */}
         <Tabs.Screen
           name="profile"
           options={{
             href: null,
+            tabBarStyle: { display: 'none' }, // Hide tab bar on profile if wanted, or keep it. Design shows it might be hidden or modal.
           }}
         />
-        <Tabs.Screen
-          name="index"
-          options={{
-            href: null,
-          }}
-        />
+        <Tabs.Screen name="index" options={{ href: null }} />
       </Tabs>
+
+      {/* FAB - Nova Meta (Fixed absolute position akin to the React App) */}
+      <View style={styles.fabContainer}>
+        {/* Implement FAB later if needed or add here. Detailed in App.tsx line 120. */}
+        <View style={styles.fab}>
+          <MaterialCommunityIcons name="plus" size={28} color="white" />
+        </View>
+      </View>
     </View>
   );
 }
@@ -93,24 +53,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  tabBarBackground: {
+  fabContainer: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    bottom: 96, // 24px (bottom) + 80px (tab bar height approx) - adjustments
+    right: 24,
+    zIndex: 90,
   },
-  floatingTabBar: {
-    width: '100%',
-    height: 64,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 32,
-    borderWidth: 1,
-    borderColor: theme.colors.gray200,
-    ...theme.shadows.lg,
+  fab: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
 });

@@ -1,26 +1,41 @@
 export const theme = {
   colors: {
-    primary: '#2563EB', // Blue 600
-    primaryDark: '#1D4ED8', // Blue 700
+    primary: '#3B82F6', // Blue 500
+    primaryDark: '#2563EB', // Blue 600
     primaryLight: '#60A5FA', // Blue 400
-    secondary: '#475569', // Slate 600
+    secondary: '#64748B', // Slate 500
     background: '#F8FAFC', // Slate 50
     backgroundDark: '#0F172A', // Slate 900
     surface: '#FFFFFF',
     surfaceDark: '#1E293B', // Slate 800
     text: '#0F172A', // Slate 900
     textLight: '#F8FAFC', // Slate 50
-    textSecondary: '#64748B', // Slate 500
+    textSecondary: '#94A3B8', // Slate 400
     success: '#10B981', // Emerald 500
     error: '#EF4444', // Red 500
     warning: '#F59E0B', // Amber 500
 
+    // Additional colors from React app
+    sky500: '#0EA5E9',
+    sky600: '#0284C7',
+    sky400: '#38BDF8',
+    indigo600: '#4F46E5',
+    emerald500: '#10B981',
+    navy600: '#2563EB', // Mapping navy to blue-600 for now as navy isn't standard tailwind v3 without config, assuming it's deep blue
+    blue900: '#1E3A8A',
+    blue50: '#EFF6FF',
+    blue300: '#93C5FD',
+    slate100: '#F1F5F9',
+    slate300: '#CBD5E1',
+    slate800: '#1E293B',
+    slate900: '#0F172A',
+
     // Pillar specific colors
     pillar: {
       spirituality: '#4F46E5', // Indigo 600
-      health: '#2563EB', // Blue 600
+      health: '#0EA5E9', // Sky 500 (Updated to match React app icon colors roughly)
       finance: '#10B981', // Emerald 500
-      relationships: '#0EA5E9', // Sky 500
+      relationships: '#3B82F6', // Blue 500
     },
 
     // Grays (Slate)
