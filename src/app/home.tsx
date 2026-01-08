@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     dateBadge: {
-        fontSize: 10,
+        fontSize: 12,
         fontWeight: 'bold',
         textTransform: 'uppercase',
         letterSpacing: 1,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     habitSubtitle: {
-        fontSize: 12,
+        fontSize: 14,
         marginTop: 2,
     },
     playButton: {
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
         borderRadius: 999,
     },
     pillarProgressText: {
-        fontSize: 10,
+        fontSize: 12,
         fontWeight: 'bold',
         textTransform: 'uppercase',
     },

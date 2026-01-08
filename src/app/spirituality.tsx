@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 24,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   headerSection: {
     alignItems: 'center',
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 16,
   },
   timerCard: {
     backgroundColor: '#0A6CF0', // Blue 500/600ish
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   },
   timerLabel: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 2,
     marginBottom: 16,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   timeInfoText: {
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
   },
   divider: {
@@ -300,6 +300,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   itemSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
   },
 });

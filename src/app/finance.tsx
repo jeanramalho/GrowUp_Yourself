@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 24,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   header: {
     flexDirection: 'row',
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   alertDesc: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#EF4444',
     opacity: 0.8,
   },
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#10B981', // we override color in render based on type
   },
@@ -192,11 +192,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   chartTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   chartBadge: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#3B82F6',
     textTransform: 'uppercase',
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     minHeight: 4,
   },
   barLabel: {
-    fontSize: 10,
+    fontSize: 12,
   },
   actionButton: {
     backgroundColor: '#2563EB',

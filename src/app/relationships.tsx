@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 24,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   header: {
     alignItems: 'center',
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
   },
   calendarDay: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   calendarDate: {
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   eventTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   eventTypeBadge: {
@@ -204,11 +204,11 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   eventTypeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   eventSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
   },
   banner: {
     padding: 24,

@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   statsLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#0EA5E9',
     textTransform: 'uppercase',
@@ -223,8 +223,8 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   msgText: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 16,
+    lineHeight: 24,
   },
   loadingBubble: {
     paddingHorizontal: 16,
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   loadingText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -252,13 +252,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   quickActionLabel: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   inputContainer: {
     padding: 24,
     paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 100 : 80, // Space for CustomTabBar
+    paddingBottom: Platform.OS === 'ios' ? 120 : 100, // Space for CustomTabBar
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 8, // adjust
-    fontSize: 14,
+    fontSize: 16,
   },
   sendButton: {
     width: 40,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   disclaimer: {
-    fontSize: 10,
+    fontSize: 12,
     textAlign: 'center',
     marginTop: 8,
     textTransform: 'uppercase',

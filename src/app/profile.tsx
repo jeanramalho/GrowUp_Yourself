@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 24,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   headerSection: {
     alignItems: 'center',
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   levelText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   userInfo: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   userLevel: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     textTransform: 'uppercase',
     letterSpacing: 1.5,
@@ -212,14 +212,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   codeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   footer: {
     alignItems: 'center',
   },
   footerBrand: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#94A3B8',
     textTransform: 'uppercase',
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   footerVersion: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#94A3B8',
   },
 });
