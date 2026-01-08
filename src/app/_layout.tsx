@@ -37,13 +37,7 @@ export default function RootLayout() {
         <Tabs.Screen name="index" options={{ href: null }} />
       </Tabs>
 
-      {/* FAB - Nova Meta (Fixed absolute position akin to the React App) */}
-      <View style={styles.fabContainer}>
-        {/* Implement FAB later if needed or add here. Detailed in App.tsx line 120. */}
-        <View style={styles.fab}>
-          <MaterialCommunityIcons name="plus" size={28} color="white" />
-        </View>
-      </View>
+
     </View>
   );
 }
@@ -53,23 +47,5 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  fabContainer: {
-    position: 'absolute',
-    bottom: 96, // 24px (bottom) + 80px (tab bar height approx) - adjustments
-    right: 24,
-    zIndex: 90,
-  },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
+
 });

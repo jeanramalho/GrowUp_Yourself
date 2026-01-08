@@ -23,13 +23,13 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     const renderPillar = (icon: any, progress: number, color: string) => (
         <View style={styles.pillarItem}>
             <CircularProgress
-                size={42}
+                size={48}
                 strokeWidth={4}
                 progress={progress * 100}
                 color={color}
                 backgroundColor={theme.colors.gray200}
             >
-                <MaterialCommunityIcons name={icon} size={20} color={color} />
+                <MaterialCommunityIcons name={icon} size={24} color={color} />
             </CircularProgress>
         </View>
     );
