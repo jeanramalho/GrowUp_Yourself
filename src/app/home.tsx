@@ -177,6 +177,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        padding: 8,
     },
     pillarContent: {
         alignItems: 'center',
