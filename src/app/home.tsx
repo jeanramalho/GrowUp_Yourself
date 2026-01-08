@@ -191,12 +191,11 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     pillarTextContainer: {
-        pillarTextContainer: {
-            alignItems: 'center',
-        },
-        pillarLabel: {
-            fontSize: 14,
-            fontWeight: 'bold',
-            marginBottom: 4,
-        },
-    });
+        alignItems: 'center',
+    },
+    pillarLabel: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+});
