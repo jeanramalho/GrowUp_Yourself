@@ -182,17 +182,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 12,
     },
-    pillarTextContainer: {
+    pillarIconBox: {
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        justifyContent: 'center',
         alignItems: 'center',
+        marginBottom: 8,
     },
-    pillarLabel: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    pillarProgressText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        textTransform: 'uppercase',
-    },
-});
+    pillarTextContainer: {
+        pillarTextContainer: {
+            alignItems: 'center',
+        },
+        pillarLabel: {
+            fontSize: 14,
+            fontWeight: 'bold',
+            marginBottom: 4,
+        },
+    });

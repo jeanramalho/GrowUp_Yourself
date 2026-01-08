@@ -23,13 +23,13 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     const renderPillar = (icon: any, progress: number, color: string) => (
         <View style={styles.pillarItem}>
             <CircularProgress
-                size={32}
-                strokeWidth={3}
+                size={42}
+                strokeWidth={4}
                 progress={progress * 100}
                 color={color}
-                backgroundColor={theme.colors.slate100}
+                backgroundColor={theme.colors.gray200}
             >
-                <MaterialCommunityIcons name={icon} size={16} color={color} />
+                <MaterialCommunityIcons name={icon} size={20} color={color} />
             </CircularProgress>
         </View>
     );
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: 'rgba(255,255,255,0.8)', // Blur effect simulation
         borderBottomWidth: 1,
-        borderBottomColor: theme.colors.slate100,
+        borderBottomColor: theme.colors.gray200,
         paddingHorizontal: 24,
         paddingBottom: 16,
         zIndex: 50,
