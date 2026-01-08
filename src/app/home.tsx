@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { useRouter } from 'expo-router';
+import { CircularProgress } from '@/components/ui/CircularProgress';
 
 // Helper to get formatted date string similar to design "Segunda, 24 Out"
 const getFormattedDate = () => {
@@ -76,16 +77,23 @@ export default function HomeScreen() {
                             style={[styles.pillarCard, { backgroundColor: colors.surface, borderColor: colors.border }, shadows.sm]}
                             onPress={() => handlePillarPress(p.type)}
                         >
-                            <View style={[styles.pillarIconBox, { backgroundColor: p.color }]}>
-                                {/* @ts-ignore icon name string */}
-                                <MaterialCommunityIcons name={p.icon} size={20} color="white" />
-                            </View>
-                            <Text style={[styles.pillarLabel, { color: colors.text }]}>{p.label}</Text>
+                            <View style={styles.pillarContent}>
+                                <CircularProgress
+                                    size={68}
+                                    strokeWidth={4}
+                                    progress={p.progress}
+                                    color={p.color}
+                                    backgroundColor={colors.border}
+                                >
+                                    {/* @ts-ignore icon name string */}
+                                    <MaterialCommunityIcons name={p.icon} size={28} color={p.color} />
+                                </CircularProgress>
 
-                            <View style={[styles.pillarProgressBg, { backgroundColor: colors.border }]}>
-                                <View style={[styles.pillarProgressFill, { width: `${p.progress}%`, backgroundColor: p.color }]} />
+                                <View style={styles.pillarTextContainer}>
+                                    <Text style={[styles.pillarLabel, { color: colors.text }]}>{p.label}</Text>
+                                    <Text style={[styles.pillarProgressText, { color: colors.textSecondary }]}>{p.progress}% Completo</Text>
+                                </View>
                             </View>
-                            <Text style={[styles.pillarProgressText, { color: colors.textSecondary }]}>{p.progress}% Completo</Text>
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -165,34 +173,22 @@ const styles = StyleSheet.create({
     },
     pillarCard: {
         width: '47%', // roughly half - gap
-        padding: 20,
         borderRadius: 32,
         borderWidth: 1,
-    },
-    pillarIconBox: {
-        width: 44,
-        height: 44,
-        borderRadius: 16,
-        justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 16,
-        alignSelf: 'flex-start',
+        justifyContent: 'center',
+    },
+    pillarContent: {
+        alignItems: 'center',
+        gap: 12,
+    },
+    pillarTextContainer: {
+        alignItems: 'center',
     },
     pillarLabel: {
         fontSize: 14,
         fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    pillarProgressBg: {
-        height: 6,
-        borderRadius: 999,
-        width: '100%',
-        overflow: 'hidden',
-        marginBottom: 8,
-    },
-    pillarProgressFill: {
-        height: '100%',
-        borderRadius: 999,
+        marginBottom: 4,
     },
     pillarProgressText: {
         fontSize: 12,
