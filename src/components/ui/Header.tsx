@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '@/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CircularProgress } from '@/components/ui/CircularProgress';
 
 interface HeaderProps {
     onProfilePress?: () => void;
@@ -18,6 +19,20 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
         finance: 0.91,
         relationships: 0.30,
     };
+
+    const renderPillar = (icon: any, progress: number, color: string) => (
+        <View style={styles.pillarItem}>
+            <CircularProgress
+                size={32}
+                strokeWidth={3}
+                progress={progress * 100}
+                color={color}
+                backgroundColor={theme.colors.slate100}
+            >
+                <MaterialCommunityIcons name={icon} size={16} color={color} />
+            </CircularProgress>
+        </View>
+    );
 
     return (
         <View style={[styles.container, { paddingTop: Math.max(insets.top, 24) }]}>
@@ -35,38 +50,10 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
             </View>
 
             <View style={styles.pillarsContainer}>
-                {/* Spirituality */}
-                <View style={styles.pillarItem}>
-                    <MaterialCommunityIcons name="creation" size={16} color={theme.colors.pillar.spirituality} />
-                    <View style={styles.progressBarBg}>
-                        <View style={[styles.progressBarFill, { width: `${pillarProgress.spirituality * 100}%`, backgroundColor: theme.colors.primary }]} />
-                    </View>
-                </View>
-
-                {/* Health */}
-                <View style={styles.pillarItem}>
-                    <MaterialCommunityIcons name="heart-pulse" size={16} color={theme.colors.pillar.health} />
-                    <View style={styles.progressBarBg}>
-                        <View style={[styles.progressBarFill, { width: `${pillarProgress.health * 100}%`, backgroundColor: theme.colors.primary }]} />
-                    </View>
-                </View>
-
-                {/* Finance */}
-                <View style={styles.pillarItem}>
-                    <MaterialCommunityIcons name="wallet" size={16} color={theme.colors.pillar.finance} />
-                    <View style={styles.progressBarBg}>
-                        {/* Using red for > 90% as per React code logic */}
-                        <View style={[styles.progressBarFill, { width: `${pillarProgress.finance * 100}%`, backgroundColor: pillarProgress.finance > 0.9 ? theme.colors.error : theme.colors.primary }]} />
-                    </View>
-                </View>
-
-                {/* Relationships */}
-                <View style={styles.pillarItem}>
-                    <MaterialCommunityIcons name="account-group" size={16} color={theme.colors.pillar.relationships} />
-                    <View style={styles.progressBarBg}>
-                        <View style={[styles.progressBarFill, { width: `${pillarProgress.relationships * 100}%`, backgroundColor: theme.colors.primary }]} />
-                    </View>
-                </View>
+                {renderPillar("creation", pillarProgress.spirituality, theme.colors.pillar.spirituality)}
+                {renderPillar("heart-pulse", pillarProgress.health, theme.colors.pillar.health)}
+                {renderPillar("wallet", pillarProgress.finance, pillarProgress.finance > 0.9 ? theme.colors.error : theme.colors.pillar.finance)}
+                {renderPillar("account-group", pillarProgress.relationships, theme.colors.pillar.relationships)}
             </View>
         </View>
     );
@@ -121,19 +108,7 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     pillarItem: {
-        flex: 1,
         alignItems: 'center',
-        gap: 6,
-    },
-    progressBarBg: {
-        width: 48,
-        height: 4,
-        backgroundColor: theme.colors.slate100,
-        borderRadius: 999,
-        overflow: 'hidden',
-    },
-    progressBarFill: {
-        height: '100%',
-        borderRadius: 999,
+        justifyContent: 'center',
     },
 });
