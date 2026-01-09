@@ -6,10 +6,12 @@ import { useThemeStore } from '@/store/themeStore';
 import { useUserStore } from '@/store/userStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import { PersonalInfoModal } from '@/components/profile/PersonalInfoModal';
 
 export default function ProfileScreen() {
   const { colors, isDarkMode, spacing, typography, borderRadius } = useAppTheme();
   const { toggleTheme } = useThemeStore();
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const {
     avatarUri,
     setAvatar,
@@ -79,6 +81,7 @@ export default function ProfileScreen() {
           {/* Informações Pessoais */}
           <TouchableOpacity
             style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => setIsModalVisible(true)}
           >
             <View style={styles.menuItemLeft}>
               <View style={[styles.iconBox, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100 }]}>
@@ -145,6 +148,11 @@ export default function ProfileScreen() {
         </View>
 
       </ScrollView>
+
+      <PersonalInfoModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }

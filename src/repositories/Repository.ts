@@ -36,12 +36,8 @@ export class Repository<T extends { id: string }> implements IRepository<T> {
    */
   protected async executeQuery<R>(sql: string, params: any[] = []): Promise<R[]> {
     try {
-      let result: R[] = [];
-      await this.db.transactionAsync(async (tx) => {
-        const resultSet = await tx.executeSqlAsync(sql, params);
-        result = (resultSet.rows as unknown as R[]) || [];
-      }, true); // true = readOnly
-      return result;
+      const results = await this.db.getAllAsync<R>(sql, params);
+      return results || [];
     } catch (error) {
       console.error(`Query error in ${this.tableName}:`, error);
       throw error;
@@ -53,9 +49,7 @@ export class Repository<T extends { id: string }> implements IRepository<T> {
    */
   protected async executeStatement(sql: string, params: any[] = []): Promise<void> {
     try {
-      await this.db.transactionAsync(async (tx) => {
-        await tx.executeSqlAsync(sql, params);
-      }, false); // false = not readOnly
+      await this.db.runAsync(sql, params);
     } catch (error) {
       console.error(`Execute error in ${this.tableName}:`, error);
       throw error;
@@ -154,7 +148,7 @@ export class Database {
   async initialize(dbInstance: SQLiteDatabase): Promise<void> {
     this.db = dbInstance;
     // Enable foreign keys
-    await this.db.execAsync([{ sql: 'PRAGMA foreign_keys = ON', args: [] }], false);
+    await this.db.execAsync('PRAGMA foreign_keys = ON');
   }
 
   /**
@@ -173,6 +167,27 @@ export class Database {
   createRepository<T extends { id: string }>(tableName: string): Repository<T> {
     const db = this.getDb();
     return new Repository<T>(db, tableName);
+  }
+
+  /**
+   * Delete all data from all tables (Except schema_version)
+   */
+  async clearAllData(): Promise<void> {
+    const db = this.getDb();
+    const tables = [
+      'execucao',
+      'meta',
+      'lancamento_financeiro',
+      'investimento',
+      'compromisso',
+      'user_profile',
+    ];
+
+    await db.withTransactionAsync(async () => {
+      for (const table of tables) {
+        await db.runAsync(`DELETE FROM ${table}`);
+      }
+    });
   }
 
   /**
