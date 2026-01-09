@@ -30,7 +30,9 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
         weight,
         height,
         weightGoal,
+        isProfileComplete,
         updateProfile,
+        setProfileComplete,
         resetStore
     } = useUserStore();
 
@@ -55,7 +57,15 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
     }, [visible, userName, gender, weight, height, weightGoal]);
 
     const handleSave = () => {
+        const { userName, gender, weight, height, weightGoal } = formData;
+
+        if (!userName.trim() || !gender || !weight || !height || !weightGoal) {
+            Alert.alert("Campos Obrigatórios", "Por favor, preencha todas as informações para continuar.");
+            return;
+        }
+
         updateProfile(formData);
+        setProfileComplete(true);
         onClose();
     };
 
@@ -122,7 +132,7 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
             visible={visible}
             animationType="slide"
             presentationStyle="fullScreen"
-            onRequestClose={onClose}
+            onRequestClose={isProfileComplete ? onClose : () => { }}
         >
             <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
                 <KeyboardAvoidingView
@@ -131,12 +141,16 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
                 >
                     {/* Header */}
                     <View style={[styles.header, { borderBottomColor: colors.border }]}>
-                        <TouchableOpacity onPress={onClose} style={styles.backButton}>
-                            <MaterialCommunityIcons name="chevron-left" size={32} color={colors.text} />
-                        </TouchableOpacity>
+                        <View style={styles.backButtonPlaceholder}>
+                            {isProfileComplete && (
+                                <TouchableOpacity onPress={onClose} style={styles.backButton}>
+                                    <MaterialCommunityIcons name="chevron-left" size={32} color={colors.text} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
                         <Text style={[styles.title, { color: colors.text }]}>Informações Pessoais</Text>
                         <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-                            <Text style={[styles.saveButtonText, { color: colors.primary }]}>Salvar</Text>
+                            <Text style={[styles.saveButtonText, { color: colors.primary }]}>Concluir</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -187,19 +201,23 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
 
                             {renderInput("Meta de Peso (kg)", formData.weightGoal, "weightGoal", "0.0", "numeric")}
 
-                            <View style={styles.divider} />
+                            {isProfileComplete && (
+                                <>
+                                    <View style={styles.divider} />
 
-                            <TouchableOpacity
-                                style={[styles.resetButton, { borderColor: colors.error }]}
-                                onPress={handleReset}
-                            >
-                                <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.error} />
-                                <Text style={[styles.resetButtonText, { color: colors.error }]}>Excluir Perfil e Recomeçar</Text>
-                            </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.resetButton, { borderColor: colors.error }]}
+                                        onPress={handleReset}
+                                    >
+                                        <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.error} />
+                                        <Text style={[styles.resetButtonText, { color: colors.error }]}>Excluir Perfil e Recomeçar</Text>
+                                    </TouchableOpacity>
 
-                            <Text style={[styles.disclaimer, { color: colors.textSecondary }]}>
-                                A exclusão do perfil removerá todos os seus dados e progresso do app de forma permanente.
-                            </Text>
+                                    <Text style={[styles.disclaimer, { color: colors.textSecondary }]}>
+                                        A exclusão do perfil removerá todos os seus dados e progresso do app de forma permanente.
+                                    </Text>
+                                </>
+                            )}
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
@@ -225,6 +243,9 @@ const styles = StyleSheet.create({
     },
     backButton: {
         padding: 4,
+    },
+    backButtonPlaceholder: {
+        width: 40,
     },
     title: {
         fontSize: 18,

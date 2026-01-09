@@ -12,10 +12,12 @@ interface UserState {
     height: string | null;
     weightGoal: string | null;
     notificationsEnabled: boolean;
+    isProfileComplete: boolean;
     setUserName: (name: string) => void;
     setUserLevel: (level: number) => void;
     setUserTitle: (title: string) => void;
     setAvatar: (uri: string | null) => void;
+    setProfileComplete: (complete: boolean) => void;
     updateProfile: (data: Partial<Pick<UserState, 'userName' | 'gender' | 'weight' | 'height' | 'weightGoal'>>) => void;
     setNotifications: (enabled: boolean) => void;
     toggleNotifications: () => void;
@@ -23,15 +25,16 @@ interface UserState {
 }
 
 const initialState = {
-    userName: 'Jean Ramalho',
-    userLevel: 5,
-    userTitle: 'Explorador Nível 5',
+    userName: '',
+    userLevel: 1,
+    userTitle: 'Novo Usuário',
     avatarUri: null,
     gender: null,
     weight: null,
     height: null,
     weightGoal: null,
     notificationsEnabled: false,
+    isProfileComplete: false,
 };
 
 export const useUserStore = create<UserState>()(
@@ -42,6 +45,7 @@ export const useUserStore = create<UserState>()(
             setUserLevel: (userLevel) => set({ userLevel }),
             setUserTitle: (userTitle) => set({ userTitle }),
             setAvatar: (uri) => set({ avatarUri: uri }),
+            setProfileComplete: (isProfileComplete) => set({ isProfileComplete }),
             updateProfile: (data) => set((state) => ({ ...state, ...data })),
             setNotifications: (enabled) => set({ notificationsEnabled: enabled }),
             toggleNotifications: () => set((state) => ({ notificationsEnabled: !state.notificationsEnabled })),
