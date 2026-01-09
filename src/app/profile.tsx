@@ -10,9 +10,18 @@ import * as ImagePicker from 'expo-image-picker';
 export default function ProfileScreen() {
   const { colors, isDarkMode, spacing, typography, borderRadius } = useAppTheme();
   const { toggleTheme } = useThemeStore();
-  const { avatarUri, setAvatar, notificationsEnabled, toggleNotifications } = useUserStore();
+  const {
+    avatarUri,
+    setAvatar,
+    notificationsEnabled,
+    toggleNotifications,
+    userName,
+    userLevel,
+    userTitle
+  } = useUserStore();
 
   const handlePickImage = async () => {
+    // ... logic remains same ...
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -37,11 +46,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const menuItems = [
-    { icon: 'account-outline', label: "Informações Pessoais" },
-  ];
-
-  const defaultAvatar = 'https://picsum.photos/seed/default-avatar/200'; // Or use a local require() if you have assets
+  const defaultAvatar = 'https://picsum.photos/seed/default-avatar/200';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -60,34 +65,31 @@ export default function ProfileScreen() {
               </View>
             </View>
             <View style={[styles.levelBadge, { backgroundColor: colors.primary, borderColor: colors.surface }]}>
-              <Text style={styles.levelText}>5</Text>
+              <Text style={styles.levelText}>{userLevel}</Text>
             </View>
           </TouchableOpacity>
           <View style={styles.userInfo}>
-            <Text style={[styles.userName, { color: colors.text }]}>Alex Carvalho</Text>
-            <Text style={[styles.userLevel, { color: colors.primary }]}>Explorador Nível 5</Text>
+            <Text style={[styles.userName, { color: colors.text }]}>{userName}</Text>
+            <Text style={[styles.userLevel, { color: colors.primary }]}>{userTitle}</Text>
           </View>
         </View>
 
-        {/* Menu Section */}
+        {/* Unified Menu Section */}
         <View style={styles.menuSection}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            >
-              <View style={styles.menuItemLeft}>
-                <View style={[styles.iconBox, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100 }]}>
-                  {/* @ts-ignore icon name string */}
-                  <MaterialCommunityIcons name={item.icon} size={20} color={colors.textSecondary} />
-                </View>
-                <Text style={[styles.menuLabel, { color: colors.text }]}>{item.label}</Text>
+          {/* Informações Pessoais */}
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.iconBox, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100 }]}>
+                <MaterialCommunityIcons name="account-outline" size={20} color={colors.textSecondary} />
               </View>
-              <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
-          ))}
+              <Text style={[styles.menuLabel, { color: colors.text }]}>Informações Pessoais</Text>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
 
-          {/* Notifications Toggle */}
+          {/* Notificações Toggle */}
           <View style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.menuItemLeft}>
               <View style={[styles.iconBox, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100 }]}>
@@ -102,29 +104,6 @@ export default function ProfileScreen() {
               thumbColor={'white'}
             />
           </View>
-          <View style={styles.userInfo}>
-            <Text style={[styles.userName, { color: colors.text }]}>Alex Carvalho</Text>
-            <Text style={[styles.userLevel, { color: colors.primary }]}>Explorador Nível 5</Text>
-          </View>
-        </View>
-
-        {/* Menu Section */}
-        <View style={styles.menuSection}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            >
-              <View style={styles.menuItemLeft}>
-                <View style={[styles.iconBox, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100 }]}>
-                  {/* @ts-ignore icon name string */}
-                  <MaterialCommunityIcons name={item.icon} size={20} color={colors.textSecondary} />
-                </View>
-                <Text style={[styles.menuLabel, { color: colors.text }]}>{item.label}</Text>
-              </View>
-              <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
-          ))}
 
           {/* Dark Mode Toggle */}
           <View style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>

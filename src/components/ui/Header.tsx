@@ -13,7 +13,8 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     const insets = useSafeAreaInsets();
     const { colors, isDarkMode } = useAppTheme();
-    const { avatarUri } = useUserStore();
+    const { avatarUri, userName } = useUserStore();
+    const firstName = userName.split(' ')[0];
 
     // Mock data matching the React App
     const pillarProgress = {
@@ -51,7 +52,7 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
             <View style={styles.topRow}>
                 <View style={styles.greetingContainer}>
                     <Text style={[styles.brandText, { color: colors.primary }]}>GROWUP YOURSELF</Text>
-                    <Text style={[styles.greetingText, { color: colors.text }]}>Olá, Jean</Text>
+                    <Text style={[styles.greetingText, { color: colors.text }]}>Olá, {firstName}</Text>
                 </View>
                 <TouchableOpacity onPress={onProfilePress} style={[styles.avatarContainer, { borderColor: 'rgba(59, 130, 246, 0.2)' }]}>
                     <Image
