@@ -5,9 +5,16 @@ import { theme } from '@/theme';
 import { CustomTabBar } from '@/components/ui/CustomTabBar';
 import { Header } from '@/components/ui/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useUserStore } from '@/store/userStore';
+import { ProfileRequiredOverlay } from '@/components/profile/ProfileRequiredOverlay';
 
 export default function RootLayout() {
   const router = useRouter();
+  const { isProfileComplete } = useUserStore();
+
+  if (!isProfileComplete) {
+    return <ProfileRequiredOverlay />;
+  }
 
   return (
     <View style={styles.container}>
