@@ -77,9 +77,15 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
                                 {
                                     text: "EU TENHO CERTEZA",
                                     style: "destructive",
-                                    onPress: () => {
-                                        resetStore();
-                                        onClose();
+                                    onPress: async () => {
+                                        try {
+                                            await database.clearAllData();
+                                            resetStore();
+                                            onClose();
+                                        } catch (error) {
+                                            console.error("Error clearing data:", error);
+                                            Alert.alert("Erro", "Ocorreu um erro ao excluir os dados.");
+                                        }
                                     }
                                 }
                             ]
@@ -137,7 +143,37 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         <View style={styles.form}>
                             {renderInput("Nome Completo", formData.userName, "userName", "Seu nome")}
-                            {renderInput("Gênero", formData.gender, "gender", "Masculino, Feminino, etc.")}
+
+                            <View style={styles.inputGroup}>
+                                <Text style={[styles.label, { color: colors.textSecondary }]}>Gênero</Text>
+                                <View style={styles.genderContainer}>
+                                    {['Masculino', 'Feminino'].map((option) => (
+                                        <TouchableOpacity
+                                            key={option}
+                                            onPress={() => setFormData(prev => ({ ...prev, gender: option }))}
+                                            style={[
+                                                styles.genderOption,
+                                                {
+                                                    backgroundColor: formData.gender === option ? colors.primary : (isDarkMode ? colors.gray800 : colors.gray100),
+                                                    borderColor: formData.gender === option ? colors.primary : colors.border
+                                                }
+                                            ]}
+                                        >
+                                            <MaterialCommunityIcons
+                                                name={option === 'Masculino' ? 'gender-male' : 'gender-female'}
+                                                size={20}
+                                                color={formData.gender === option ? 'white' : colors.text}
+                                            />
+                                            <Text style={[
+                                                styles.genderText,
+                                                { color: formData.gender === option ? 'white' : colors.text }
+                                            ]}>
+                                                {option}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
 
                             <View style={styles.row}>
                                 <View style={{ flex: 1 }}>
@@ -250,5 +286,23 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         marginTop: 4,
         lineHeight: 18,
+    },
+    genderContainer: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    genderOption: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        height: 56,
+        borderRadius: 16,
+        borderWidth: 1,
+    },
+    genderText: {
+        fontSize: 16,
+        fontWeight: '600',
     },
 });
