@@ -1,19 +1,47 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Platform, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { useThemeStore } from '@/store/themeStore';
+import { useUserStore } from '@/store/userStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
   const { colors, isDarkMode, spacing, typography, borderRadius } = useAppTheme();
   const { toggleTheme } = useThemeStore();
+  const { avatarUri, setAvatar, notificationsEnabled, toggleNotifications } = useUserStore();
+
+  const handlePickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== 'granted') {
+        Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para mudar a foto.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true, // Enables cropping
+        aspect: [1, 1], // Square aspect ratio
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setAvatar(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.log('Error picking image:', error);
+      Alert.alert('Erro', 'Ocorreu um erro ao selecionar a imagem.');
+    }
+  };
 
   const menuItems = [
     { icon: 'account-outline', label: "Informações Pessoais" },
-    { icon: 'bell-outline', label: "Notificações" },
-    { icon: 'shield-check-outline', label: "Privacidade & Segurança" },
   ];
+
+  const defaultAvatar = 'https://picsum.photos/seed/default-avatar/200'; // Or use a local require() if you have assets
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -21,16 +49,58 @@ export default function ProfileScreen() {
 
         {/* Profile Header */}
         <View style={styles.headerSection}>
-          <View style={styles.avatarWrapper}>
+          <TouchableOpacity onPress={handlePickImage} style={styles.avatarWrapper}>
             <View style={[styles.avatarBorder, { borderColor: 'rgba(59, 130, 246, 0.2)' }]}>
               <Image
-                source={{ uri: 'https://picsum.photos/seed/jean/200' }}
+                source={{ uri: avatarUri || defaultAvatar }}
                 style={[styles.avatar, { backgroundColor: colors.surface }]}
               />
+              <View style={[styles.editIconContainer, { backgroundColor: colors.primary }]}>
+                <MaterialCommunityIcons name="pencil" size={16} color="white" />
+              </View>
             </View>
             <View style={[styles.levelBadge, { backgroundColor: colors.primary, borderColor: colors.surface }]}>
               <Text style={styles.levelText}>5</Text>
             </View>
+          </TouchableOpacity>
+          <View style={styles.userInfo}>
+            <Text style={[styles.userName, { color: colors.text }]}>Alex Carvalho</Text>
+            <Text style={[styles.userLevel, { color: colors.primary }]}>Explorador Nível 5</Text>
+          </View>
+        </View>
+
+        {/* Menu Section */}
+        <View style={styles.menuSection}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            >
+              <View style={styles.menuItemLeft}>
+                <View style={[styles.iconBox, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100 }]}>
+                  {/* @ts-ignore icon name string */}
+                  <MaterialCommunityIcons name={item.icon} size={20} color={colors.textSecondary} />
+                </View>
+                <Text style={[styles.menuLabel, { color: colors.text }]}>{item.label}</Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          ))}
+
+          {/* Notifications Toggle */}
+          <View style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.iconBox, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100 }]}>
+                <MaterialCommunityIcons name={notificationsEnabled ? "bell-ring" : "bell-off"} size={20} color={colors.textSecondary} />
+              </View>
+              <Text style={[styles.menuLabel, { color: colors.text }]}>Notificações</Text>
+            </View>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={toggleNotifications}
+              trackColor={{ false: colors.gray300, true: colors.primary }}
+              thumbColor={'white'}
+            />
           </View>
           <View style={styles.userInfo}>
             <Text style={[styles.userName, { color: colors.text }]}>Alex Carvalho</Text>
@@ -146,6 +216,19 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  editIconContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+    zIndex: 10,
   },
   userInfo: {
     alignItems: 'center',
