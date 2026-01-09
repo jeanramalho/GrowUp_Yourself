@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '@/theme';
+import { useAppTheme } from '@/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CircularProgress } from '@/components/ui/CircularProgress';
+import { useUserStore } from '@/store/userStore';
 
 interface HeaderProps {
     onProfilePress?: () => void;
@@ -11,6 +12,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     const insets = useSafeAreaInsets();
+    const { colors, isDarkMode } = useAppTheme();
+    const { avatarUri } = useUserStore();
 
     // Mock data matching the React App
     const pillarProgress = {
@@ -20,6 +23,8 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
         relationships: 0.30,
     };
 
+    const defaultAvatar = 'https://picsum.photos/seed/default-avatar/200';
+
     const renderPillar = (icon: any, progress: number, color: string) => (
         <View style={styles.pillarItem}>
             <CircularProgress
@@ -27,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
                 strokeWidth={4}
                 progress={progress * 100}
                 color={color}
-                backgroundColor={theme.colors.gray200}
+                backgroundColor={isDarkMode ? colors.gray700 : colors.gray200}
             >
                 <MaterialCommunityIcons name={icon} size={24} color={color} />
             </CircularProgress>
@@ -35,25 +40,32 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     );
 
     return (
-        <View style={[styles.container, { paddingTop: Math.max(insets.top, 24) }]}>
+        <View style={[
+            styles.container,
+            {
+                paddingTop: Math.max(insets.top, 24),
+                backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.8)',
+                borderBottomColor: colors.border
+            }
+        ]}>
             <View style={styles.topRow}>
                 <View style={styles.greetingContainer}>
-                    <Text style={styles.brandText}>GROWUP YOURSELF</Text>
-                    <Text style={styles.greetingText}>Olá, Jean</Text>
+                    <Text style={[styles.brandText, { color: colors.primary }]}>GROWUP YOURSELF</Text>
+                    <Text style={[styles.greetingText, { color: colors.text }]}>Olá, Jean</Text>
                 </View>
-                <TouchableOpacity onPress={onProfilePress} style={styles.avatarContainer}>
+                <TouchableOpacity onPress={onProfilePress} style={[styles.avatarContainer, { borderColor: 'rgba(59, 130, 246, 0.2)' }]}>
                     <Image
-                        source={{ uri: 'https://picsum.photos/seed/jean/100' }}
-                        style={styles.avatar}
+                        source={{ uri: avatarUri || defaultAvatar }}
+                        style={[styles.avatar, { backgroundColor: colors.surface }]}
                     />
                 </TouchableOpacity>
             </View>
 
             <View style={styles.pillarsContainer}>
-                {renderPillar("creation", pillarProgress.spirituality, theme.colors.pillar.spirituality)}
-                {renderPillar("heart-pulse", pillarProgress.health, theme.colors.pillar.health)}
-                {renderPillar("wallet", pillarProgress.finance, pillarProgress.finance > 0.9 ? theme.colors.error : theme.colors.pillar.finance)}
-                {renderPillar("account-group", pillarProgress.relationships, theme.colors.pillar.relationships)}
+                {renderPillar("creation", pillarProgress.spirituality, colors.pillar.spirituality)}
+                {renderPillar("heart-pulse", pillarProgress.health, colors.pillar.health)}
+                {renderPillar("wallet", pillarProgress.finance, pillarProgress.finance > 0.9 ? colors.error : colors.pillar.finance)}
+                {renderPillar("account-group", pillarProgress.relationships, colors.pillar.relationships)}
             </View>
         </View>
     );
@@ -61,9 +73,7 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: 'rgba(255,255,255,0.8)', // Blur effect simulation
         borderBottomWidth: 1,
-        borderBottomColor: theme.colors.gray200,
         paddingHorizontal: 24,
         paddingBottom: 16,
         zIndex: 50,
@@ -80,7 +90,6 @@ const styles = StyleSheet.create({
     brandText: {
         fontSize: 10,
         fontWeight: '900',
-        color: theme.colors.primary,
         letterSpacing: 2,
         marginBottom: 4,
         textTransform: 'uppercase',
@@ -88,14 +97,12 @@ const styles = StyleSheet.create({
     greetingText: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: theme.colors.text,
     },
     avatarContainer: {
         width: 40,
         height: 40,
         borderRadius: 20,
         borderWidth: 2,
-        borderColor: 'rgba(37, 99, 235, 0.2)', // blue-500/20
         overflow: 'hidden',
     },
     avatar: {
