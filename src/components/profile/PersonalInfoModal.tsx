@@ -15,6 +15,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { useUserStore } from '@/store/userStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { database } from '@/repositories/Repository';
 
 interface PersonalInfoModalProps {
     visible: boolean;

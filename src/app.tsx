@@ -9,7 +9,7 @@ import { Slot } from 'expo-router';
 
 import { theme } from '@/theme/tokens';
 import { notificationService } from '@/services/NotificationService';
-import { Database } from '@/repositories/Repository';
+import { Database, database } from '@/repositories/Repository';
 import { MigrationRunner } from '@/repositories/migrations';
 import * as SQLite from 'expo-sqlite';
 
@@ -19,7 +19,6 @@ import * as SQLite from 'expo-sqlite';
 async function initializeDatabase(): Promise<Database> {
   try {
     const db = await SQLite.openDatabaseAsync('growup_yourself.db');
-    const database = new Database();
     await database.initialize(db);
 
     // Run migrations
