@@ -14,7 +14,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { useUserStore } from '@/store/userStore';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { database } from '@/repositories/Repository';
 
 interface PersonalInfoModalProps {
@@ -23,6 +23,7 @@ interface PersonalInfoModalProps {
 }
 
 export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, onClose }) => {
+    const insets = useSafeAreaInsets();
     const { colors, isDarkMode, spacing, borderRadius } = useAppTheme();
     const {
         userName,
@@ -132,6 +133,7 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
             visible={visible}
             animationType="slide"
             presentationStyle="fullScreen"
+            statusBarTranslucent={true}
             onRequestClose={isProfileComplete ? onClose : () => { }}
         >
             <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -140,7 +142,13 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
                     style={styles.keyboardView}
                 >
                     {/* Header */}
-                    <View style={[styles.header, { borderBottomColor: colors.border }]}>
+                    <View style={[
+                        styles.header,
+                        {
+                            borderBottomColor: colors.border,
+                            paddingTop: Platform.OS === 'ios' ? spacing.m : insets.top + spacing.s
+                        }
+                    ]}>
                         <View style={styles.backButtonPlaceholder}>
                             {isProfileComplete && (
                                 <TouchableOpacity onPress={onClose} style={styles.backButton}>

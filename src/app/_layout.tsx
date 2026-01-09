@@ -10,9 +10,10 @@ import { ProfileRequiredOverlay } from '@/components/profile/ProfileRequiredOver
 
 export default function RootLayout() {
   const router = useRouter();
-  const { isProfileComplete } = useUserStore();
+  const { isProfileComplete, userName } = useUserStore();
 
-  if (!isProfileComplete) {
+  // If profile is not complete AND there's no name (legacy/reset), show overlay
+  if (!isProfileComplete && !userName) {
     return <ProfileRequiredOverlay />;
   }
 
