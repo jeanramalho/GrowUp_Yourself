@@ -146,7 +146,7 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
                         styles.header,
                         {
                             borderBottomColor: colors.border,
-                            paddingTop: Platform.OS === 'ios' ? spacing.m : insets.top + spacing.s
+                            paddingTop: Platform.OS === 'ios' ? spacing.xl : insets.top + spacing.m
                         }
                     ]}>
                         <View style={styles.backButtonPlaceholder}>
@@ -158,7 +158,7 @@ export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, o
                         </View>
                         <Text style={[styles.title, { color: colors.text }]}>Informações Pessoais</Text>
                         <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-                            <Text style={[styles.saveButtonText, { color: colors.primary }]}>Concluir</Text>
+                            <Text style={[styles.saveButtonText, { color: colors.primary }]}>Salvar</Text>
                         </TouchableOpacity>
                     </View>
 
