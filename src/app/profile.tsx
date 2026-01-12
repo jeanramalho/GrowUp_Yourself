@@ -125,22 +125,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Developer Export Section */}
-        <View style={[styles.devSection, { backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.5)' : colors.gray100, borderColor: colors.border }]}>
-          <View style={styles.devHeader}>
-            <MaterialCommunityIcons name="download" size={20} color={colors.primary} />
-            <Text style={[styles.devTitle, { color: colors.text }]}>Exportar Design Tokens (JSON)</Text>
-          </View>
-          <Text style={[styles.devDesc, { color: colors.textSecondary }]}>Prontos para uso em React Native / Expo.</Text>
-          <View style={[styles.codeBlock, { backgroundColor: isDarkMode ? colors.gray900 : 'white', borderColor: colors.border }]}>
-            <Text style={[styles.codeText, { color: colors.textSecondary }]}>
-              {`{
-  "colors": { ... },
-  "typography": { ... }
-}`}
-            </Text>
-          </View>
-        </View>
 
         <View style={styles.footer}>
           <Text style={styles.footerBrand}>DESIGN BY JEAN RAMALHO</Text>
@@ -255,35 +239,6 @@ const styles = StyleSheet.create({
   menuLabel: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  devSection: {
-    padding: 24,
-    borderRadius: 24,
-    borderWidth: 1,
-    marginBottom: 32,
-  },
-  devHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
-  devTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  devDesc: {
-    fontSize: 12,
-    marginBottom: 16,
-  },
-  codeBlock: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  codeText: {
-    fontSize: 12,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   footer: {
     alignItems: 'center',
