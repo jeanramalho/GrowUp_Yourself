@@ -1,16 +1,53 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, useRouter } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { theme } from '@/theme';
 import { CustomTabBar } from '@/components/ui/CustomTabBar';
 import { Header } from '@/components/ui/Header';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useUserStore } from '@/store/userStore';
 import { ProfileRequiredOverlay } from '@/components/profile/ProfileRequiredOverlay';
+import { database } from '@/repositories/Repository';
+import { MigrationRunner } from '@/repositories/migrations';
+import { notificationService } from '@/services/NotificationService';
+import * as SQLite from 'expo-sqlite';
 
 export default function RootLayout() {
   const router = useRouter();
   const { isProfileComplete, userName } = useUserStore();
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    const initApp = async () => {
+      try {
+        const db = await SQLite.openDatabaseAsync('growup_yourself.db');
+        await database.initialize(db);
+
+        // Run migrations
+        const migrationRunner = new MigrationRunner(db);
+        await migrationRunner.runMigrations();
+
+        // Initialize notifications
+        await notificationService.initialize();
+        await notificationService.requestPermissions();
+
+        console.log('Database and services initialized successfully');
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+      }
+    };
+
+    initApp();
+  }, []);
+
+  if (!isInitialized) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
 
   // If profile is not complete AND there's no name (legacy/reset), show overlay
   if (!isProfileComplete && !userName) {
