@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { habitService } from '@/services/HabitService';
@@ -94,6 +95,75 @@ export default function SpiritualityScreen() {
   const handleToggleCompletion = async (habit: HabitWithStatus) => {
     await habitService.toggleCompletion(habit.id, new Date());
     loadHabits();
+  };
+
+  const handleDeleteHabit = async (habitId: string) => {
+    Alert.alert(
+      "Excluir Hábito",
+      "Tem certeza que deseja excluir este hábito permanentemente?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            await habitService.deleteHabit(habitId);
+            if (selectedHabit?.id === habitId) setSelectedHabit(null);
+            loadHabits();
+          }
+        }
+      ]
+    );
+  };
+
+  const handleDeleteAll = async () => {
+    Alert.alert(
+      "Limpar Todos os Hábitos",
+      "Isso excluirá permanentemente TODOS os seus hábitos deste pilar. Deseja continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir Tudo",
+          style: "destructive",
+          onPress: async () => {
+            await habitService.deleteAllHabits(pilarId);
+            setSelectedHabit(null);
+            loadHabits();
+          }
+        }
+      ]
+    );
+  };
+
+  const handleDeleteCompleted = async () => {
+    Alert.alert(
+      "Excluir Concluídos",
+      "Deseja excluir permanentemente todos os hábitos que já foram concluídos hoje?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir Concluídos",
+          style: "destructive",
+          onPress: async () => {
+            await habitService.deleteCompletedHabitsForDate(pilarId, new Date());
+            loadHabits();
+          }
+        }
+      ]
+    );
+  };
+
+  const renderRightActions = (habitId: string) => {
+    return (
+      <View style={styles.deleteActionContainer}>
+        <TouchableOpacity
+          onPress={() => handleDeleteHabit(habitId)}
+          style={styles.deleteCircle}
+        >
+          <MaterialCommunityIcons name="trash-can-outline" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   const formatTime = (seconds: number) => {
@@ -193,31 +263,37 @@ export default function SpiritualityScreen() {
             <ActivityIndicator size="small" color={colors.primary} />
           ) : habits.length > 0 ? (
             habits.map((item) => (
-              <TouchableOpacity
+              <Swipeable
                 key={item.id}
-                onPress={() => handleSelectHabit(item)}
-                style={[
-                  styles.listItem,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: selectedHabit?.id === item.id ? colors.primary : colors.border
-                  }
-                ]}
+                renderRightActions={() => renderRightActions(item.id)}
+                friction={2}
+                rightThreshold={40}
               >
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.itemTitle, { color: colors.text }]}>{item.titulo}</Text>
-                  <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>
-                    {item.duracao_minutos} min • {item.horario_sugerido || 'Sem horário'}
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={() => handleToggleCompletion(item)}>
-                  <MaterialCommunityIcons
-                    name={item.completed ? "check-circle" : "check-circle-outline"}
-                    size={28}
-                    color={item.completed ? colors.success : colors.border}
-                  />
+                <TouchableOpacity
+                  onPress={() => handleSelectHabit(item)}
+                  style={[
+                    styles.listItem,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: selectedHabit?.id === item.id ? colors.primary : colors.border
+                    }
+                  ]}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.itemTitle, { color: colors.text }]}>{item.titulo}</Text>
+                    <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>
+                      {item.duracao_minutos} min • {item.horario_sugerido || 'Sem horário'}
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => handleToggleCompletion(item)}>
+                    <MaterialCommunityIcons
+                      name={item.completed ? "check-circle" : "check-circle-outline"}
+                      size={28}
+                      color={item.completed ? colors.success : colors.border}
+                    />
+                  </TouchableOpacity>
                 </TouchableOpacity>
-              </TouchableOpacity>
+              </Swipeable>
             ))
           ) : (
             <View style={styles.emptyState}>
@@ -227,6 +303,27 @@ export default function SpiritualityScreen() {
             </View>
           )}
         </View>
+      </View>
+
+      {/* Bulk Actions */}
+      <View style={styles.bulkActionsContainer}>
+        {completedCount > 0 && (
+          <TouchableOpacity
+            onPress={handleDeleteCompleted}
+            style={[styles.bulkActionButton, { backgroundColor: colors.error + '10' }]}
+          >
+            <MaterialCommunityIcons name="check-all" size={20} color={colors.error} />
+            <Text style={[styles.bulkActionButtonText, { color: colors.error }]}>Excluir Concluídos</Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity
+          onPress={handleDeleteAll}
+          style={[styles.bulkActionButton, { marginTop: 8 }]}
+        >
+          <MaterialCommunityIcons name="delete-sweep-outline" size={20} color={colors.textSecondary} />
+          <Text style={[styles.bulkActionButtonText, { color: colors.textSecondary }]}>Limpar Todos os Hábitos</Text>
+        </TouchableOpacity>
       </View>
 
       <HabitFormModal
@@ -407,5 +504,36 @@ const styles = StyleSheet.create({
     padding: 32,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  deleteActionContainer: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    width: 68,
+    backgroundColor: 'transparent',
+    paddingRight: 4,
+  },
+  deleteCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bulkActionsContainer: {
+    marginTop: 48,
+    gap: 12,
+  },
+  bulkActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 12,
+    gap: 8,
+  },
+  bulkActionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   }
 });

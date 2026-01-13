@@ -1,14 +1,23 @@
-import { Meta, Execucao, ExecucaoStatus } from '../models';
+import { Meta, Execucao } from '../models';
 import { MetaRepository, ExecucaoRepository } from '../repositories/HabitRepository';
 import { database } from '../repositories/Repository';
 
 export class HabitService {
-    private metaRepo: MetaRepository;
-    private execRepo: ExecucaoRepository;
+    private _metaRepo: MetaRepository | null = null;
+    private _execRepo: ExecucaoRepository | null = null;
 
-    constructor() {
-        this.metaRepo = new MetaRepository(database.getDb());
-        this.execRepo = new ExecucaoRepository(database.getDb());
+    private get metaRepo(): MetaRepository {
+        if (!this._metaRepo) {
+            this._metaRepo = new MetaRepository(database.getDb());
+        }
+        return this._metaRepo;
+    }
+
+    private get execRepo(): ExecucaoRepository {
+        if (!this._execRepo) {
+            this._execRepo = new ExecucaoRepository(database.getDb());
+        }
+        return this._execRepo;
     }
 
     /**
@@ -94,15 +103,10 @@ export class HabitService {
 
     /**
      * Calculate monthly progress for a pillar
-     * Average of weekly scores
      */
     async getMonthlyProgress(pilarId: string, monthDate: Date): Promise<number> {
         const metas = await this.metaRepo.getByPilar(pilarId);
         if (metas.length === 0) return 0;
-
-        // Simplified progress: percentage of scheduled days in the month that were completed
-        // Requirements say average of weeks, but let's do a monthly average for simplicity first
-        // unless they specifically want week-by-week granularity.
 
         const startOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
         const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
@@ -115,7 +119,6 @@ export class HabitService {
         let totalScheduledDays = 0;
         let totalCompletedDays = 0;
 
-        // For each day of the month
         for (let d = new Date(startOfMonth); d <= endOfMonth; d.setDate(d.getDate() + 1)) {
             const dayOfWeek = d.getDay();
             const bitmask = 1 << dayOfWeek;
