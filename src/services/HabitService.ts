@@ -1,6 +1,7 @@
 import { Meta, Execucao, ExecucaoStatus } from '../models';
 import { MetaRepository, ExecucaoRepository } from '../repositories/HabitRepository';
 import { database } from '../repositories/Repository';
+import * as Crypto from 'expo-crypto';
 
 export class HabitService {
     private metaRepo: MetaRepository;
@@ -18,7 +19,7 @@ export class HabitService {
         const now = new Date().toISOString();
         const newMeta: Meta = {
             ...meta,
-            id: crypto.randomUUID(),
+            id: Crypto.randomUUID(),
             created_at: now,
             updated_at: now,
         };
@@ -71,7 +72,7 @@ export class HabitService {
             await this.execRepo.delete(existing.id);
         } else {
             const exec: Execucao = {
-                id: crypto.randomUUID(),
+                id: Crypto.randomUUID(),
                 meta_id: metaId,
                 data: dateString,
                 status: 'concluida',

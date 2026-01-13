@@ -168,6 +168,14 @@ export default function SpiritualityScreen() {
         </View>
       </View>
 
+      <TouchableOpacity
+        onPress={() => setIsModalVisible(true)}
+        style={[styles.addButton, { backgroundColor: colors.primary + '10', borderColor: colors.primary, marginBottom: 32 }]}
+      >
+        <MaterialCommunityIcons name="plus" size={24} color={colors.primary} />
+        <Text style={[styles.addButtonText, { color: colors.primary }]}>Adicionar Hábito</Text>
+      </TouchableOpacity>
+
       {/* Schedule Section */}
       <View style={styles.scheduleSection}>
         <View style={styles.sectionHeader}>
@@ -218,14 +226,6 @@ export default function SpiritualityScreen() {
               </Text>
             </View>
           )}
-
-          <TouchableOpacity
-            onPress={() => setIsModalVisible(true)}
-            style={[styles.addButton, { backgroundColor: colors.primary + '10', borderColor: colors.primary }]}
-          >
-            <MaterialCommunityIcons name="plus" size={24} color={colors.primary} />
-            <Text style={[styles.addButtonText, { color: colors.primary }]}>Adicionar Hábito</Text>
-          </TouchableOpacity>
         </View>
       </View>
 
