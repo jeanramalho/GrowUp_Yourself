@@ -1,7 +1,6 @@
 import { Meta, Execucao, ExecucaoStatus } from '../models';
 import { MetaRepository, ExecucaoRepository } from '../repositories/HabitRepository';
 import { database } from '../repositories/Repository';
-import * as Crypto from 'expo-crypto';
 
 export class HabitService {
     private metaRepo: MetaRepository;
@@ -13,13 +12,24 @@ export class HabitService {
     }
 
     /**
+     * Generate a UUID v4
+     */
+    private generateId(): string {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    /**
      * Create a new habit (meta)
      */
     async createHabit(meta: Omit<Meta, 'id' | 'created_at' | 'updated_at'>): Promise<Meta> {
         const now = new Date().toISOString();
         const newMeta: Meta = {
             ...meta,
-            id: Crypto.randomUUID(),
+            id: this.generateId(),
             created_at: now,
             updated_at: now,
         };
@@ -72,7 +82,7 @@ export class HabitService {
             await this.execRepo.delete(existing.id);
         } else {
             const exec: Execucao = {
-                id: Crypto.randomUUID(),
+                id: this.generateId(),
                 meta_id: metaId,
                 data: dateString,
                 status: 'concluida',
@@ -125,12 +135,33 @@ export class HabitService {
     }
 
     /**
-     * Delete a habit
+     * Delete a habit and its executions
      */
     async deleteHabit(id: string): Promise<boolean> {
-        // Should also delete executions? SQLite cascade could handle it if set up.
-        // The migrations didn't specify ON DELETE CASCADE explicitly in a way I'm sure of yet.
+        await this.execRepo.deleteByMeta(id);
         return await this.metaRepo.delete(id);
+    }
+
+    /**
+     * Delete all habits for a specific pillar
+     */
+    async deleteAllHabits(pilarId: string): Promise<void> {
+        const metas = await this.metaRepo.getByPilar(pilarId);
+        for (const meta of metas) {
+            await this.deleteHabit(meta.id);
+        }
+    }
+
+    /**
+     * Delete habits that were completed on a specific date
+     */
+    async deleteCompletedHabitsForDate(pilarId: string, date: Date): Promise<void> {
+        const habits = await this.getHabitsForDate(date, pilarId);
+        const completedHabits = habits.filter(h => h.completed);
+
+        for (const habit of completedHabits) {
+            await this.deleteHabit(habit.id);
+        }
     }
 }
 

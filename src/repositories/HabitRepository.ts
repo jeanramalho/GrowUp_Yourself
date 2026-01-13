@@ -11,6 +11,11 @@ export class MetaRepository extends Repository<Meta> {
         const sql = `SELECT * FROM ${this.tableName} WHERE pilar_id = ?`;
         return this.executeQuery<Meta>(sql, [pilarId]);
     }
+
+    async deleteByPilar(pilarId: string): Promise<void> {
+        const sql = `DELETE FROM ${this.tableName} WHERE pilar_id = ?`;
+        await this.executeStatement(sql, [pilarId]);
+    }
 }
 
 export class ExecucaoRepository extends Repository<Execucao> {
@@ -32,5 +37,15 @@ export class ExecucaoRepository extends Repository<Execucao> {
         const sql = `SELECT * FROM ${this.tableName} WHERE meta_id = ? AND data = ?`;
         const results = await this.executeQuery<Execucao>(sql, [metaId, date]);
         return results.length > 0 ? results[0] : null;
+    }
+
+    async deleteByMeta(metaId: string): Promise<void> {
+        const sql = `DELETE FROM ${this.tableName} WHERE meta_id = ?`;
+        await this.executeStatement(sql, [metaId]);
+    }
+
+    async deleteByMetaAndDate(metaId: string, date: string): Promise<void> {
+        const sql = `DELETE FROM ${this.tableName} WHERE meta_id = ? AND data = ?`;
+        await this.executeStatement(sql, [metaId, date]);
     }
 }
