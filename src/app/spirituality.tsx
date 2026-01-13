@@ -1,16 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
+import { habitService } from '@/services/HabitService';
+import { Meta } from '@/models';
+import { HabitFormModal } from '@/components/habits/HabitFormModal';
+import { useFocusEffect } from 'expo-router';
+
+type HabitWithStatus = Meta & { completed: boolean; executionId?: string };
 
 export default function SpiritualityScreen() {
   const { colors, isDarkMode, shadows } = useAppTheme();
+  const pilarId = 'pilar-1'; // Spirituality
+
+  // State
+  const [habits, setHabits] = useState<HabitWithStatus[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedHabit, setSelectedHabit] = useState<HabitWithStatus | null>(null);
 
   // Timer State
   const [timerActive, setTimerActive] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(1800); // 30 mins
+  const [timeLeft, setTimeLeft] = useState(1800); // Default 30 mins
   const [startTime, setStartTime] = useState<string | null>(null);
   const [endTime, setEndTime] = useState<string | null>(null);
+
+  const loadHabits = useCallback(async () => {
+    try {
+      setLoading(true);
+      const today = new Date();
+      const data = await habitService.getHabitsForDate(today, pilarId);
+      setHabits(data);
+
+      // If no habit is selected yet and we have habits today, select the first one
+      if (!selectedHabit && data.length > 0) {
+        const first = data.find(h => !h.completed) || data[0];
+        handleSelectHabit(first);
+      }
+    } catch (error) {
+      console.error("Error loading habits:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedHabit]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadHabits();
+    }, [loadHabits])
+  );
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -24,6 +62,14 @@ export default function SpiritualityScreen() {
     return () => clearInterval(interval);
   }, [timerActive, timeLeft]);
 
+  const handleSelectHabit = (habit: HabitWithStatus) => {
+    setSelectedHabit(habit);
+    setTimeLeft(habit.duracao_minutos * 60);
+    setStartTime(null);
+    setEndTime(null);
+    setTimerActive(false);
+  };
+
   const handleStart = () => {
     if (!timerActive && !startTime) {
       const now = new Date();
@@ -35,10 +81,19 @@ export default function SpiritualityScreen() {
   };
 
   const handleReset = () => {
-    setTimeLeft(1800);
+    if (selectedHabit) {
+      setTimeLeft(selectedHabit.duracao_minutos * 60);
+    } else {
+      setTimeLeft(1800);
+    }
     setStartTime(null);
     setEndTime(null);
     setTimerActive(false);
+  };
+
+  const handleToggleCompletion = async (habit: HabitWithStatus) => {
+    await habitService.toggleCompletion(habit.id, new Date());
+    loadHabits();
   };
 
   const formatTime = (seconds: number) => {
@@ -47,10 +102,7 @@ export default function SpiritualityScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const scheduleItems = [
-    { id: '1', title: 'Leitura Reflexiva', status: 'Ativa', progress: '30 min • Seg/Qua/Sex', completed: false },
-    { id: '2', title: 'Oração Matinal', status: 'Concluído', progress: '10 min • Diário', completed: true },
-  ];
+  const completedCount = habits.filter(h => h.completed).length;
 
   return (
     <ScrollView
@@ -69,7 +121,9 @@ export default function SpiritualityScreen() {
         {/* Decorative Blur Circle (Simulated) */}
         <View style={styles.blurCircle} />
 
-        <Text style={styles.timerLabel}>LEITURA — SALMO 23</Text>
+        <Text style={styles.timerLabel}>
+          {selectedHabit ? selectedHabit.titulo.toUpperCase() : 'SELECIONE UM HÁBITO'}
+        </Text>
 
         <Text style={styles.timerDisplay}>
           {formatTime(timeLeft)}
@@ -92,7 +146,8 @@ export default function SpiritualityScreen() {
           <TouchableOpacity
             onPress={handleStart}
             activeOpacity={0.8}
-            style={styles.playButton}
+            style={[styles.playButton, !selectedHabit && { opacity: 0.5 }]}
+            disabled={!selectedHabit}
           >
             <MaterialCommunityIcons
               name={timerActive ? "pause" : "play"}
@@ -105,7 +160,8 @@ export default function SpiritualityScreen() {
           <TouchableOpacity
             onPress={handleReset}
             activeOpacity={0.8}
-            style={styles.resetButton}
+            style={[styles.resetButton, !selectedHabit && { opacity: 0.5 }]}
+            disabled={!selectedHabit}
           >
             <MaterialCommunityIcons name="refresh" size={24} color="white" />
           </TouchableOpacity>
@@ -117,38 +173,68 @@ export default function SpiritualityScreen() {
         <View style={styles.sectionHeader}>
           <View style={styles.sectionTitleRow}>
             <MaterialCommunityIcons name="book-open-page-variant" size={20} color={colors.primary} />
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Cronograma Semanal</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Cronograma de Hoje</Text>
           </View>
-          <Text style={[styles.sectionBadge, { color: colors.textSecondary }]}>3 CONCLUÍDAS</Text>
+          <Text style={[styles.sectionBadge, { color: colors.textSecondary }]}>
+            {completedCount} CONCLUÍDAS
+          </Text>
         </View>
 
         <View style={styles.listContainer}>
-          {scheduleItems.map((item) => (
-            <View
-              key={item.id}
-              style={[
-                styles.listItem,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border
-                }
-              ]}
-            >
-              <View>
-                <Text style={[styles.itemTitle, { color: colors.text }]}>{item.title}</Text>
-                <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{item.progress}</Text>
-              </View>
-              <TouchableOpacity>
-                <MaterialCommunityIcons
-                  name={item.completed ? "check-circle" : "check-circle-outline"}
-                  size={24}
-                  color={item.completed ? colors.success : colors.border}
-                />
+          {loading ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : habits.length > 0 ? (
+            habits.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => handleSelectHabit(item)}
+                style={[
+                  styles.listItem,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: selectedHabit?.id === item.id ? colors.primary : colors.border
+                  }
+                ]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.itemTitle, { color: colors.text }]}>{item.titulo}</Text>
+                  <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>
+                    {item.duracao_minutos} min • {item.horario_sugerido || 'Sem horário'}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={() => handleToggleCompletion(item)}>
+                  <MaterialCommunityIcons
+                    name={item.completed ? "check-circle" : "check-circle-outline"}
+                    size={28}
+                    color={item.completed ? colors.success : colors.border}
+                  />
+                </TouchableOpacity>
               </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={{ color: colors.textSecondary, textAlign: 'center' }}>
+                Nenhum hábito espiritual para hoje.
+              </Text>
             </View>
-          ))}
+          )}
+
+          <TouchableOpacity
+            onPress={() => setIsModalVisible(true)}
+            style={[styles.addButton, { backgroundColor: colors.primary + '10', borderColor: colors.primary }]}
+          >
+            <MaterialCommunityIcons name="plus" size={24} color={colors.primary} />
+            <Text style={[styles.addButtonText, { color: colors.primary }]}>Adicionar Hábito</Text>
+          </TouchableOpacity>
         </View>
       </View>
+
+      <HabitFormModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        pilarId={pilarId}
+        onSaveSuccess={loadHabits}
+      />
     </ScrollView>
   );
 }
@@ -302,4 +388,24 @@ const styles = StyleSheet.create({
   itemSubtitle: {
     fontSize: 14,
   },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    marginTop: 8,
+    gap: 8,
+  },
+  addButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  emptyState: {
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 });

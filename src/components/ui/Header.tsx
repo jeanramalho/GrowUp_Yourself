@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CircularProgress } from '@/components/ui/CircularProgress';
 import { useUserStore } from '@/store/userStore';
+import { habitService } from '@/services/HabitService';
+import { useFocusEffect } from 'expo-router';
 
 interface HeaderProps {
     onProfilePress?: () => void;
@@ -16,21 +18,44 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     const { avatarUri, userName } = useUserStore();
     const firstName = userName.split(' ')[0];
 
-    // Mock data matching the React App
-    const pillarProgress = {
-        spirituality: 0.65,
-        health: 0.42,
-        finance: 0.91,
-        relationships: 0.30,
-    };
+    const [progress, setProgress] = useState({
+        'pilar-1': 0,
+        'pilar-2': 0,
+        'pilar-3': 0,
+        'pilar-4': 0,
+    });
 
+    const loadProgress = useCallback(async () => {
+        try {
+            const now = new Date();
+            const p1 = await habitService.getMonthlyProgress('pilar-1', now);
+            const p2 = await habitService.getMonthlyProgress('pilar-2', now);
+            const p3 = await habitService.getMonthlyProgress('pilar-3', now);
+            const p4 = await habitService.getMonthlyProgress('pilar-4', now);
 
-    const renderPillar = (icon: any, progress: number, color: string) => (
+            setProgress({
+                'pilar-1': p1,
+                'pilar-2': p2,
+                'pilar-3': p3,
+                'pilar-4': p4,
+            });
+        } catch (error) {
+            console.error("Error loading header progress:", error);
+        }
+    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            loadProgress();
+        }, [loadProgress])
+    );
+
+    const renderPillar = (icon: any, progressValue: number, color: string) => (
         <View style={styles.pillarItem}>
             <CircularProgress
                 size={48}
                 strokeWidth={4}
-                progress={progress * 100}
+                progress={progressValue}
                 color={color}
                 backgroundColor={isDarkMode ? colors.gray700 : colors.gray200}
             >
@@ -68,10 +93,10 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
             </View>
 
             <View style={styles.pillarsContainer}>
-                {renderPillar("creation", pillarProgress.spirituality, colors.pillar.spirituality)}
-                {renderPillar("heart-pulse", pillarProgress.health, colors.pillar.health)}
-                {renderPillar("wallet", pillarProgress.finance, pillarProgress.finance > 0.9 ? colors.error : colors.pillar.finance)}
-                {renderPillar("account-group", pillarProgress.relationships, colors.pillar.relationships)}
+                {renderPillar("creation", progress['pilar-1'], colors.pillar.spirituality)}
+                {renderPillar("heart-pulse", progress['pilar-2'], colors.pillar.health)}
+                {renderPillar("wallet", progress['pilar-3'], progress['pilar-3'] > 90 ? colors.error : colors.pillar.finance)}
+                {renderPillar("account-group", progress['pilar-4'], colors.pillar.relationships)}
             </View>
         </View>
     );

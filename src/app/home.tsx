@@ -1,33 +1,87 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { CircularProgress } from '@/components/ui/CircularProgress';
+import { habitService } from '@/services/HabitService';
+import { Meta } from '@/models';
+
+type HabitWithStatus = Meta & { completed: boolean; executionId?: string };
 
 // Helper to get formatted date string similar to design "Segunda, 24 Out"
 const getFormattedDate = () => {
-    return "Segunda, 24 Out";
+    const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const now = new Date();
+    return `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
 };
 
 export default function HomeScreen() {
     const router = useRouter();
     const { colors, shadows } = useAppTheme();
 
-    const activeHabits = [
-        { id: '1', title: 'Leitura Reflexiva', pillar: 'spirituality', time: '30 min', icon: 'creation', color: colors.primary, bg: 'bg-blue-500' },
-        { id: '2', title: 'Treino Hiit', pillar: 'health', time: '40 min', icon: 'heart-pulse', color: colors.sky500, bg: 'bg-sky-500' },
-    ];
+    const [activeHabits, setActiveHabits] = useState<HabitWithStatus[]>([]);
+    const [pillars, setPillars] = useState([
+        { type: 'spirituality', id: 'pilar-1', icon: 'creation', label: "Espírito", progress: 0, color: colors.indigo600 },
+        { type: 'health', id: 'pilar-2', icon: 'heart-pulse', label: "Saúde", progress: 0, color: colors.sky500 },
+        { type: 'finance', id: 'pilar-3', icon: 'wallet', label: "Finanças", progress: 0, color: colors.navy600 },
+        { type: 'relationships', id: 'pilar-4', icon: 'account-group', label: "Relações", progress: 0, color: colors.blue300 },
+    ]);
+    const [loading, setLoading] = useState(true);
 
-    const pillars = [
-        { type: 'spirituality', icon: 'creation', label: "Espírito", progress: 65, color: colors.indigo600 },
-        { type: 'health', icon: 'heart-pulse', label: "Saúde", progress: 42, color: colors.sky500 },
-        { type: 'finance', icon: 'wallet', label: "Finanças", progress: 91, color: colors.navy600 }, // navy mapped
-        { type: 'relationships', icon: 'account-group', label: "Relações", progress: 30, color: colors.blue300 },
-    ];
+    const loadData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const now = new Date();
+
+            // Load Today's Habits
+            const todayHabits = await habitService.getHabitsForDate(now);
+            setActiveHabits(todayHabits);
+
+            // Load Pillar Progress
+            const p1 = await habitService.getMonthlyProgress('pilar-1', now);
+            const p2 = await habitService.getMonthlyProgress('pilar-2', now);
+            const p3 = await habitService.getMonthlyProgress('pilar-3', now);
+            const p4 = await habitService.getMonthlyProgress('pilar-4', now);
+
+            setPillars(prev => prev.map(p => {
+                if (p.id === 'pilar-1') return { ...p, progress: p1 };
+                if (p.id === 'pilar-2') return { ...p, progress: p2 };
+                if (p.id === 'pilar-3') return { ...p, progress: p3 };
+                if (p.id === 'pilar-4') return { ...p, progress: p4 };
+                return p;
+            }));
+        } catch (error) {
+            console.error("Error loading home data:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            loadData();
+        }, [loadData])
+    );
 
     const handlePillarPress = (pillar: string) => {
         router.push(`/${pillar}`);
+    };
+
+    const handleToggleHabit = async (habit: HabitWithStatus) => {
+        await habitService.toggleCompletion(habit.id, new Date());
+        loadData();
+    };
+
+    const getPillarColor = (pillarType: string) => {
+        const map: Record<string, string> = {
+            spirituality: colors.indigo600,
+            health: colors.sky500,
+            finance: colors.navy600,
+            relationships: colors.blue300,
+        };
+        return map[pillarType] || colors.primary;
     };
 
     return (
@@ -44,26 +98,52 @@ export default function HomeScreen() {
                 </View>
 
                 <View style={styles.habitsList}>
-                    {activeHabits.map((habit) => (
-                        <View key={habit.id} style={[styles.habitCard, { backgroundColor: colors.surface, borderColor: colors.border }, shadows.sm]}>
-                            <View style={styles.habitContent}>
-                                <View style={[styles.habitIconBox, { backgroundColor: habit.color }]}>
-                                    {/* @ts-ignore icon name string */}
-                                    <MaterialCommunityIcons name={habit.icon} size={20} color="white" />
-                                </View>
-                                <View>
-                                    <Text style={[styles.habitTitle, { color: colors.text }]}>{habit.title}</Text>
-                                    <Text style={[styles.habitSubtitle, { color: colors.textSecondary }]}>{habit.time} • Restante</Text>
-                                </View>
-                            </View>
-                            <TouchableOpacity
-                                style={[styles.playButton, { backgroundColor: colors.blue50 }]}
-                                onPress={() => handlePillarPress(habit.pillar)}
-                            >
-                                <MaterialCommunityIcons name="play" size={18} color={colors.primary} />
-                            </TouchableOpacity>
+                    {loading ? (
+                        <ActivityIndicator color={colors.primary} />
+                    ) : activeHabits.length > 0 ? (
+                        activeHabits.map((habit) => {
+                            const pilarType = pillars.find(p => p.id === habit.pilar_id)?.type || 'spirituality';
+                            const habitColor = getPillarColor(pilarType);
+                            const habitIcon = habit.pilar_id === 'pilar-1' ? 'creation' :
+                                habit.pilar_id === 'pilar-2' ? 'heart-pulse' :
+                                    habit.pilar_id === 'pilar-3' ? 'wallet' : 'account-group';
+
+                            return (
+                                <TouchableOpacity
+                                    key={habit.id}
+                                    onPress={() => handleToggleHabit(habit)}
+                                    style={[styles.habitCard, { backgroundColor: colors.surface, borderColor: habit.completed ? colors.success : colors.border }, shadows.sm]}
+                                >
+                                    <View style={styles.habitContent}>
+                                        <View style={[styles.habitIconBox, { backgroundColor: habitColor }]}>
+                                            <MaterialCommunityIcons name={habitIcon as any} size={20} color="white" />
+                                        </View>
+                                        <View>
+                                            <Text style={[styles.habitTitle, { color: colors.text, textDecorationLine: habit.completed ? 'line-through' : 'none' }]}>
+                                                {habit.titulo}
+                                            </Text>
+                                            <Text style={[styles.habitSubtitle, { color: colors.textSecondary }]}>
+                                                {habit.duracao_minutos} min • {habit.horario_sugerido || 'Sem horário'}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View
+                                        style={[styles.playButton, { backgroundColor: habit.completed ? colors.success + '20' : colors.blue50 }]}
+                                    >
+                                        <MaterialCommunityIcons
+                                            name={habit.completed ? "check" : "play"}
+                                            size={18}
+                                            color={habit.completed ? colors.success : colors.primary}
+                                        />
+                                    </View>
+                                </TouchableOpacity>
+                            );
+                        })
+                    ) : (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: colors.textSecondary }}>Nenhuma meta para hoje.</Text>
                         </View>
-                    ))}
+                    )}
                 </View>
             </View>
 
@@ -85,8 +165,7 @@ export default function HomeScreen() {
                                     color={p.color}
                                     backgroundColor={colors.border}
                                 >
-                                    {/* @ts-ignore icon name string */}
-                                    <MaterialCommunityIcons name={p.icon} size={28} color={p.color} />
+                                    <MaterialCommunityIcons name={p.icon as any} size={28} color={p.color} />
                                 </CircularProgress>
 
                                 <View style={styles.pillarTextContainer}>
@@ -198,5 +277,8 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
         marginBottom: 4,
+    },
+    pillarProgressText: {
+        fontSize: 12,
     },
 });
