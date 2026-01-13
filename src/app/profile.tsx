@@ -48,7 +48,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const defaultAvatar = 'https://picsum.photos/seed/default-avatar/200';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -58,10 +57,16 @@ export default function ProfileScreen() {
         <View style={styles.headerSection}>
           <TouchableOpacity onPress={handlePickImage} style={styles.avatarWrapper}>
             <View style={[styles.avatarBorder, { borderColor: 'rgba(59, 130, 246, 0.2)' }]}>
-              <Image
-                source={{ uri: avatarUri || defaultAvatar }}
-                style={[styles.avatar, { backgroundColor: colors.surface }]}
-              />
+              {avatarUri ? (
+                <Image
+                  source={{ uri: avatarUri }}
+                  style={[styles.avatar, { backgroundColor: colors.surface }]}
+                />
+              ) : (
+                <View style={[styles.avatar, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, justifyContent: 'center', alignItems: 'center' }]}>
+                  <MaterialCommunityIcons name="account" size={60} color={colors.textSecondary} />
+                </View>
+              )}
               <View style={[styles.editIconContainer, { backgroundColor: colors.primary }]}>
                 <MaterialCommunityIcons name="pencil" size={16} color="white" />
               </View>

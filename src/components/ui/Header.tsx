@@ -24,7 +24,6 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
         relationships: 0.30,
     };
 
-    const defaultAvatar = 'https://picsum.photos/seed/default-avatar/200';
 
     const renderPillar = (icon: any, progress: number, color: string) => (
         <View style={styles.pillarItem}>
@@ -55,10 +54,16 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
                     <Text style={[styles.greetingText, { color: colors.text }]}>Olá, {firstName}</Text>
                 </View>
                 <TouchableOpacity onPress={onProfilePress} style={[styles.avatarContainer, { borderColor: 'rgba(59, 130, 246, 0.2)' }]}>
-                    <Image
-                        source={{ uri: avatarUri || defaultAvatar }}
-                        style={[styles.avatar, { backgroundColor: colors.surface }]}
-                    />
+                    {avatarUri ? (
+                        <Image
+                            source={{ uri: avatarUri }}
+                            style={[styles.avatar, { backgroundColor: colors.surface }]}
+                        />
+                    ) : (
+                        <View style={[styles.avatar, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, justifyContent: 'center', alignItems: 'center' }]}>
+                            <MaterialCommunityIcons name="account" size={24} color={colors.textSecondary} />
+                        </View>
+                    )}
                 </TouchableOpacity>
             </View>
 
