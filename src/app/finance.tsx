@@ -3,15 +3,17 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Activ
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { financeService } from '@/services/FinanceService';
-import { LancamentoFinanceiro, Investimento } from '@/models';
+import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito } from '@/models';
 import { TransactionFormModal } from '@/components/finance/TransactionFormModal';
 import { BudgetFormModal } from '@/components/finance/BudgetFormModal';
 import { InvestmentFormModal } from '@/components/finance/InvestmentFormModal';
+import { AccountFormModal } from '@/components/finance/AccountFormModal';
+import { CardFormModal } from '@/components/finance/CardFormModal';
 import { useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
-type TabType = 'Resumo' | 'Lançamentos' | 'Planejamento' | 'Investimentos';
+type TabType = 'Resumo' | 'Lançamentos' | 'Planejamento' | 'Investimentos' | 'Gestão';
 
 export default function FinanceScreen() {
   const { colors, isDarkMode, shadows } = useAppTheme();
@@ -19,16 +21,20 @@ export default function FinanceScreen() {
 
   // State
   const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState({ income: 0, expenses: 0, plannedIncome: 0, plannedExpenses: 0, balance: 0, expenseUsagePercent: 0 });
+  const [summary, setSummary] = useState({ income: 0, expenses: 0, plannedExpenses: 0, balance: 0, expenseUsagePercent: 0 });
   const [dailyChart, setDailyChart] = useState<any[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<LancamentoFinanceiro[]>([]);
   const [investments, setInvestments] = useState<Investimento[]>([]);
   const [plannedItems, setPlannedItems] = useState<LancamentoFinanceiro[]>([]);
+  const [accounts, setAccounts] = useState<Conta[]>([]);
+  const [cards, setCards] = useState<(CartaoCredito & { fatura: number })[]>([]);
 
   // Modals
   const [isTransactionModalVisible, setIsTransactionModalVisible] = useState(false);
   const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
   const [isInvestmentModalVisible, setIsInvestmentModalVisible] = useState(false);
+  const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
+  const [isCardModalVisible, setIsCardModalVisible] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<LancamentoFinanceiro | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -40,12 +46,21 @@ export default function FinanceScreen() {
       const transactions = await financeService.getTransactionsByMonth(today);
       const invs = await financeService.getInvestments();
       const planned = await financeService.getPlannedByMonth(today);
+      const accs = await financeService.getAccounts();
+      const crds = await financeService.getCards();
+
+      const cardsWithFatura = await Promise.all(crds.map(async c => ({
+        ...c,
+        fatura: await financeService.getCardInvoice(c.id, today)
+      })));
 
       setSummary(s);
       setDailyChart(chart);
       setRecentTransactions(transactions);
       setInvestments(invs);
       setPlannedItems(planned);
+      setAccounts(accs);
+      setCards(cardsWithFatura);
     } catch (error) {
       console.error("Error fetching finance data:", error);
     } finally {
@@ -86,7 +101,7 @@ export default function FinanceScreen() {
   const renderTabs = () => (
     <View style={styles.tabsWrapper}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
-        {(['Resumo', 'Lançamentos', 'Planejamento', 'Investimentos'] as TabType[]).map((tab) => (
+        {(['Resumo', 'Lançamentos', 'Planejamento', 'Investimentos', 'Gestão'] as TabType[]).map((tab) => (
           <TouchableOpacity
             key={tab}
             onPress={() => setActiveTab(tab)}
@@ -106,6 +121,21 @@ export default function FinanceScreen() {
 
   const renderSummary = () => (
     <View style={styles.section}>
+      {/* Wallet Balance Card */}
+      <View style={[styles.mainBalanceCard, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
+        <Text style={styles.mainBalanceLabel}>SALDO EM CARTEIRA</Text>
+        <Text style={styles.mainBalanceValue}>R$ {summary.balance.toFixed(2)}</Text>
+        <View style={styles.mainBalanceRow}>
+          <View>
+            <Text style={styles.mainBalanceSubLabel}>ORÇAMENTO TOTAL</Text>
+            <Text style={styles.mainBalanceSubValue}>R$ {summary.plannedExpenses.toFixed(2)}</Text>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <MaterialCommunityIcons name="wallet-outline" size={32} color="rgba(255,255,255,0.4)" />
+          </View>
+        </View>
+      </View>
+
       {/* Alert Banner */}
       {summary.expenseUsagePercent > 90 && (
         <View style={[styles.alertBanner, { backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)' }]}>
@@ -286,6 +316,73 @@ export default function FinanceScreen() {
     </View>
   );
 
+  const renderGestao = () => (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Contas e Vales</Text>
+        <TouchableOpacity onPress={() => setIsAccountModalVisible(true)} style={styles.addButtonCircle}>
+          <MaterialCommunityIcons name="plus" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+
+      {accounts.map(acc => (
+        <View key={acc.id} style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <MaterialCommunityIcons
+            name={acc.tipo === 'carteira' ? 'wallet' : 'food'}
+            size={24}
+            color={colors.primary}
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.itemTitle, { color: colors.text }]}>{acc.nome}</Text>
+            <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{acc.tipo.replace('_', ' ')}</Text>
+          </View>
+          <Text style={[styles.itemValue, { color: colors.text }]}>R$ {acc.saldo_inicial.toFixed(2)}</Text>
+        </View>
+      ))}
+
+      <View style={[styles.sectionHeader, { marginTop: 16 }]}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Cartões de Crédito</Text>
+        <TouchableOpacity onPress={() => setIsCardModalVisible(true)} style={styles.addButtonCircle}>
+          <MaterialCommunityIcons name="plus" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+
+      {cards.map(card => (
+        <View key={card.id} style={[styles.cardItem, { backgroundColor: isDarkMode ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
+          <View style={styles.cardInfo}>
+            <MaterialCommunityIcons name="credit-card-chip" size={32} color={colors.primary} />
+            <View>
+              <Text style={[styles.itemTitle, { color: colors.text }]}>{card.nome}</Text>
+              <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>Vence dia {card.dia_vencimento}</Text>
+            </View>
+          </View>
+
+          <View style={styles.cardFaturaBox}>
+            <Text style={[styles.faturaLabel, { color: colors.textSecondary }]}>Fatura Atual</Text>
+            <Text style={[styles.faturaValue, { color: colors.error }]}>R$ {card.fatura.toFixed(2)}</Text>
+            <TouchableOpacity
+              style={[styles.payBtn, { backgroundColor: colors.primary }]}
+              onPress={() => {
+                Alert.alert("Pagar Fatura", "Escolha a conta para o pagamento", [
+                  { text: "Cancelar", style: "cancel" },
+                  ...accounts.map(acc => ({
+                    text: acc.nome,
+                    onPress: async () => {
+                      await financeService.payInvoice(card.id, acc.id, card.fatura);
+                      fetchData();
+                    }
+                  }))
+                ]);
+              }}
+            >
+              <Text style={styles.payBtnText}>Pagar Agora</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -310,6 +407,7 @@ export default function FinanceScreen() {
             {activeTab === 'Lançamentos' && renderTransactions()}
             {activeTab === 'Planejamento' && renderPlanning()}
             {activeTab === 'Investimentos' && renderInvestments()}
+            {activeTab === 'Gestão' && renderGestao()}
           </>
         )}
       </ScrollView>
@@ -335,6 +433,18 @@ export default function FinanceScreen() {
         onClose={() => setIsInvestmentModalVisible(false)}
         onSaveSuccess={fetchData}
       />
+
+      <AccountFormModal
+        visible={isAccountModalVisible}
+        onClose={() => setIsAccountModalVisible(false)}
+        onSaveSuccess={fetchData}
+      />
+
+      <CardFormModal
+        visible={isCardModalVisible}
+        onClose={() => setIsCardModalVisible(false)}
+        onSaveSuccess={fetchData}
+      />
     </View>
   );
 }
@@ -356,6 +466,13 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold' },
   addButtonCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#2563EB', justifyContent: 'center', alignItems: 'center' },
+
+  mainBalanceCard: { padding: 24, borderRadius: 32, gap: 8, marginBottom: 8 },
+  mainBalanceLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 'bold', letterSpacing: 1 },
+  mainBalanceValue: { color: 'white', fontSize: 32, fontWeight: 'bold' },
+  mainBalanceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 12 },
+  mainBalanceSubLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 10, fontWeight: 'bold' },
+  mainBalanceSubValue: { color: 'white', fontSize: 16, fontWeight: 'bold' },
 
   alertBanner: { flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: 32, borderWidth: 1, gap: 16, marginBottom: 8 },
   alertIconBox: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#EF4444', justifyContent: 'center', alignItems: 'center' },
@@ -390,5 +507,14 @@ const styles = StyleSheet.create({
 
   progressBarBg: { height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, width: '100%', overflow: 'hidden' },
   progressBarFill: { height: '100%', borderRadius: 4 },
+
+  cardItem: { padding: 20, borderRadius: 24, borderWidth: 1, gap: 16 },
+  cardInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  cardFaturaBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.03)', padding: 12, borderRadius: 16 },
+  faturaLabel: { fontSize: 12, fontWeight: '600' },
+  faturaValue: { fontSize: 18, fontWeight: 'bold' },
+  payBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  payBtnText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
 });
+
 
