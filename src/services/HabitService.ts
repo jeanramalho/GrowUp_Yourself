@@ -46,6 +46,17 @@ export class HabitService {
     }
 
     /**
+     * Update an existing habit (meta)
+     */
+    async updateHabit(id: string, meta: Partial<Meta>): Promise<Meta> {
+        const updatedMeta = {
+            ...meta,
+            updated_at: new Date().toISOString(),
+        };
+        return await this.metaRepo.update(id, updatedMeta);
+    }
+
+    /**
      * Get habits for a specific pillar
      */
     async getHabitsByPilar(pilarId: string): Promise<Meta[]> {

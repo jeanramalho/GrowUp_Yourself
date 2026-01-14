@@ -19,6 +19,7 @@ export default function SpiritualityScreen() {
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedHabit, setSelectedHabit] = useState<HabitWithStatus | null>(null);
+  const [habitToEdit, setHabitToEdit] = useState<HabitWithStatus | null>(null);
 
   // Timer State
   const [timerActive, setTimerActive] = useState(false);
@@ -116,6 +117,16 @@ export default function SpiritualityScreen() {
     );
   };
 
+  const handleEditHabit = (habit: HabitWithStatus) => {
+    setHabitToEdit(habit);
+    setIsModalVisible(true);
+  };
+
+  const handleOpenAddModal = () => {
+    setHabitToEdit(null);
+    setIsModalVisible(true);
+  };
+
   const handleDeleteAll = async () => {
     Alert.alert(
       "Limpar Todos os Hábitos",
@@ -153,11 +164,17 @@ export default function SpiritualityScreen() {
     );
   };
 
-  const renderRightActions = (habitId: string) => {
+  const renderRightActions = (habit: HabitWithStatus) => {
     return (
-      <View style={styles.deleteActionContainer}>
+      <View style={styles.rightActionsContainer}>
         <TouchableOpacity
-          onPress={() => handleDeleteHabit(habitId)}
+          onPress={() => handleEditHabit(habit)}
+          style={styles.editCircle}
+        >
+          <MaterialCommunityIcons name="pencil" size={24} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => handleDeleteHabit(habit.id)}
           style={styles.deleteCircle}
         >
           <MaterialCommunityIcons name="trash-can-outline" size={24} color="white" />
@@ -239,7 +256,7 @@ export default function SpiritualityScreen() {
       </View>
 
       <TouchableOpacity
-        onPress={() => setIsModalVisible(true)}
+        onPress={handleOpenAddModal}
         style={[styles.addButton, { backgroundColor: colors.primary + '10', borderColor: colors.primary, marginBottom: 32 }]}
       >
         <MaterialCommunityIcons name="plus" size={24} color={colors.primary} />
@@ -265,7 +282,7 @@ export default function SpiritualityScreen() {
             habits.map((item) => (
               <Swipeable
                 key={item.id}
-                renderRightActions={() => renderRightActions(item.id)}
+                renderRightActions={() => renderRightActions(item)}
                 friction={2}
                 rightThreshold={40}
               >
@@ -328,8 +345,12 @@ export default function SpiritualityScreen() {
 
       <HabitFormModal
         visible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
+        onClose={() => {
+          setIsModalVisible(false);
+          setHabitToEdit(null);
+        }}
         pilarId={pilarId}
+        habitToEdit={habitToEdit}
         onSaveSuccess={loadHabits}
       />
     </ScrollView>
@@ -505,12 +526,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  deleteActionContainer: {
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    width: 68,
-    backgroundColor: 'transparent',
+  rightActionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     paddingRight: 4,
+  },
+  editCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#3B82F6', // Blue 500
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   deleteCircle: {
     width: 48,

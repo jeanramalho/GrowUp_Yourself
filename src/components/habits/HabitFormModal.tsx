@@ -104,9 +104,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
             };
 
             if (habitToEdit) {
-                // Update logic (to be added to service if needed, or use repository directly)
-                // For now, let's just implement creation to fulfill initial request
-                // await habitService.updateHabit(habitToEdit.id, data);
+                await habitService.updateHabit(habitToEdit.id, data);
             } else {
                 await habitService.createHabit(data);
             }
