@@ -1,5 +1,5 @@
 import { Repository } from './Repository';
-import { LancamentoFinanceiro, Investimento } from '../models';
+import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito } from '../models';
 import { SQLiteDatabase } from 'expo-sqlite';
 
 export class LancamentoRepository extends Repository<LancamentoFinanceiro> {
@@ -27,5 +27,17 @@ export class LancamentoRepository extends Repository<LancamentoFinanceiro> {
 export class InvestimentoRepository extends Repository<Investimento> {
     constructor(db: SQLiteDatabase) {
         super(db, 'investimento');
+    }
+}
+
+export class ContaRepository extends Repository<Conta> {
+    constructor(db: SQLiteDatabase) {
+        super(db, 'conta');
+    }
+}
+
+export class CartaoRepository extends Repository<CartaoCredito> {
+    constructor(db: SQLiteDatabase) {
+        super(db, 'cartao_credito');
     }
 }
