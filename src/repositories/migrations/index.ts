@@ -190,6 +190,62 @@ export const migration002SeedPilares: Migration = {
 };
 
 /**
+ * Finance enhancements migration - adds accounts and credit cards
+ */
+export const migration003FinanceEnhancements: Migration = {
+  version: 3,
+  name: '003_finance_enhancements',
+  up: async (db: SQLiteDatabase) => {
+    await db.withTransactionAsync(async () => {
+      // Create conta table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS conta (
+          id TEXT PRIMARY KEY,
+          nome TEXT NOT NULL,
+          tipo TEXT NOT NULL, -- 'carteira', 'vale_alimentacao', 'vale_refeicao'
+          saldo_inicial REAL NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      // Create cartao_credito table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS cartao_credito (
+          id TEXT PRIMARY KEY,
+          nome TEXT NOT NULL,
+          descricao TEXT,
+          limite REAL NOT NULL,
+          dia_fechamento INTEGER NOT NULL,
+          dia_vencimento INTEGER NOT NULL,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      // Update lancamento_financeiro
+      // Since SQLite doesn't support ADD COLUMN with FOREIGN KEY in one go easily or dropping columns, 
+      // we'll just add the columns. 
+      await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN conta_id TEXT`);
+      await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN cartao_id TEXT`);
+      await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN parcelas_total INTEGER DEFAULT 1`);
+      await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN parcela_atual INTEGER DEFAULT 1`);
+      await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN id_grupo_parcela TEXT`);
+
+      // Seed initial wallet if doesn't exist
+      await db.runAsync(
+        `INSERT OR IGNORE INTO conta (id, nome, tipo, saldo_inicial, created_at) VALUES (?, ?, ?, ?, ?)`,
+        ['conta-1', 'Carteira Principal', 'carteira', 0, new Date().toISOString()]
+      );
+
+      // Record this migration
+      await db.runAsync(
+        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
+        [3, '003_finance_enhancements', new Date().toISOString()]
+      );
+    });
+  },
+};
+
+/**
  * Migration runner
  */
 export class MigrationRunner {
@@ -202,6 +258,7 @@ export class MigrationRunner {
     this.migrations = [
       migration001Init,
       migration002SeedPilares,
+      migration003FinanceEnhancements,
     ];
   }
 

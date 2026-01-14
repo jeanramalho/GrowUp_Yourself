@@ -76,6 +76,35 @@ export interface LancamentoFinanceiro {
   data: string; // YYYY-MM-DD format
   nota?: string | null;
   planejado: boolean;
+  conta_id?: string | null;
+  cartao_id?: string | null;
+  parcelas_total?: number;
+  parcela_atual?: number;
+  id_grupo_parcela?: string | null;
+  created_at: string;
+}
+
+/**
+ * Account (Conta/Carteira/Vales)
+ */
+export interface Conta {
+  id: string;
+  nome: string;
+  tipo: 'carteira' | 'vale_alimentacao' | 'vale_refeicao';
+  saldo_inicial: number;
+  created_at: string;
+}
+
+/**
+ * Credit Card (Cartão de Crédito)
+ */
+export interface CartaoCredito {
+  id: string;
+  nome: string;
+  descricao?: string | null;
+  limite: number;
+  dia_fechamento: number;
+  dia_vencimento: number;
   created_at: string;
 }
 
