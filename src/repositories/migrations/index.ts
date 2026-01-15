@@ -246,6 +246,49 @@ export const migration003FinanceEnhancements: Migration = {
 };
 
 /**
+ * Planning Categories migration
+ */
+export const migration004PlanningCategories: Migration = {
+  version: 4,
+  name: '004_planning_categories',
+  up: async (db: SQLiteDatabase) => {
+    await db.withTransactionAsync(async () => {
+      // Create categoria_planejamento table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS categoria_planejamento (
+          id TEXT PRIMARY KEY,
+          nome TEXT NOT NULL,
+          tipo TEXT NOT NULL, -- 'receita' or 'despesa'
+          sistema INTEGER DEFAULT 0, -- 1 = system default, 0 = user created
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      // Seed default categories
+      const defaultCategories = [
+        'Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Outros', 'Salário', 'Freelance', 'V.A.', 'V.R.'
+      ];
+
+      for (const cat of defaultCategories) {
+        let type = 'despesa';
+        if (['Salário', 'Freelance'].includes(cat)) type = 'receita';
+
+        await db.runAsync(
+          `INSERT OR IGNORE INTO categoria_planejamento (id, nome, tipo, sistema, created_at) VALUES (?, ?, ?, ?, ?)`,
+          [`cat-${cat.toLowerCase().replace(/[^a-z0-9]/g, '')}`, cat, type, 1, new Date().toISOString()]
+        );
+      }
+
+      // Record this migration
+      await db.runAsync(
+        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
+        [4, '004_planning_categories', new Date().toISOString()]
+      );
+    });
+  },
+};
+
+/**
  * Migration runner
  */
 export class MigrationRunner {
@@ -259,6 +302,7 @@ export class MigrationRunner {
       migration001Init,
       migration002SeedPilares,
       migration003FinanceEnhancements,
+      migration004PlanningCategories,
     ];
   }
 

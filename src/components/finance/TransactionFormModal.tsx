@@ -8,12 +8,12 @@ import {
     TextInput,
     ScrollView,
     Alert,
-    Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { financeService } from '@/services/FinanceService';
-import { LancamentoFinanceiro, Conta, CartaoCredito } from '@/models';
+import { LancamentoFinanceiro, Conta, CartaoCredito, CategoriaPlanejamento } from '@/models';
+import { CurrencyInput } from '../ui/CurrencyInput';
 
 interface TransactionFormModalProps {
     visible: boolean;
@@ -22,15 +22,13 @@ interface TransactionFormModalProps {
     onSaveSuccess: () => void;
 }
 
-const DEFAULT_CATEGORIES = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Outros', 'Salário', 'Freelance', 'V.A.', 'V.R.'];
-
 export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     visible,
     onClose,
     transactionToEdit,
     onSaveSuccess,
 }) => {
-    const { colors, isDarkMode, spacing } = useAppTheme();
+    const { colors, isDarkMode } = useAppTheme();
 
     const [formData, setFormData] = useState({
         tipo: 'despesa' as 'receita' | 'despesa',
@@ -45,16 +43,19 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
     const [accounts, setAccounts] = useState<Conta[]>([]);
     const [cards, setCards] = useState<CartaoCredito[]>([]);
+    const [categories, setCategories] = useState<CategoriaPlanejamento[]>([]);
     const [customCategory, setCustomCategory] = useState('');
 
     useEffect(() => {
         if (visible) {
             loadMethods();
+            financeService.getPlanningCategories().then(setCategories);
+
             if (transactionToEdit) {
                 setFormData({
                     tipo: transactionToEdit.tipo,
                     categoria: transactionToEdit.categoria || 'Outros',
-                    valor: transactionToEdit.valor.toString(),
+                    valor: transactionToEdit.valor.toFixed(2).replace('.', ','),
                     data: transactionToEdit.data,
                     nota: transactionToEdit.nota || '',
                     metodo: transactionToEdit.cartao_id ? 'cartao' : 'conta',
@@ -84,8 +85,6 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         if (!transactionToEdit) {
             if (accs.length > 0) {
                 setFormData(p => ({ ...p, pagamentoId: accs[0].id }));
-            } else if (cards.length > 0) {
-                setFormData(p => ({ ...p, metodo: 'cartao', pagamentoId: cards[0].id }));
             }
         }
     };
@@ -122,6 +121,10 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 await financeService.createTransaction(data);
             }
 
+            // Also check if category exists, if not, create it? 
+            // The logic: if customCategory is used, assume user wants to reuse it?
+            // For now, adhere to scope, let's just save transaction.
+
             onSaveSuccess();
             onClose();
         } catch (error) {
@@ -129,6 +132,8 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             Alert.alert("Erro", "Não foi possível salvar a movimentação.");
         }
     };
+
+    const filteredCategories = categories.length > 0 ? categories : [{ id: '1', nome: 'Outros', tipo: 'despesa', sistema: true, created_at: '' }];
 
     return (
         <Modal
@@ -172,18 +177,37 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     <View style={styles.form}>
                         <View style={styles.inputGroup}>
                             <Text style={[styles.label, { color: colors.textSecondary }]}>Valor</Text>
-                            <TextInput
-                                style={[styles.input, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
+                            <CurrencyInput
                                 value={formData.valor}
-                                onChangeText={(text) => setFormData(p => ({ ...p, valor: text }))}
+                                onValueChange={(val) => setFormData(p => ({ ...p, valor: val }))}
                                 placeholder="0,00"
-                                placeholderTextColor={colors.textSecondary}
-                                keyboardType="numeric"
                             />
                         </View>
 
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Pago com:</Text>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>Data (AAAA-MM-DD)</Text>
+                            <TextInput
+                                style={[styles.input, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
+                                value={formData.data}
+                                onChangeText={(text) => setFormData(p => ({ ...p, data: text }))}
+                                placeholder="2024-01-01"
+                                placeholderTextColor={colors.textSecondary}
+                            />
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>Descrição</Text>
+                            <TextInput
+                                style={[styles.input, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
+                                value={formData.nota}
+                                onChangeText={(text) => setFormData(p => ({ ...p, nota: text }))}
+                                placeholder="Ex: Supermercado"
+                                placeholderTextColor={colors.textSecondary}
+                            />
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>Conta / Cartão</Text>
                             <View style={styles.paymentSelector}>
                                 <TouchableOpacity
                                     style={[styles.payMethodBtn, formData.metodo === 'conta' && { borderColor: colors.primary, backgroundColor: colors.primary + '10' }]}
@@ -195,7 +219,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                     style={[styles.payMethodBtn, formData.metodo === 'cartao' && { borderColor: colors.primary, backgroundColor: colors.primary + '10' }]}
                                     onPress={() => setFormData(p => ({ ...p, metodo: 'cartao', pagamentoId: cards[0]?.id || '' }))}
                                 >
-                                    <Text style={{ color: formData.metodo === 'cartao' ? colors.primary : colors.textSecondary }}>Cartão</Text>
+                                    <Text style={{ color: formData.metodo === 'cartao' ? colors.primary : colors.textSecondary }}>Cartão de Crédito</Text>
                                 </TouchableOpacity>
                             </View>
 
@@ -203,15 +227,17 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 {formData.metodo === 'conta' ? accounts.map(acc => (
                                     <TouchableOpacity
                                         key={acc.id}
-                                        style={[styles.methodChip, formData.pagamentoId === acc.id && { backgroundColor: colors.primary }]}
+                                        style={[styles.methodChip, formData.pagamentoId === acc.id && { backgroundColor: colors.primary, borderColor: colors.primary }]}
                                         onPress={() => setFormData(p => ({ ...p, pagamentoId: acc.id }))}
                                     >
-                                        <Text style={{ color: formData.pagamentoId === acc.id ? 'white' : colors.text }}>{acc.nome}</Text>
+                                        <Text style={{ color: formData.pagamentoId === acc.id ? 'white' : colors.text }}>
+                                            {acc.nome} {acc.tipo !== 'carteira' ? `(${acc.tipo === 'vale_alimentacao' ? 'VA' : 'VR'})` : ''}
+                                        </Text>
                                     </TouchableOpacity>
                                 )) : cards.map(c => (
                                     <TouchableOpacity
                                         key={c.id}
-                                        style={[styles.methodChip, formData.pagamentoId === c.id && { backgroundColor: colors.primary }]}
+                                        style={[styles.methodChip, formData.pagamentoId === c.id && { backgroundColor: colors.primary, borderColor: colors.primary }]}
                                         onPress={() => setFormData(p => ({ ...p, pagamentoId: c.id }))}
                                     >
                                         <Text style={{ color: formData.pagamentoId === c.id ? 'white' : colors.text }}>{c.nome}</Text>
@@ -236,19 +262,19 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         <View style={styles.inputGroup}>
                             <Text style={[styles.label, { color: colors.textSecondary }]}>Categoria</Text>
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryList}>
-                                {DEFAULT_CATEGORIES.map(cat => (
+                                {filteredCategories.map(cat => (
                                     <TouchableOpacity
-                                        key={cat}
+                                        key={cat.id}
                                         onPress={() => {
-                                            setFormData(p => ({ ...p, categoria: cat }));
+                                            setFormData(p => ({ ...p, categoria: cat.nome }));
                                             setCustomCategory('');
                                         }}
                                         style={[
                                             styles.categoryChip,
-                                            { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, borderColor: formData.categoria === cat && !customCategory ? colors.primary : colors.border }
+                                            { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, borderColor: formData.categoria === cat.nome && !customCategory ? colors.primary : colors.border }
                                         ]}
                                     >
-                                        <Text style={[styles.categoryText, { color: formData.categoria === cat && !customCategory ? colors.primary : colors.textSecondary }]}>{cat}</Text>
+                                        <Text style={[styles.categoryText, { color: formData.categoria === cat.nome && !customCategory ? colors.primary : colors.textSecondary }]}>{cat.nome}</Text>
                                     </TouchableOpacity>
                                 ))}
                             </ScrollView>
@@ -257,17 +283,6 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 value={customCategory}
                                 onChangeText={setCustomCategory}
                                 placeholder="Ou digite uma nova categoria..."
-                                placeholderTextColor={colors.textSecondary}
-                            />
-                        </View>
-
-                        <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Data (AAAA-MM-DD)</Text>
-                            <TextInput
-                                style={[styles.input, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
-                                value={formData.data}
-                                onChangeText={(text) => setFormData(p => ({ ...p, data: text }))}
-                                placeholder="2024-01-01"
                                 placeholderTextColor={colors.textSecondary}
                             />
                         </View>
@@ -297,7 +312,7 @@ const styles = StyleSheet.create({
     categoryChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, marginRight: 8 },
     categoryText: { fontSize: 14, fontWeight: '600' },
     paymentSelector: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-    payMethodBtn: { padding: 8, borderWidth: 1, borderRadius: 8 },
+    payMethodBtn: { paddingVertical: 8, paddingHorizontal: 16, borderWidth: 1, borderRadius: 8 },
     methodList: { flexDirection: 'row' },
-    methodChip: { padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#ccc', marginRight: 8 },
+    methodChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#ccc', marginRight: 8 },
 });

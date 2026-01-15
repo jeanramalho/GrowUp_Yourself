@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Alert, Modal } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { financeService } from '@/services/FinanceService';
@@ -9,6 +9,7 @@ import { BudgetFormModal } from '@/components/finance/BudgetFormModal';
 import { InvestmentFormModal } from '@/components/finance/InvestmentFormModal';
 import { AccountFormModal } from '@/components/finance/AccountFormModal';
 import { CardFormModal } from '@/components/finance/CardFormModal';
+import { TransactionDetailsModal } from '@/components/finance/TransactionDetailsModal';
 import { useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
@@ -21,13 +22,26 @@ export default function FinanceScreen() {
 
   // State
   const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState({ income: 0, expenses: 0, plannedExpenses: 0, balance: 0, expenseUsagePercent: 0 });
+  const [summary, setSummary] = useState({
+    income: 0,
+    expenses: 0,
+    plannedExpenses: 0,
+    balance: 0,
+    vouchersBalance: 0,
+    expenseUsagePercent: 0,
+    hasVouchers: false
+  });
   const [dailyChart, setDailyChart] = useState<any[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<LancamentoFinanceiro[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<LancamentoFinanceiro[]>([]);
   const [investments, setInvestments] = useState<Investimento[]>([]);
   const [plannedItems, setPlannedItems] = useState<LancamentoFinanceiro[]>([]);
   const [accounts, setAccounts] = useState<Conta[]>([]);
   const [cards, setCards] = useState<(CartaoCredito & { fatura: number })[]>([]);
+
+  // Filters
+  const [filterType, setFilterType] = useState<'all' | 'receita' | 'despesa'>('all');
+  const [filterAccount, setFilterAccount] = useState<string>('all'); // 'all' or accountId or cardId
 
   // Modals
   const [isTransactionModalVisible, setIsTransactionModalVisible] = useState(false);
@@ -35,6 +49,8 @@ export default function FinanceScreen() {
   const [isInvestmentModalVisible, setIsInvestmentModalVisible] = useState(false);
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
   const [isCardModalVisible, setIsCardModalVisible] = useState(false);
+  const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
+
   const [selectedTransaction, setSelectedTransaction] = useState<LancamentoFinanceiro | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -67,6 +83,26 @@ export default function FinanceScreen() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [recentTransactions, filterType, filterAccount]);
+
+  const applyFilters = () => {
+    let filtered = [...recentTransactions];
+
+    if (filterType !== 'all') {
+      filtered = filtered.filter(t => t.tipo === filterType);
+    }
+
+    if (filterAccount !== 'all') {
+      // Check if it's an account ID or Card ID
+      // Transaction has conta_id OR cartao_id
+      filtered = filtered.filter(t => t.conta_id === filterAccount || t.cartao_id === filterAccount);
+    }
+
+    setFilteredTransactions(filtered);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -134,6 +170,31 @@ export default function FinanceScreen() {
             <MaterialCommunityIcons name="wallet-outline" size={32} color="rgba(255,255,255,0.4)" />
           </View>
         </View>
+      </View>
+
+      {/* Vouchers and Cards Summaries */}
+      <View style={{ gap: 12 }}>
+        {summary.hasVouchers && (
+          <View style={[styles.miniCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <MaterialCommunityIcons name="ticket-percent-outline" size={24} color={colors.secondary} />
+              <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Vales (A/R)</Text>
+            </View>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.text }}>R$ {summary.vouchersBalance.toFixed(2)}</Text>
+          </View>
+        )}
+
+        {cards.length > 0 && (
+          <View style={[styles.miniCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <MaterialCommunityIcons name="credit-card-outline" size={24} color={colors.error} />
+              <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Faturas Abertas</Text>
+            </View>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.error }}>
+              R$ {cards.reduce((sum, c) => sum + c.fatura, 0).toFixed(2)}
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Alert Banner */}
@@ -206,44 +267,128 @@ export default function FinanceScreen() {
     </View>
   );
 
-  const renderTransactions = () => (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Lançamentos do Mês</Text>
-        <TouchableOpacity onPress={() => setIsTransactionModalVisible(true)} style={styles.addButtonCircle}>
-          <MaterialCommunityIcons name="plus" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
+  const renderTransactions = () => {
+    // Filter options
 
-      {recentTransactions.length > 0 ? (
-        recentTransactions.map(t => (
-          <View key={t.id} style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={styles.listItemIcon}>
-              <MaterialCommunityIcons
-                name={t.tipo === 'receita' ? 'arrow-up-circle' : 'arrow-down-circle'}
-                size={32}
-                color={t.tipo === 'receita' ? colors.success : colors.error}
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.itemTitle, { color: colors.text }]}>{t.categoria}</Text>
-              <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{t.data} • {t.nota || 'Sem nota'}</Text>
-            </View>
-            <View style={{ alignItems: 'flex-end', gap: 4 }}>
-              <Text style={[styles.itemValue, { color: t.tipo === 'receita' ? colors.success : colors.error }]}>
-                {t.tipo === 'receita' ? '+' : '-'} R$ {t.valor.toFixed(2)}
-              </Text>
-              <TouchableOpacity onPress={() => handleDeleteTransaction(t.id)}>
-                <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.textSecondary} />
+    return (
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Lançamentos</Text>
+          <TouchableOpacity onPress={() => setIsTransactionModalVisible(true)} style={styles.addButtonCircle}>
+            <MaterialCommunityIcons name="plus" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Filters UI */}
+        <View style={{ marginBottom: 16 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity
+              onPress={() => setFilterType('all')}
+              style={[styles.filterChip, filterType === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+            >
+              <Text style={{ color: filterType === 'all' ? 'white' : colors.text, fontSize: 12 }}>Todos</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setFilterType('receita')}
+              style={[styles.filterChip, filterType === 'receita' && { backgroundColor: colors.success, borderColor: colors.success }]}
+            >
+              <Text style={{ color: filterType === 'receita' ? 'white' : colors.text, fontSize: 12 }}>Entradas</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setFilterType('despesa')}
+              style={[styles.filterChip, filterType === 'despesa' && { backgroundColor: colors.error, borderColor: colors.error }]}
+            >
+              <Text style={{ color: filterType === 'despesa' ? 'white' : colors.text, fontSize: 12 }}>Saídas</Text>
+            </TouchableOpacity>
+
+            <View style={{ width: 1, height: 20, backgroundColor: colors.border, marginHorizontal: 8, alignSelf: 'center' }} />
+
+            <TouchableOpacity
+              onPress={() => setFilterAccount('all')}
+              style={[styles.filterChip, filterAccount === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+            >
+              <Text style={{ color: filterAccount === 'all' ? 'white' : colors.text, fontSize: 12 }}>Geral</Text>
+            </TouchableOpacity>
+
+            {accounts.map(acc => (
+              <TouchableOpacity
+                key={acc.id}
+                onPress={() => setFilterAccount(acc.id)}
+                style={[styles.filterChip, filterAccount === acc.id && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+              >
+                <Text style={{ color: filterAccount === acc.id ? 'white' : colors.text, fontSize: 12 }}>{acc.nome}</Text>
               </TouchableOpacity>
-            </View>
-          </View>
-        ))
-      ) : (
-        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Nenhuma movimentação lançada.</Text>
-      )}
-    </View>
-  );
+            ))}
+
+            {cards.map(c => (
+              <TouchableOpacity
+                key={c.id}
+                onPress={() => setFilterAccount(c.id)}
+                style={[styles.filterChip, filterAccount === c.id && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+              >
+                <Text style={{ color: filterAccount === c.id ? 'white' : colors.text, fontSize: 12 }}>Cartão: {c.nome}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {filteredTransactions.length > 0 ? (
+          filteredTransactions.map(t => {
+            const isCard = !!t.cartao_id;
+            const isVoucher = accounts.find(a => a.id === t.conta_id && ['vale_alimentacao', 'vale_refeicao'].includes(a.tipo));
+
+            return (
+              <TouchableOpacity
+                key={t.id}
+                style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => {
+                  setSelectedTransaction(t);
+                  setIsDetailsModalVisible(true);
+                }}
+                onLongPress={() => {
+                  Alert.alert("Opções", "O que deseja fazer?", [
+                    { text: "Editar", onPress: () => { setSelectedTransaction(t); setIsTransactionModalVisible(true); } },
+                    { text: "Excluir", style: "destructive", onPress: () => handleDeleteTransaction(t.id) },
+                    { text: "Cancelar", style: "cancel" }
+                  ]);
+                }}
+              >
+                <View style={styles.listItemIcon}>
+                  <MaterialCommunityIcons
+                    name={t.tipo === 'receita' ? 'arrow-up-circle' : 'arrow-down-circle'}
+                    size={32}
+                    color={t.tipo === 'receita' ? colors.success : colors.error}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.itemTitle, { color: colors.text }]}>{t.categoria}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>
+                      {t.data.split('-').reverse().join('/')}
+                    </Text>
+                    {isCard && <MaterialCommunityIcons name="credit-card" size={12} color={colors.textSecondary} />}
+                    {isVoucher && <MaterialCommunityIcons name="ticket-percent" size={12} color={colors.textSecondary} />}
+                  </View>
+                  {t.nota && (
+                    <Text numberOfLines={1} style={[styles.itemSubtitle, { color: colors.textSecondary, fontStyle: 'italic', marginTop: 2 }]}>
+                      {t.nota}
+                    </Text>
+                  )}
+                </View>
+                <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                  <Text style={[styles.itemValue, { color: t.tipo === 'receita' ? colors.success : colors.error }]}>
+                    {t.tipo === 'receita' ? '+' : '-'} R$ {t.valor.toFixed(2)}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })
+        ) : (
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Nenhuma movimentação encontrada.</Text>
+        )}
+      </View>
+    );
+  };
 
   const renderPlanning = () => (
     <View style={styles.section}>
@@ -445,6 +590,12 @@ export default function FinanceScreen() {
         onClose={() => setIsCardModalVisible(false)}
         onSaveSuccess={fetchData}
       />
+
+      <TransactionDetailsModal
+        visible={isDetailsModalVisible}
+        onClose={() => setIsDetailsModalVisible(false)}
+        transaction={selectedTransaction}
+      />
     </View>
   );
 }
@@ -473,6 +624,8 @@ const styles = StyleSheet.create({
   mainBalanceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 12 },
   mainBalanceSubLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 10, fontWeight: 'bold' },
   mainBalanceSubValue: { color: 'white', fontSize: 16, fontWeight: 'bold' },
+
+  miniCard: { padding: 16, borderRadius: 20, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 
   alertBanner: { flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: 32, borderWidth: 1, gap: 16, marginBottom: 8 },
   alertIconBox: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#EF4444', justifyContent: 'center', alignItems: 'center' },
@@ -515,6 +668,5 @@ const styles = StyleSheet.create({
   faturaValue: { fontSize: 18, fontWeight: 'bold' },
   payBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   payBtnText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
+  filterChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, borderWidth: 1, backgroundColor: 'transparent' },
 });
-
-

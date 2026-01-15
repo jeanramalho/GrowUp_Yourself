@@ -1,5 +1,5 @@
-import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito } from '../models';
-import { LancamentoRepository, InvestimentoRepository, ContaRepository, CartaoRepository } from '../repositories/FinanceRepository';
+import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito, CategoriaPlanejamento } from '../models';
+import { LancamentoRepository, InvestimentoRepository, ContaRepository, CartaoRepository, PlanningCategoryRepository } from '../repositories/FinanceRepository';
 import { database } from '../repositories/Repository';
 
 export class FinanceService {
@@ -7,6 +7,7 @@ export class FinanceService {
     private _investimentoRepo: InvestimentoRepository | null = null;
     private _contaRepo: ContaRepository | null = null;
     private _cartaoRepo: CartaoRepository | null = null;
+    private _planningCategoryRepo: PlanningCategoryRepository | null = null;
 
     private get lancamentoRepo(): LancamentoRepository {
         if (!this._lancamentoRepo) {
@@ -34,6 +35,13 @@ export class FinanceService {
             this._cartaoRepo = new CartaoRepository(database.getDb());
         }
         return this._cartaoRepo;
+    }
+
+    private get planningCategoryRepo(): PlanningCategoryRepository {
+        if (!this._planningCategoryRepo) {
+            this._planningCategoryRepo = new PlanningCategoryRepository(database.getDb());
+        }
+        return this._planningCategoryRepo;
     }
 
     private generateId(): string {
@@ -114,26 +122,42 @@ export class FinanceService {
         const real = await this.getTransactionsByMonth(date);
         const planned = await this.getPlannedByMonth(date);
         const accounts = await this.getAccounts();
+        const allTransactions = await this.lancamentoRepo.list();
 
         const income = real.filter(t => t.tipo === 'receita').reduce((sum, t) => sum + t.valor, 0);
         const expenses = real.filter(t => t.tipo === 'despesa').reduce((sum, t) => sum + t.valor, 0);
 
         const plannedExpenses = planned.filter(t => t.tipo === 'despesa').reduce((sum, t) => sum + t.valor, 0);
 
-        // Calculate Wallet Balance (Income - Expense for Wallet type only)
-        // Note: For simplicity, we are summing all time or just reflecting starting balance + transactions
-        // Requirement says "saldo atual da carteira", reflecting if it's negative.
-        // Let's sum all transactions for 'conta-1' (Default Wallet)
-        const allTransactions = await this.lancamentoRepo.list();
-        const mainAccountId = 'conta-1';
-        const walletTransactions = allTransactions.filter(t => t.conta_id === mainAccountId && !t.planejado);
-        const walletBalance = walletTransactions.reduce((sum, t) => t.tipo === 'receita' ? sum + t.valor : sum - t.valor, 0);
+        // Wallet Balance (Income - Expense for Wallet type only, explicitly for 'conta-1' as main wallet for now or allow multiple)
+        // Requirement: "saldo atual da carteira"
+        // Let's iterate all 'carteira' type accounts
+        const walletAccounts = accounts.filter(a => a.tipo === 'carteira');
+
+        // Calculate balance for each wallet
+        let totalWalletBalance = 0;
+        for (const account of walletAccounts) {
+            const txs = allTransactions.filter(t => t.conta_id === account.id && !t.planejado);
+            const bal = txs.reduce((s, t) => t.tipo === 'receita' ? s + t.valor : s - t.valor, 0);
+            totalWalletBalance += (account.saldo_inicial + bal);
+        }
+
+        // Vouchers Balance (vale_alimentacao + vale_refeicao)
+        const voucherAccounts = accounts.filter(a => ['vale_alimentacao', 'vale_refeicao'].includes(a.tipo));
+        let vouchersBalance = 0;
+        for (const account of voucherAccounts) {
+            const txs = allTransactions.filter(t => t.conta_id === account.id && !t.planejado);
+            const bal = txs.reduce((s, t) => t.tipo === 'receita' ? s + t.valor : s - t.valor, 0);
+            vouchersBalance += (account.saldo_inicial + bal);
+        }
 
         return {
             income,
             expenses,
             plannedExpenses,
-            balance: walletBalance,
+            balance: totalWalletBalance,
+            vouchersBalance: vouchersBalance || 0,
+            hasVouchers: voucherAccounts.length > 0,
             expenseUsagePercent: plannedExpenses > 0 ? (expenses / plannedExpenses) * 100 : 0
         };
     }
@@ -247,6 +271,27 @@ export class FinanceService {
         const currentVal = investment.principal * Math.pow(1 + dailyRate, diffDays);
 
         return currentVal - investment.principal;
+    }
+
+    // Planning Categories
+    async getPlanningCategories(): Promise<CategoriaPlanejamento[]> {
+        return await this.planningCategoryRepo.list();
+    }
+
+    async createPlanningCategory(category: Omit<CategoriaPlanejamento, 'id' | 'created_at'>): Promise<CategoriaPlanejamento> {
+        return await this.planningCategoryRepo.create({
+            ...category,
+            id: this.generateId(),
+            created_at: new Date().toISOString()
+        });
+    }
+
+    async updatePlanningCategory(id: string, category: Partial<CategoriaPlanejamento>): Promise<CategoriaPlanejamento> {
+        return await this.planningCategoryRepo.update(id, category);
+    }
+
+    async deletePlanningCategory(id: string): Promise<boolean> {
+        return await this.planningCategoryRepo.delete(id);
     }
 }
 

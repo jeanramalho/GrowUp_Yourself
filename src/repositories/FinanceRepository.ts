@@ -41,3 +41,9 @@ export class CartaoRepository extends Repository<CartaoCredito> {
         super(db, 'cartao_credito');
     }
 }
+
+export class PlanningCategoryRepository extends Repository<any> {
+    constructor(db: SQLiteDatabase) {
+        super(db, 'categoria_planejamento');
+    }
+}

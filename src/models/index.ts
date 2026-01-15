@@ -109,6 +109,17 @@ export interface CartaoCredito {
 }
 
 /**
+ * Planning Category (Categoria de Planejamento)
+ */
+export interface CategoriaPlanejamento {
+  id: string;
+  nome: string;
+  tipo: 'receita' | 'despesa';
+  sistema: boolean; // 1 = true, 0 = false
+  created_at: string;
+}
+
+/**
  * Investment record
  */
 export interface Investimento {
