@@ -13,6 +13,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { financeService } from '@/services/FinanceService';
 import { Investimento } from '@/models';
+import { CurrencyInput } from '../ui/CurrencyInput';
+import { DatePickerInput } from '../ui/DatePickerInput';
 
 interface InvestmentFormModalProps {
     visible: boolean;
@@ -33,18 +35,27 @@ export const InvestmentFormModal: React.FC<InvestmentFormModalProps> = ({
         nome: '',
         principal: '',
         taxa_juros_ano: '',
-        data_inicio: new Date().toISOString().split('T')[0],
+        data_inicio: new Date(),
         notas: '',
     });
 
     useEffect(() => {
         if (visible) {
             if (investmentToEdit) {
+                let parsedDate = new Date();
+                // Add T12:00:00 to avoid timezone issues shifting days, same as Transaction form
+                if (investmentToEdit.data_inicio && investmentToEdit.data_inicio.length === 10) {
+                    const [y, m, d] = investmentToEdit.data_inicio.split('-').map(Number);
+                    parsedDate = new Date(y, m - 1, d);
+                } else if (investmentToEdit.data_inicio) {
+                    parsedDate = new Date(investmentToEdit.data_inicio);
+                }
+
                 setFormData({
                     nome: investmentToEdit.nome,
-                    principal: investmentToEdit.principal.toString(),
-                    taxa_juros_ano: investmentToEdit.taxa_juros_ano?.toString() || '',
-                    data_inicio: investmentToEdit.data_inicio || new Date().toISOString().split('T')[0],
+                    principal: investmentToEdit.principal.toString().replace('.', ','),
+                    taxa_juros_ano: investmentToEdit.taxa_juros_ano?.toString().replace('.', ',') || '',
+                    data_inicio: parsedDate,
                     notas: investmentToEdit.notas || '',
                 });
             } else {
@@ -52,7 +63,7 @@ export const InvestmentFormModal: React.FC<InvestmentFormModalProps> = ({
                     nome: '',
                     principal: '',
                     taxa_juros_ano: '',
-                    data_inicio: new Date().toISOString().split('T')[0],
+                    data_inicio: new Date(),
                     notas: '',
                 });
             }
@@ -73,19 +84,21 @@ export const InvestmentFormModal: React.FC<InvestmentFormModalProps> = ({
         }
 
         try {
-            const data = {
+            const year = formData.data_inicio.getFullYear();
+            const month = String(formData.data_inicio.getMonth() + 1).padStart(2, '0');
+            const day = String(formData.data_inicio.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+
+            const data: any = {
                 nome: formData.nome,
                 principal: principalNum,
                 taxa_juros_ano: isNaN(taxaNum) ? undefined : taxaNum,
-                data_inicio: formData.data_inicio,
+                data_inicio: dateStr,
                 notas: formData.notas,
             };
 
             if (investmentToEdit) {
-                // await financeService.updateInvestment(investmentToEdit.id, data);
-                // Repository doesn't have update for Investment yet, let's fix that if needed
-                // But following original pattern, let's just use create/delete for now or add update
-                // I'll add update to Investment in Service
+                await financeService.updateInvestment(investmentToEdit.id, data);
             } else {
                 await financeService.createInvestment(data);
             }
@@ -133,13 +146,10 @@ export const InvestmentFormModal: React.FC<InvestmentFormModalProps> = ({
 
                         <View style={styles.inputGroup}>
                             <Text style={[styles.label, { color: colors.textSecondary }]}>Valor Principal</Text>
-                            <TextInput
-                                style={[styles.input, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
+                            <CurrencyInput
                                 value={formData.principal}
-                                onChangeText={(text) => setFormData(p => ({ ...p, principal: text }))}
+                                onValueChange={(val) => setFormData(p => ({ ...p, principal: val }))}
                                 placeholder="0,00"
-                                placeholderTextColor={colors.textSecondary}
-                                keyboardType="numeric"
                             />
                         </View>
 
@@ -149,20 +159,17 @@ export const InvestmentFormModal: React.FC<InvestmentFormModalProps> = ({
                                 style={[styles.input, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
                                 value={formData.taxa_juros_ano}
                                 onChangeText={(text) => setFormData(p => ({ ...p, taxa_juros_ano: text }))}
-                                placeholder="Ex: 12.5"
+                                placeholder="Ex: 12,5"
                                 placeholderTextColor={colors.textSecondary}
                                 keyboardType="numeric"
                             />
                         </View>
 
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Data de Início (AAAA-MM-DD)</Text>
-                            <TextInput
-                                style={[styles.input, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
+                            <DatePickerInput
+                                label="Data de Início"
                                 value={formData.data_inicio}
-                                onChangeText={(text) => setFormData(p => ({ ...p, data_inicio: text }))}
-                                placeholder="2024-01-01"
-                                placeholderTextColor={colors.textSecondary}
+                                onChange={(date) => setFormData(p => ({ ...p, data_inicio: date }))}
                             />
                         </View>
 

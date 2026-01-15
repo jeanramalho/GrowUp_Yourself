@@ -14,6 +14,7 @@ import { useAppTheme } from '@/theme';
 import { financeService } from '@/services/FinanceService';
 import { LancamentoFinanceiro, Conta, CartaoCredito, CategoriaPlanejamento } from '@/models';
 import { CurrencyInput } from '../ui/CurrencyInput';
+import { DatePickerInput } from '../ui/DatePickerInput';
 
 interface TransactionFormModalProps {
     visible: boolean;
@@ -34,7 +35,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         tipo: 'despesa' as 'receita' | 'despesa',
         categoria: 'Outros',
         valor: '',
-        data: new Date().toISOString().split('T')[0],
+        data: new Date(),
         nota: '',
         metodo: 'conta' as 'conta' | 'cartao',
         pagamentoId: '',
@@ -52,11 +53,27 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             financeService.getPlanningCategories().then(setCategories);
 
             if (transactionToEdit) {
+                // Ensure date is valid, fallback to today
+                let parsedDate = new Date();
+                if (transactionToEdit.data) {
+                    const d = new Date(transactionToEdit.data);
+                    if (!isNaN(d.getTime())) {
+                        parsedDate = d;
+                    }
+                }
+
+                // Add T12:00:00 to avoid timezone issues shifting days
+                // If the string is YYYY-MM-DD
+                if (transactionToEdit.data && transactionToEdit.data.length === 10) {
+                    const [y, m, d] = transactionToEdit.data.split('-').map(Number);
+                    parsedDate = new Date(y, m - 1, d);
+                }
+
                 setFormData({
                     tipo: transactionToEdit.tipo,
                     categoria: transactionToEdit.categoria || 'Outros',
                     valor: transactionToEdit.valor.toFixed(2).replace('.', ','),
-                    data: transactionToEdit.data,
+                    data: parsedDate,
                     nota: transactionToEdit.nota || '',
                     metodo: transactionToEdit.cartao_id ? 'cartao' : 'conta',
                     pagamentoId: transactionToEdit.cartao_id || transactionToEdit.conta_id || '',
@@ -67,7 +84,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     tipo: 'despesa',
                     categoria: 'Outros',
                     valor: '',
-                    data: new Date().toISOString().split('T')[0],
+                    data: new Date(),
                     nota: '',
                     metodo: 'conta',
                     pagamentoId: '',
@@ -99,11 +116,17 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         }
 
         try {
+            // Format date to YYYY-MM-DD safely
+            const year = formData.data.getFullYear();
+            const month = String(formData.data.getMonth() + 1).padStart(2, '0');
+            const day = String(formData.data.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+
             const data: any = {
                 tipo: formData.tipo,
                 categoria: customCategory || formData.categoria,
                 valor: valorNum,
-                data: formData.data,
+                data: dateStr,
                 nota: formData.nota,
                 planejado: false,
                 parcelas_total: parcelasNum,
@@ -120,10 +143,6 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             } else {
                 await financeService.createTransaction(data);
             }
-
-            // Also check if category exists, if not, create it? 
-            // The logic: if customCategory is used, assume user wants to reuse it?
-            // For now, adhere to scope, let's just save transaction.
 
             onSaveSuccess();
             onClose();
@@ -185,13 +204,10 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         </View>
 
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Data (AAAA-MM-DD)</Text>
-                            <TextInput
-                                style={[styles.input, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
+                            <DatePickerInput
+                                label="Data"
                                 value={formData.data}
-                                onChangeText={(text) => setFormData(p => ({ ...p, data: text }))}
-                                placeholder="2024-01-01"
-                                placeholderTextColor={colors.textSecondary}
+                                onChange={(date) => setFormData(p => ({ ...p, data: date }))}
                             />
                         </View>
 
