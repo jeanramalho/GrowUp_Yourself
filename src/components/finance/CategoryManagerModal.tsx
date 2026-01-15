@@ -121,7 +121,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ visi
                                             <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.error} />
                                         </TouchableOpacity>
                                     )}
-                                    {item.sistema && (
+                                    {!!item.sistema && (
                                         <MaterialCommunityIcons name="lock-outline" size={16} color={colors.textSecondary} />
                                     )}
                                 </View>
