@@ -83,12 +83,15 @@ export class FinanceService {
         const results: LancamentoFinanceiro[] = [];
         const groupId = (transaction.parcelas_total || 1) > 1 ? this.generateId() : null;
 
+        const installmentValue = transaction.valor / (transaction.parcelas_total || 1);
+
         for (let i = 0; i < (transaction.parcelas_total || 1); i++) {
             const date = new Date(transaction.data);
             date.setMonth(date.getMonth() + i);
 
             const newTransaction: LancamentoFinanceiro = {
                 ...transaction,
+                valor: installmentValue, // Use divided value
                 id: this.generateId(),
                 created_at: new Date().toISOString(),
                 data: date.toISOString().split('T')[0],

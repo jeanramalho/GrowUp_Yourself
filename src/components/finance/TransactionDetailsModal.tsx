@@ -55,7 +55,19 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
                         )}
 
                         {transaction.parcelas_total && transaction.parcelas_total > 1 && (
-                            <DetailRow label="Parcela" value={`${transaction.parcela_atual}/${transaction.parcelas_total}`} icon="layers" />
+                            <>
+                                <DetailRow label="Parcela" value={`${transaction.parcela_atual}/${transaction.parcelas_total}`} icon="layers" />
+                                <DetailRow
+                                    label="Valor da Parcela"
+                                    value={`R$ ${transaction.valor.toFixed(2)}`}
+                                    icon="cash-multiple"
+                                />
+                                <DetailRow
+                                    label="Valor Total da Compra"
+                                    value={`R$ ${(transaction.valor * transaction.parcelas_total).toFixed(2)}`}
+                                    icon="cart-outline"
+                                />
+                            </>
                         )}
                     </ScrollView>
                 </View>

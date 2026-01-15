@@ -368,6 +368,11 @@ export default function FinanceScreen() {
                     </Text>
                     {isCard && <MaterialCommunityIcons name="credit-card" size={12} color={colors.textSecondary} />}
                     {isVoucher && <MaterialCommunityIcons name="ticket-percent" size={12} color={colors.textSecondary} />}
+                    {t.parcelas_total && t.parcelas_total > 1 && (
+                      <Text style={{ fontSize: 10, color: colors.textSecondary, fontWeight: 'bold' }}>
+                        ({t.parcela_atual}/{t.parcelas_total})
+                      </Text>
+                    )}
                   </View>
                   {t.nota && (
                     <Text numberOfLines={1} style={[styles.itemSubtitle, { color: colors.textSecondary, fontStyle: 'italic', marginTop: 2 }]}>
