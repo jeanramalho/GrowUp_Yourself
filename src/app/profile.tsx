@@ -6,6 +6,7 @@ import { useThemeStore } from '@/store/themeStore';
 import { useUserStore } from '@/store/userStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { PersonalInfoModal } from '@/components/profile/PersonalInfoModal';
 
 export default function ProfileScreen() {
@@ -40,7 +41,23 @@ export default function ProfileScreen() {
       });
 
       if (!result.canceled) {
-        setAvatar(result.assets[0].uri);
+        const selectedUri = result.assets[0].uri;
+
+        try {
+          const fileName = selectedUri.split('/').pop();
+          const newPath = `${FileSystem.documentDirectory}${Date.now()}_${fileName}`;
+
+          await FileSystem.copyAsync({
+            from: selectedUri,
+            to: newPath
+          });
+
+          setAvatar(newPath);
+        } catch (err) {
+          console.error('Error saving image:', err);
+          // Fallback to original URI if save fails, though it might not persist
+          setAvatar(selectedUri);
+        }
       }
     } catch (error) {
       console.log('Error picking image:', error);

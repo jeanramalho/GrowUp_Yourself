@@ -83,20 +83,25 @@ export class FinanceService {
         const results: LancamentoFinanceiro[] = [];
         const groupId = (transaction.parcelas_total || 1) > 1 ? this.generateId() : null;
 
-        const installmentValue = transaction.valor / (transaction.parcelas_total || 1);
+        // Force convert to number to be safe
+        const totalValue = Number(transaction.valor);
+        const parcels = Number(transaction.parcelas_total) || 1;
+        const installmentValue = totalValue / parcels;
 
-        for (let i = 0; i < (transaction.parcelas_total || 1); i++) {
+        for (let i = 0; i < parcels; i++) {
             const date = new Date(transaction.data);
             date.setMonth(date.getMonth() + i);
 
             const newTransaction: LancamentoFinanceiro = {
                 ...transaction,
-                valor: installmentValue, // Use divided value
                 id: this.generateId(),
                 created_at: new Date().toISOString(),
                 data: date.toISOString().split('T')[0],
+                // EXPLICITLY OVERWRITE VALOR with the divided amount
+                valor: installmentValue,
                 parcela_atual: i + 1,
-                id_grupo_parcela: groupId
+                id_grupo_parcela: groupId,
+                parcelas_total: parcels // Ensure this is set correctly
             };
             results.push(await this.lancamentoRepo.create(newTransaction));
         }
@@ -166,28 +171,32 @@ export class FinanceService {
     }
 
     async getCardInvoice(cardId: string, monthDate: Date): Promise<number> {
-        const card = await this.cartaoRepo.read(cardId);
-        if (!card) return 0;
+        const transactions = await this.getCardTransactions(cardId, monthDate);
+        return transactions.reduce((sum, t) => sum + t.valor, 0);
+    }
 
-        // Simplified logic: transactions within the billing cycle
-        // Closing date is card.dia_fechamento
+    async getCardTransactions(cardId: string, monthDate: Date): Promise<LancamentoFinanceiro[]> {
+        const card = await this.cartaoRepo.read(cardId);
+        if (!card) return [];
+
         const month = monthDate.getMonth();
         const year = monthDate.getFullYear();
 
-        // Fatura of Month M:
-        // Transactions from Day Fechamento of M-1 to Day Fechamento - 1 of M
+        // Closing date is card.dia_fechamento
+        // Invoice M: From (Fechamento of M-1) to (Fechamento - 1 of M)
         const startCycle = new Date(year, month - 1, card.dia_fechamento);
         const endCycle = new Date(year, month, card.dia_fechamento - 1);
 
+        // Adjust for end of day
+        endCycle.setHours(23, 59, 59, 999);
+
         const all = await this.lancamentoRepo.list();
-        const cardTxs = all.filter(t =>
+        return all.filter(t =>
             t.cartao_id === cardId &&
             !t.planejado &&
             new Date(t.data) >= startCycle &&
             new Date(t.data) <= endCycle
         );
-
-        return cardTxs.reduce((sum, t) => sum + t.valor, 0);
     }
 
     async payInvoice(cardId: string, accountId: string, value: number) {
