@@ -605,6 +605,10 @@ export default function FinanceScreen() {
         visible={isInvoiceModalVisible}
         onClose={() => setIsInvoiceModalVisible(false)}
         card={selectedCard}
+        onTransactionPress={(transaction) => {
+          setSelectedTransaction(transaction);
+          setIsDetailsModalVisible(true);
+        }}
       />
     </View>
   );

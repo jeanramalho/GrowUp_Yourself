@@ -9,12 +9,14 @@ interface CreditCardInvoiceModalProps {
     visible: boolean;
     onClose: () => void;
     card: CartaoCredito | null;
+    onTransactionPress: (transaction: LancamentoFinanceiro) => void;
 }
 
 export const CreditCardInvoiceModal: React.FC<CreditCardInvoiceModalProps> = ({
     visible,
     onClose,
-    card
+    card,
+    onTransactionPress
 }) => {
     const { colors, isDarkMode } = useAppTheme();
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -116,7 +118,11 @@ export const CreditCardInvoiceModal: React.FC<CreditCardInvoiceModalProps> = ({
                         <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
                     ) : transactions.length > 0 ? (
                         transactions.map(t => (
-                            <View key={t.id} style={[styles.transactionItem, { borderBottomColor: colors.border }]}>
+                            <TouchableOpacity
+                                key={t.id}
+                                style={[styles.transactionItem, { borderBottomColor: colors.border }]}
+                                onPress={() => onTransactionPress(t)}
+                            >
                                 <View style={styles.iconBox}>
                                     <MaterialCommunityIcons name={t.tipo === 'receita' ? 'arrow-up' : 'cart-outline'} size={20} color={colors.text} />
                                 </View>
@@ -137,7 +143,7 @@ export const CreditCardInvoiceModal: React.FC<CreditCardInvoiceModalProps> = ({
                                 <Text style={[styles.tValue, { color: colors.text }]}>
                                     R$ {t.valor.toFixed(2)}
                                 </Text>
-                            </View>
+                            </TouchableOpacity>
                         ))
                     ) : (
                         <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: 20 }}>
