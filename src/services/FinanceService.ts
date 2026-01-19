@@ -83,10 +83,9 @@ export class FinanceService {
         const results: LancamentoFinanceiro[] = [];
         const groupId = (transaction.parcelas_total || 1) > 1 ? this.generateId() : null;
 
-        // Force convert to number to be safe
-        const totalValue = Number(transaction.valor);
         const parcels = Number(transaction.parcelas_total) || 1;
-        const installmentValue = totalValue / parcels;
+        // Logic update: received value IS the installment value calculated by UI
+        const installmentValue = Number(transaction.valor);
 
         for (let i = 0; i < parcels; i++) {
             const date = new Date(transaction.data);
@@ -97,11 +96,10 @@ export class FinanceService {
                 id: this.generateId(),
                 created_at: new Date().toISOString(),
                 data: date.toISOString().split('T')[0],
-                // EXPLICITLY OVERWRITE VALOR with the divided amount
                 valor: installmentValue,
                 parcela_atual: i + 1,
                 id_grupo_parcela: groupId,
-                parcelas_total: parcels // Ensure this is set correctly
+                parcelas_total: parcels
             };
             results.push(await this.lancamentoRepo.create(newTransaction));
         }

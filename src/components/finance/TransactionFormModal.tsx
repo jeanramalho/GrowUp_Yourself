@@ -31,21 +31,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 }) => {
     const { colors, isDarkMode } = useAppTheme();
 
-    const [formData, setFormData] = useState({
-        tipo: 'despesa' as 'receita' | 'despesa',
-        categoria: 'Outros',
-        valor: '',
-        data: new Date(),
-        nota: '',
-        metodo: 'conta' as 'conta' | 'cartao',
-        pagamentoId: '',
-        parcelas: '1',
-    });
-
-    const [accounts, setAccounts] = useState<Conta[]>([]);
-    const [cards, setCards] = useState<CartaoCredito[]>([]);
-    const [categories, setCategories] = useState<CategoriaPlanejamento[]>([]);
-    const [customCategory, setCustomCategory] = useState('');
+    const [installmentType, setInstallmentType] = useState<'total' | 'parcela'>('total');
 
     useEffect(() => {
         if (visible) {
@@ -63,7 +49,6 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 }
 
                 // Add T12:00:00 to avoid timezone issues shifting days
-                // If the string is YYYY-MM-DD
                 if (transactionToEdit.data && transactionToEdit.data.length === 10) {
                     const [y, m, d] = transactionToEdit.data.split('-').map(Number);
                     parsedDate = new Date(y, m - 1, d);
@@ -79,7 +64,9 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     pagamentoId: transactionToEdit.cartao_id || transactionToEdit.conta_id || '',
                     parcelas: (transactionToEdit.parcelas_total || 1).toString(),
                 });
+                setInstallmentType('parcela'); // Editing usually means we see the installment value
             } else {
+                // RESET FORM
                 setFormData({
                     tipo: 'despesa',
                     categoria: 'Outros',
@@ -87,35 +74,39 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     data: new Date(),
                     nota: '',
                     metodo: 'conta',
-                    pagamentoId: '',
+                    pagamentoId: accounts.length > 0 ? accounts[0].id : '',
                     parcelas: '1',
                 });
+                setCustomCategory('');
+                setInstallmentType('total');
             }
         }
-    }, [visible, transactionToEdit]);
+    }, [visible, transactionToEdit, accounts]); // Added accounts to dep array to reset properly
 
     const loadMethods = async () => {
         const accs = await financeService.getAccounts();
         const crds = await financeService.getCards();
         setAccounts(accs);
         setCards(crds);
-        if (!transactionToEdit) {
-            if (accs.length > 0) {
-                setFormData(p => ({ ...p, pagamentoId: accs[0].id }));
-            }
-        }
+        // Dont override formData here if already set by reset logic
     };
 
     const handleSave = async () => {
-        const valorNum = parseFloat(formData.valor.replace(',', '.'));
+        const rawValue = parseFloat(formData.valor.replace(',', '.'));
         const parcelasNum = parseInt(formData.parcelas) || 1;
 
-        if (isNaN(valorNum) || valorNum <= 0) {
+        if (isNaN(rawValue) || rawValue <= 0) {
             Alert.alert("Erro", "Por favor, insira um valor válido.");
             return;
         }
 
         try {
+            // Determine final installment value passed to service
+            let finalInstallmentValue = rawValue;
+            if (formData.metodo === 'cartao' && parcelasNum > 1 && installmentType === 'total') {
+                finalInstallmentValue = rawValue / parcelasNum;
+            }
+
             // Format date to YYYY-MM-DD safely
             const year = formData.data.getFullYear();
             const month = String(formData.data.getMonth() + 1).padStart(2, '0');
@@ -125,7 +116,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             const data: any = {
                 tipo: formData.tipo,
                 categoria: customCategory || formData.categoria,
-                valor: valorNum,
+                valor: finalInstallmentValue,
                 data: dateStr,
                 nota: formData.nota,
                 planejado: false,
@@ -265,13 +256,31 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         {formData.metodo === 'cartao' && (
                             <View style={styles.inputGroup}>
                                 <Text style={[styles.label, { color: colors.textSecondary }]}>Parcelas</Text>
-                                <TextInput
-                                    style={[styles.input, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
-                                    value={formData.parcelas}
-                                    onChangeText={(text) => setFormData(p => ({ ...p, parcelas: text }))}
-                                    placeholder="1"
-                                    keyboardType="numeric"
-                                />
+                                <View style={{ flexDirection: 'row', gap: 12 }}>
+                                    <TextInput
+                                        style={[styles.input, { flex: 1, backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
+                                        value={formData.parcelas}
+                                        onChangeText={(text) => setFormData(p => ({ ...p, parcelas: text }))}
+                                        placeholder="1"
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+                                {parseInt(formData.parcelas) > 1 && (
+                                    <View style={{ flexDirection: 'row', marginTop: 8, backgroundColor: isDarkMode ? colors.gray800 : '#e5e5e5', borderRadius: 8, padding: 2 }}>
+                                        <TouchableOpacity
+                                            style={{ flex: 1, paddingVertical: 6, alignItems: 'center', borderRadius: 6, backgroundColor: installmentType === 'total' ? (isDarkMode ? '#334155' : 'white') : 'transparent' }}
+                                            onPress={() => setInstallmentType('total')}
+                                        >
+                                            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.text }}>Valor Total</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={{ flex: 1, paddingVertical: 6, alignItems: 'center', borderRadius: 6, backgroundColor: installmentType === 'parcela' ? (isDarkMode ? '#334155' : 'white') : 'transparent' }}
+                                            onPress={() => setInstallmentType('parcela')}
+                                        >
+                                            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.text }}>Valor da Parcela</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </View>
                         )}
 
