@@ -31,6 +31,22 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 }) => {
     const { colors, isDarkMode } = useAppTheme();
 
+    const [formData, setFormData] = useState({
+        tipo: 'despesa' as 'receita' | 'despesa',
+        categoria: 'Outros',
+        valor: '',
+        data: new Date(),
+        nota: '',
+        metodo: 'conta' as 'conta' | 'cartao',
+        pagamentoId: '',
+        parcelas: '1',
+    });
+
+    const [accounts, setAccounts] = useState<Conta[]>([]);
+    const [cards, setCards] = useState<CartaoCredito[]>([]);
+    const [categories, setCategories] = useState<CategoriaPlanejamento[]>([]);
+    const [customCategory, setCustomCategory] = useState('');
+
     const [installmentType, setInstallmentType] = useState<'total' | 'parcela'>('total');
 
     useEffect(() => {

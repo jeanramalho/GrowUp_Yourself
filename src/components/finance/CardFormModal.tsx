@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -31,6 +31,16 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
     const [limite, setLimite] = useState('');
     const [diaFechamento, setDiaFechamento] = useState('');
     const [diaVencimento, setDiaVencimento] = useState('');
+
+    useEffect(() => {
+        if (visible) {
+            setNome('');
+            setDescricao('');
+            setLimite('');
+            setDiaFechamento('');
+            setDiaVencimento('');
+        }
+    }, [visible]);
 
     const handleSave = async () => {
         if (!nome.trim() || !diaFechamento || !diaVencimento) {

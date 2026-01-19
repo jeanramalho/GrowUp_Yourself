@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -35,6 +35,14 @@ export const AccountFormModal: React.FC<AccountFormModalProps> = ({
     const [nome, setNome] = useState('');
     const [tipo, setTipo] = useState<any>('carteira');
     const [saldoInicial, setSaldoInicial] = useState('');
+
+    useEffect(() => {
+        if (visible) {
+            setNome('');
+            setTipo('carteira');
+            setSaldoInicial('');
+        }
+    }, [visible]);
 
     const handleSave = async () => {
         if (!nome.trim()) {
