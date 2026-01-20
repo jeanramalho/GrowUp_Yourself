@@ -11,6 +11,7 @@ import { AccountFormModal } from '@/components/finance/AccountFormModal';
 import { CardFormModal } from '@/components/finance/CardFormModal';
 import { TransactionDetailsModal } from '@/components/finance/TransactionDetailsModal';
 import { CreditCardInvoiceModal } from '@/components/finance/CreditCardInvoiceModal';
+import { InvestmentDetailsModal } from '@/components/finance/InvestmentDetailsModal';
 import { useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
@@ -52,9 +53,11 @@ export default function FinanceScreen() {
   const [isCardModalVisible, setIsCardModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [isInvoiceModalVisible, setIsInvoiceModalVisible] = useState(false);
+  const [isInvestmentDetailsModalVisible, setIsInvestmentDetailsModalVisible] = useState(false);
 
   const [selectedTransaction, setSelectedTransaction] = useState<LancamentoFinanceiro | null>(null);
   const [selectedCard, setSelectedCard] = useState<CartaoCredito | null>(null);
+  const [selectedInvestment, setSelectedInvestment] = useState<Investimento | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -433,7 +436,14 @@ export default function FinanceScreen() {
         investments.map(inv => {
           const returns = financeService.calculateReturns(inv);
           return (
-            <View key={inv.id} style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <TouchableOpacity
+              key={inv.id}
+              style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={() => {
+                setSelectedInvestment(inv);
+                setIsInvestmentDetailsModalVisible(true);
+              }}
+            >
               <View style={[styles.listItemIcon, { backgroundColor: colors.primary + '10', borderRadius: 12, padding: 8 }]}>
                 <MaterialCommunityIcons name="chart-line" size={24} color={colors.primary} />
               </View>
@@ -448,7 +458,7 @@ export default function FinanceScreen() {
                   <MaterialCommunityIcons name="trash-can-outline" size={18} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
-            </View>
+            </TouchableOpacity>
           );
         })
       ) : (
@@ -609,6 +619,12 @@ export default function FinanceScreen() {
           setSelectedTransaction(transaction);
           setIsDetailsModalVisible(true);
         }}
+      />
+
+      <InvestmentDetailsModal
+        visible={isInvestmentDetailsModalVisible}
+        onClose={() => setIsInvestmentDetailsModalVisible(false)}
+        investment={selectedInvestment}
       />
     </View>
   );
