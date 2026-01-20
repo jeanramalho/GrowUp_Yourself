@@ -49,11 +49,17 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
     const [installmentType, setInstallmentType] = useState<'total' | 'parcela'>('total');
 
+    // Effect for loading data
     useEffect(() => {
         if (visible) {
             loadMethods();
             financeService.getPlanningCategories().then(setCategories);
+        }
+    }, [visible]);
 
+    // Effect for form initialization (Reset or Edit Mode)
+    useEffect(() => {
+        if (visible) {
             if (transactionToEdit) {
                 // Ensure date is valid, fallback to today
                 let parsedDate = new Date();
@@ -97,14 +103,20 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 setInstallmentType('total');
             }
         }
-    }, [visible, transactionToEdit, accounts]); // Added accounts to dep array to reset properly
+    }, [visible, transactionToEdit]);
+
+    // Effect to set default account if not set (UX improvement)
+    useEffect(() => {
+        if (visible && !transactionToEdit && formData.metodo === 'conta' && !formData.pagamentoId && accounts.length > 0) {
+            setFormData(prev => ({ ...prev, pagamentoId: accounts[0].id }));
+        }
+    }, [accounts, visible, transactionToEdit]);
 
     const loadMethods = async () => {
         const accs = await financeService.getAccounts();
         const crds = await financeService.getCards();
         setAccounts(accs);
         setCards(crds);
-        // Dont override formData here if already set by reset logic
     };
 
     const handleSave = async () => {
@@ -159,7 +171,9 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         }
     };
 
-    const filteredCategories = categories.length > 0 ? categories : [{ id: '1', nome: 'Outros', tipo: 'despesa', sistema: true, created_at: '' }];
+    const filteredCategories = categories.length > 0
+        ? categories.filter(c => c.tipo === formData.tipo)
+        : [{ id: '1', nome: 'Outros', tipo: formData.tipo, sistema: true, created_at: '' }];
 
     return (
         <Modal
