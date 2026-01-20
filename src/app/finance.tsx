@@ -219,20 +219,37 @@ export default function FinanceScreen() {
       )}
 
       <View style={styles.statsGrid}>
-        <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.statHeader}>
-            <MaterialCommunityIcons name="trending-up" size={16} color={colors.success} />
-            <Text style={[styles.statLabel, { color: colors.success }]}>ENTRADAS</Text>
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          onPress={() => {
+            setHistoryType('receita');
+            setIsHistoryModalVisible(true);
+          }}
+        >
+          <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={styles.statHeader}>
+              <MaterialCommunityIcons name="trending-up" size={16} color={colors.success} />
+              <Text style={[styles.statLabel, { color: colors.success }]}>ENTRADAS</Text>
+            </View>
+            <Text style={[styles.statValue, { color: colors.text }]}>R$ {summary.income.toFixed(2)}</Text>
           </View>
-          <Text style={[styles.statValue, { color: colors.text }]}>R$ {summary.income.toFixed(2)}</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.statHeader}>
-            <MaterialCommunityIcons name="trending-down" size={16} color={colors.error} />
-            <Text style={[styles.statLabel, { color: colors.error }]}>GASTO REAL</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          onPress={() => {
+            setHistoryType('despesa');
+            setIsHistoryModalVisible(true);
+          }}
+        >
+          <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={styles.statHeader}>
+              <MaterialCommunityIcons name="trending-down" size={16} color={colors.error} />
+              <Text style={[styles.statLabel, { color: colors.error }]}>GASTO REAL</Text>
+            </View>
+            <Text style={[styles.statValue, { color: colors.text }]}>R$ {summary.expenses.toFixed(2)}</Text>
           </View>
-          <Text style={[styles.statValue, { color: colors.text }]}>R$ {summary.expenses.toFixed(2)}</Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       <View style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.border }, shadows.sm]}>
@@ -628,6 +645,12 @@ export default function FinanceScreen() {
         visible={isInvestmentDetailsModalVisible}
         onClose={() => setIsInvestmentDetailsModalVisible(false)}
         investment={selectedInvestment}
+      />
+
+      <TransactionHistoryModal
+        visible={isHistoryModalVisible}
+        onClose={() => setIsHistoryModalVisible(false)}
+        type={historyType}
       />
     </View>
   );
