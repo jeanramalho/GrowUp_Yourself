@@ -170,7 +170,11 @@ export class FinanceService {
 
     async getCardInvoice(cardId: string, monthDate: Date): Promise<number> {
         const transactions = await this.getCardTransactions(cardId, monthDate);
-        return transactions.reduce((sum, t) => sum + t.valor, 0);
+        return transactions.reduce((sum, t) => {
+            if (t.tipo === 'despesa') return sum + t.valor;
+            if (t.tipo === 'receita') return sum - t.valor;
+            return sum;
+        }, 0);
     }
 
     async getCardTransactions(cardId: string, monthDate: Date): Promise<LancamentoFinanceiro[]> {
@@ -198,15 +202,29 @@ export class FinanceService {
     }
 
     async payInvoice(cardId: string, accountId: string, value: number) {
-        // Create an expense in the wallet
+        const today = new Date().toISOString().split('T')[0];
+
+        // 1. Create an expense in the wallet (money leaving the account)
         await this.createTransaction({
             tipo: 'despesa',
             valor: value,
             categoria: 'Pagamento Cartão',
-            data: new Date().toISOString().split('T')[0],
+            data: today,
             nota: `Fatura Cartão ID: ${cardId}`,
             planejado: false,
             conta_id: accountId
+        });
+
+        // 2. Create a revenue (payment) on the card to zero the invoice
+        // This acts as a credit to the card balance
+        await this.createTransaction({
+            tipo: 'receita',
+            valor: value,
+            categoria: 'Pagamento de Fatura',
+            data: today,
+            nota: 'Pagamento de Fatura',
+            planejado: false,
+            cartao_id: cardId
         });
     }
 
