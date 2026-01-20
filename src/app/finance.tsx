@@ -12,6 +12,7 @@ import { CardFormModal } from '@/components/finance/CardFormModal';
 import { TransactionDetailsModal } from '@/components/finance/TransactionDetailsModal';
 import { CreditCardInvoiceModal } from '@/components/finance/CreditCardInvoiceModal';
 import { InvestmentDetailsModal } from '@/components/finance/InvestmentDetailsModal';
+import { TransactionHistoryModal } from '@/components/finance/TransactionHistoryModal';
 import { useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
@@ -54,6 +55,8 @@ export default function FinanceScreen() {
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [isInvoiceModalVisible, setIsInvoiceModalVisible] = useState(false);
   const [isInvestmentDetailsModalVisible, setIsInvestmentDetailsModalVisible] = useState(false);
+  const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
+  const [historyType, setHistoryType] = useState<'receita' | 'despesa'>('receita');
 
   const [selectedTransaction, setSelectedTransaction] = useState<LancamentoFinanceiro | null>(null);
   const [selectedCard, setSelectedCard] = useState<CartaoCredito | null>(null);
