@@ -64,12 +64,12 @@ export class FinanceService {
         return accounts.map(account => {
             const txs = allTransactions.filter(t => t.conta_id === account.id && !t.planejado);
             const balanceChange = txs.reduce((sum, t) => {
-                return t.tipo === 'receita' ? sum + t.valor : sum - t.valor;
+                return t.tipo === 'receita' ? sum + Number(t.valor) : sum - Number(t.valor);
             }, 0);
 
             return {
                 ...account,
-                saldo_atual: account.saldo_inicial + balanceChange
+                saldo_atual: Number(account.saldo_inicial) + balanceChange
             };
         });
     }
@@ -190,6 +190,8 @@ export class FinanceService {
         return transactions.reduce((sum, t) => {
             if (t.tipo === 'despesa') return sum + t.valor;
             if (t.tipo === 'receita') return sum - t.valor;
+            // Negative 'despesa' or positive 'receita'? Actually invoice is amount to pay.
+            // Expense increases invoice. Revenue (payment) decreases it.
             return sum;
         }, 0);
     }
@@ -198,13 +200,28 @@ export class FinanceService {
         const card = await this.cartaoRepo.read(cardId);
         if (!card) return [];
 
-        const month = monthDate.getMonth();
-        const year = monthDate.getFullYear();
+        let targetMonth = monthDate.getMonth();
+        let targetYear = monthDate.getFullYear();
 
-        // Closing date is card.dia_fechamento
-        // Invoice M: From (Fechamento of M-1) to (Fechamento - 1 of M)
-        const startCycle = new Date(year, month - 1, card.dia_fechamento);
-        const endCycle = new Date(year, month, card.dia_fechamento - 1);
+        // Check if we are past the closing date of the current month
+        // If today is 23rd and closing is 10th, we are already in NEXT month's invoice cycle (Open)
+        if (monthDate.getDate() >= card.dia_fechamento) {
+            targetMonth++;
+            if (targetMonth > 11) {
+                targetMonth = 0;
+                targetYear++;
+            }
+        }
+        // If today is 5th and closing is 10th, we are in THIS month's invoice cycle (Dec 10 - Jan 9)
+
+        // Calculate cycle range for the TARGET invoice
+        // Cycle starts on PreviousMonth Day=Closing
+        // Cycle ends on TargetMonth Day=Closing-1
+
+        // Start Date: Month-1 (relative to target), Day: Closing
+        const startCycle = new Date(targetYear, targetMonth - 1, card.dia_fechamento);
+        // End Date: Month (relative to target), Day: Closing - 1
+        const endCycle = new Date(targetYear, targetMonth, card.dia_fechamento - 1);
 
         // Adjust for end of day
         endCycle.setHours(23, 59, 59, 999);
