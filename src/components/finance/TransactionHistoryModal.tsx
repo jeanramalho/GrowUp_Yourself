@@ -4,14 +4,17 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { LancamentoFinanceiro } from '@/models';
 import { financeService } from '@/services/FinanceService';
+import { SwipeableTransactionItem } from './SwipeableTransactionItem';
 
 interface TransactionHistoryModalProps {
     visible: boolean;
     onClose: () => void;
     type: 'receita' | 'despesa';
+    onEdit: (transaction: LancamentoFinanceiro) => void;
+    onDelete: (id: string) => Promise<void>;
 }
 
-export const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({ visible, onClose, type }) => {
+export const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({ visible, onClose, type, onEdit, onDelete }) => {
     const { colors, isDarkMode } = useAppTheme();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [transactions, setTransactions] = useState<LancamentoFinanceiro[]>([]);
@@ -84,25 +87,16 @@ export const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = (
                 <ScrollView contentContainerStyle={styles.list}>
                     {transactions.length > 0 ? (
                         transactions.map(t => (
-                            <View key={t.id} style={[styles.item, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                                <View style={styles.iconBox}>
-                                    <MaterialCommunityIcons
-                                        name={type === 'receita' ? 'arrow-up-circle' : 'arrow-down-circle'}
-                                        size={24}
-                                        color={type === 'receita' ? colors.success : colors.error}
-                                    />
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={[styles.itemTitle, { color: colors.text }]}>{t.categoria}</Text>
-                                    <Text style={[styles.itemDate, { color: colors.textSecondary }]}>
-                                        {t.data.split('-').reverse().join('/')}
-                                    </Text>
-                                    {t.nota && <Text numberOfLines={1} style={{ fontSize: 12, color: colors.textSecondary, fontStyle: 'italic' }}>{t.nota}</Text>}
-                                </View>
-                                <Text style={[styles.itemValue, { color: type === 'receita' ? colors.success : colors.error }]}>
-                                    R$ {t.valor.toFixed(2)}
-                                </Text>
-                            </View>
+                            <SwipeableTransactionItem
+                                key={t.id}
+                                transaction={t}
+                                onPress={() => { }}
+                                onEdit={() => onEdit(t)}
+                                onDelete={async () => {
+                                    await onDelete(t.id);
+                                    loadTransactions();
+                                }}
+                            />
                         ))
                     ) : (
                         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Nenhum registro encontrado neste mês.</Text>

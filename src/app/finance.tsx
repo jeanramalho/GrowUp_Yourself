@@ -13,6 +13,7 @@ import { TransactionDetailsModal } from '@/components/finance/TransactionDetails
 import { CreditCardInvoiceModal } from '@/components/finance/CreditCardInvoiceModal';
 import { InvestmentDetailsModal } from '@/components/finance/InvestmentDetailsModal';
 import { TransactionHistoryModal } from '@/components/finance/TransactionHistoryModal';
+import { SwipeableTransactionItem } from '@/components/finance/SwipeableTransactionItem';
 import { useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
@@ -353,54 +354,20 @@ export default function FinanceScreen() {
           const isVoucher = accounts.find(a => a.id === t.conta_id && ['vale_alimentacao', 'vale_refeicao'].includes(a.tipo));
 
           return (
-            <TouchableOpacity
+            <SwipeableTransactionItem
               key={t.id}
-              style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              transaction={t}
+              accounts={accounts}
               onPress={() => {
                 setSelectedTransaction(t);
                 setIsDetailsModalVisible(true);
               }}
-              onLongPress={() => {
-                Alert.alert("Opções", "O que deseja fazer?", [
-                  { text: "Editar", onPress: () => { setSelectedTransaction(t); setIsTransactionModalVisible(true); } },
-                  { text: "Excluir", style: "destructive", onPress: () => handleDeleteTransaction(t.id) },
-                  { text: "Cancelar", style: "cancel" }
-                ]);
+              onEdit={() => {
+                setSelectedTransaction(t);
+                setIsTransactionModalVisible(true);
               }}
-            >
-              <View style={styles.listItemIcon}>
-                <MaterialCommunityIcons
-                  name={t.tipo === 'receita' ? 'arrow-up-circle' : 'arrow-down-circle'}
-                  size={32}
-                  color={t.tipo === 'receita' ? colors.success : colors.error}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.itemTitle, { color: colors.text }]}>{t.categoria}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>
-                    {t.data.split('-').reverse().join('/')}
-                  </Text>
-                  {isCard && <MaterialCommunityIcons name="credit-card" size={12} color={colors.textSecondary} />}
-                  {isVoucher && <MaterialCommunityIcons name="ticket-percent" size={12} color={colors.textSecondary} />}
-                  {t.parcelas_total && t.parcelas_total > 1 && (
-                    <Text style={{ fontSize: 10, color: colors.textSecondary, fontWeight: 'bold' }}>
-                      ({t.parcela_atual}/{t.parcelas_total})
-                    </Text>
-                  )}
-                </View>
-                {t.nota && (
-                  <Text numberOfLines={1} style={[styles.itemSubtitle, { color: colors.textSecondary, fontStyle: 'italic', marginTop: 2 }]}>
-                    {t.nota}
-                  </Text>
-                )}
-              </View>
-              <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                <Text style={[styles.itemValue, { color: t.tipo === 'receita' ? colors.success : colors.error }]}>
-                  {t.tipo === 'receita' ? '+' : '-'} R$ {t.valor.toFixed(2)}
-                </Text>
-              </View>
-            </TouchableOpacity>
+              onDelete={() => handleDeleteTransaction(t.id)}
+            />
           );
         })
       ) : (
@@ -639,6 +606,14 @@ export default function FinanceScreen() {
           setSelectedTransaction(transaction);
           setIsDetailsModalVisible(true);
         }}
+        onEdit={(t) => {
+          setSelectedTransaction(t);
+          setIsTransactionModalVisible(true);
+        }}
+        onDelete={async (id) => {
+          await financeService.deleteTransaction(id);
+          fetchData();
+        }}
       />
 
       <InvestmentDetailsModal
@@ -651,6 +626,14 @@ export default function FinanceScreen() {
         visible={isHistoryModalVisible}
         onClose={() => setIsHistoryModalVisible(false)}
         type={historyType}
+        onEdit={(t) => {
+          setSelectedTransaction(t);
+          setIsTransactionModalVisible(true);
+        }}
+        onDelete={async (id) => {
+          await financeService.deleteTransaction(id);
+          fetchData();
+        }}
       />
     </View>
   );

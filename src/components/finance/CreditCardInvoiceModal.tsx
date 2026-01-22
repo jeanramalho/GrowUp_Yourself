@@ -4,19 +4,24 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { financeService } from '@/services/FinanceService';
 import { CartaoCredito, LancamentoFinanceiro } from '@/models';
+import { SwipeableTransactionItem } from './SwipeableTransactionItem';
 
 interface CreditCardInvoiceModalProps {
     visible: boolean;
     onClose: () => void;
     card: CartaoCredito | null;
     onTransactionPress: (transaction: LancamentoFinanceiro) => void;
+    onEdit: (transaction: LancamentoFinanceiro) => void;
+    onDelete: (id: string) => Promise<void>;
 }
 
 export const CreditCardInvoiceModal: React.FC<CreditCardInvoiceModalProps> = ({
     visible,
     onClose,
     card,
-    onTransactionPress
+    onTransactionPress,
+    onEdit,
+    onDelete
 }) => {
     const { colors, isDarkMode } = useAppTheme();
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -118,32 +123,16 @@ export const CreditCardInvoiceModal: React.FC<CreditCardInvoiceModalProps> = ({
                         <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
                     ) : transactions.length > 0 ? (
                         transactions.map(t => (
-                            <TouchableOpacity
+                            <SwipeableTransactionItem
                                 key={t.id}
-                                style={[styles.transactionItem, { borderBottomColor: colors.border }]}
+                                transaction={t}
                                 onPress={() => onTransactionPress(t)}
-                            >
-                                <View style={styles.iconBox}>
-                                    <MaterialCommunityIcons name={t.tipo === 'receita' ? 'arrow-up' : 'cart-outline'} size={20} color={colors.text} />
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={[styles.tTitle, { color: colors.text }]}>{t.categoria}</Text>
-                                    <View style={{ flexDirection: 'row', gap: 6 }}>
-                                        <Text style={[styles.tDate, { color: colors.textSecondary }]}>
-                                            {t.data.split('-').reverse().slice(0, 2).join('/')}
-                                        </Text>
-                                        {t.parcelas_total && t.parcelas_total > 1 && (
-                                            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-                                                {t.parcela_atual}/{t.parcelas_total}
-                                            </Text>
-                                        )}
-                                    </View>
-                                    {t.nota ? <Text style={{ fontSize: 12, color: colors.textSecondary, fontStyle: 'italic' }}>{t.nota}</Text> : null}
-                                </View>
-                                <Text style={[styles.tValue, { color: colors.text }]}>
-                                    R$ {t.valor.toFixed(2)}
-                                </Text>
-                            </TouchableOpacity>
+                                onEdit={() => onEdit(t)}
+                                onDelete={async () => {
+                                    await onDelete(t.id);
+                                    loadInvoice(currentDate);
+                                }}
+                            />
                         ))
                     ) : (
                         <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: 20 }}>
