@@ -57,6 +57,23 @@ export class FinanceService {
         return await this.contaRepo.list();
     }
 
+    async getAccountsWithBalance(): Promise<(Conta & { saldo_atual: number })[]> {
+        const accounts = await this.contaRepo.list();
+        const allTransactions = await this.lancamentoRepo.list();
+
+        return accounts.map(account => {
+            const txs = allTransactions.filter(t => t.conta_id === account.id && !t.planejado);
+            const balanceChange = txs.reduce((sum, t) => {
+                return t.tipo === 'receita' ? sum + t.valor : sum - t.valor;
+            }, 0);
+
+            return {
+                ...account,
+                saldo_atual: account.saldo_inicial + balanceChange
+            };
+        });
+    }
+
     async createAccount(conta: Omit<Conta, 'id' | 'created_at'>): Promise<Conta> {
         return await this.contaRepo.create({
             ...conta,

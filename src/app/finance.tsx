@@ -40,7 +40,7 @@ export default function FinanceScreen() {
   const [filteredTransactions, setFilteredTransactions] = useState<LancamentoFinanceiro[]>([]);
   const [investments, setInvestments] = useState<Investimento[]>([]);
   const [plannedItems, setPlannedItems] = useState<LancamentoFinanceiro[]>([]);
-  const [accounts, setAccounts] = useState<Conta[]>([]);
+  const [accounts, setAccounts] = useState<(Conta & { saldo_atual: number })[]>([]);
   const [cards, setCards] = useState<(CartaoCredito & { fatura: number })[]>([]);
 
   // Filters
@@ -72,7 +72,7 @@ export default function FinanceScreen() {
       const transactions = await financeService.getTransactionsByMonth(today);
       const invs = await financeService.getInvestments();
       const planned = await financeService.getPlannedByMonth(today);
-      const accs = await financeService.getAccounts();
+      const accs = await financeService.getAccountsWithBalance();
       const crds = await financeService.getCards();
 
       const cardsWithFatura = await Promise.all(crds.map(async c => ({
@@ -474,7 +474,7 @@ export default function FinanceScreen() {
             <Text style={[styles.itemTitle, { color: colors.text }]}>{acc.nome}</Text>
             <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{acc.tipo.replace('_', ' ')}</Text>
           </View>
-          <Text style={[styles.itemValue, { color: colors.text }]}>R$ {acc.saldo_inicial.toFixed(2)}</Text>
+          <Text style={[styles.itemValue, { color: colors.text }]}>R$ {acc.saldo_atual.toFixed(2)}</Text>
         </View>
       ))}
 
