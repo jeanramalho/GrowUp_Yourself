@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
@@ -10,7 +10,7 @@ interface SwipeableTransactionItemProps {
     onPress: () => void;
     onEdit: () => void;
     onDelete: () => void;
-    accounts?: Conta[]; // Optional, for looking up voucher names if needed
+    accounts?: Conta[];
 }
 
 export const SwipeableTransactionItem: React.FC<SwipeableTransactionItemProps> = ({
@@ -20,47 +20,29 @@ export const SwipeableTransactionItem: React.FC<SwipeableTransactionItemProps> =
     onDelete,
     accounts = []
 }) => {
-    const { colors, isDarkMode } = useAppTheme();
+    const { colors } = useAppTheme();
     const swipeableRef = React.useRef<Swipeable>(null);
 
     const closeSwipeable = () => {
         swipeableRef.current?.close();
     };
 
-    const renderLeftActions = (progress: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
-        const scale = dragX.interpolate({
-            inputRange: [0, 100],
-            outputRange: [0, 1],
-            extrapolate: 'clamp',
-        });
-
-        return (
-            <TouchableOpacity onPress={() => { closeSwipeable(); onEdit(); }} style={styles.leftAction}>
-                <Animated.View style={[styles.actionIcon, { transform: [{ scale }] }]}>
-                    <MaterialCommunityIcons name="pencil" size={24} color="white" />
-                    <Text style={styles.actionText}>Editar</Text>
-                </Animated.View>
-            </TouchableOpacity>
-        );
-    };
-
     const renderRightActions = (progress: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
-        const scale = dragX.interpolate({
-            inputRange: [-100, 0],
-            outputRange: [1, 0],
-            extrapolate: 'clamp',
-        });
-
         return (
-            <TouchableOpacity
-                onPress={() => { closeSwipeable(); onDelete(); }}
-                style={styles.rightAction}
-            >
-                <Animated.View style={[styles.actionIcon, { transform: [{ scale }] }]}>
+            <View style={styles.rightActionsContainer}>
+                <TouchableOpacity
+                    onPress={() => { closeSwipeable(); onEdit(); }}
+                    style={styles.editCircle}
+                >
+                    <MaterialCommunityIcons name="pencil" size={24} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => { closeSwipeable(); onDelete(); }}
+                    style={styles.deleteCircle}
+                >
                     <MaterialCommunityIcons name="trash-can-outline" size={24} color="white" />
-                    <Text style={styles.actionText}>Excluir</Text>
-                </Animated.View>
-            </TouchableOpacity>
+                </TouchableOpacity>
+            </View>
         );
     };
 
@@ -70,8 +52,9 @@ export const SwipeableTransactionItem: React.FC<SwipeableTransactionItemProps> =
     return (
         <Swipeable
             ref={swipeableRef}
-            renderLeftActions={renderLeftActions}
             renderRightActions={renderRightActions}
+            friction={2}
+            rightThreshold={40}
             containerStyle={styles.swipeContainer}
         >
             <TouchableOpacity
@@ -119,8 +102,6 @@ export const SwipeableTransactionItem: React.FC<SwipeableTransactionItemProps> =
 const styles = StyleSheet.create({
     swipeContainer: {
         marginBottom: 8,
-        borderRadius: 20,
-        overflow: 'hidden', // Important for rounded corners on swipe actions
     },
     listItem: {
         flexDirection: 'row',
@@ -145,29 +126,26 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-    leftAction: {
-        backgroundColor: '#3B82F6',
-        justifyContent: 'center',
-        alignItems: 'flex-end',
-        flex: 1,
-        paddingHorizontal: 20,
+    rightActionsContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingLeft: 12,
+        gap: 8,
     },
-    rightAction: {
+    editCircle: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#3B82F6', // Blue 500
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    deleteCircle: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
         backgroundColor: '#EF4444',
         justifyContent: 'center',
-        alignItems: 'flex-start', // Icons start from left of the red area
-        flex: 1,
-        paddingHorizontal: 20,
-    },
-    actionIcon: {
         alignItems: 'center',
-        justifyContent: 'center',
-        width: 60,
-    },
-    actionText: {
-        color: 'white',
-        fontSize: 10,
-        fontWeight: 'bold',
-        marginTop: 4,
     },
 });
