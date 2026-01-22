@@ -14,6 +14,8 @@ import { CreditCardInvoiceModal } from '@/components/finance/CreditCardInvoiceMo
 import { InvestmentDetailsModal } from '@/components/finance/InvestmentDetailsModal';
 import { TransactionHistoryModal } from '@/components/finance/TransactionHistoryModal';
 import { SwipeableTransactionItem } from '@/components/finance/SwipeableTransactionItem';
+import { SwipeableAccountItem } from '@/components/finance/SwipeableAccountItem';
+import { SwipeableCardItem } from '@/components/finance/SwipeableCardItem';
 import { useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
@@ -62,6 +64,8 @@ export default function FinanceScreen() {
   const [selectedTransaction, setSelectedTransaction] = useState<LancamentoFinanceiro | null>(null);
   const [selectedCard, setSelectedCard] = useState<CartaoCredito | null>(null);
   const [selectedInvestment, setSelectedInvestment] = useState<Investimento | null>(null);
+  const [editingAccount, setEditingAccount] = useState<Conta | undefined>(undefined);
+  const [editingCard, setEditingCard] = useState<CartaoCredito | undefined>(undefined);
 
   const fetchData = useCallback(async () => {
     try {
@@ -464,18 +468,15 @@ export default function FinanceScreen() {
       </View>
 
       {accounts.map(acc => (
-        <View key={acc.id} style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <MaterialCommunityIcons
-            name={acc.tipo === 'carteira' ? 'wallet' : 'food'}
-            size={24}
-            color={colors.primary}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.itemTitle, { color: colors.text }]}>{acc.nome}</Text>
-            <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{acc.tipo.replace('_', ' ')}</Text>
-          </View>
-          <Text style={[styles.itemValue, { color: colors.text }]}>R$ {acc.saldo_atual.toFixed(2)}</Text>
-        </View>
+        <SwipeableAccountItem
+          key={acc.id}
+          account={acc}
+          onEdit={() => {
+            setEditingAccount(acc);
+            setIsAccountModalVisible(true);
+          }}
+          onDelete={() => handleDeleteAccount(acc.id)}
+        />
       ))}
 
       <View style={[styles.sectionHeader, { marginTop: 16 }]}>
@@ -486,45 +487,32 @@ export default function FinanceScreen() {
       </View>
 
       {cards.map(card => (
-        <TouchableOpacity
+        <SwipeableCardItem
           key={card.id}
-          activeOpacity={0.7}
-          style={[styles.cardItem, { backgroundColor: isDarkMode ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}
+          card={card}
+          isDarkMode={isDarkMode}
           onPress={() => {
             setSelectedCard(card);
             setIsInvoiceModalVisible(true);
           }}
-        >
-          <View style={styles.cardInfo}>
-            <MaterialCommunityIcons name="credit-card-chip" size={32} color={colors.primary} />
-            <View>
-              <Text style={[styles.itemTitle, { color: colors.text }]}>{card.nome}</Text>
-              <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>Vence dia {card.dia_vencimento}</Text>
-            </View>
-          </View>
-
-          <View style={styles.cardFaturaBox}>
-            <Text style={[styles.faturaLabel, { color: colors.textSecondary }]}>Fatura Atual</Text>
-            <Text style={[styles.faturaValue, { color: colors.error }]}>R$ {card.fatura.toFixed(2)}</Text>
-            <TouchableOpacity
-              style={[styles.payBtn, { backgroundColor: colors.primary }]}
-              onPress={() => {
-                Alert.alert("Pagar Fatura", "Escolha a conta para o pagamento", [
-                  { text: "Cancelar", style: "cancel" },
-                  ...accounts.map(acc => ({
-                    text: acc.nome,
-                    onPress: async () => {
-                      await financeService.payInvoice(card.id, acc.id, card.fatura);
-                      fetchData();
-                    }
-                  }))
-                ]);
-              }}
-            >
-              <Text style={styles.payBtnText}>Pagar Agora</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
+          onEdit={() => {
+            setEditingCard(card);
+            setIsCardModalVisible(true);
+          }}
+          onDelete={() => handleDeleteCard(card.id)}
+          onPay={() => {
+            Alert.alert("Pagar Fatura", "Escolha a conta para o pagamento", [
+              { text: "Cancelar", style: "cancel" },
+              ...accounts.map(acc => ({
+                text: acc.nome,
+                onPress: async () => {
+                  await financeService.payInvoice(card.id, acc.id, card.fatura);
+                  fetchData();
+                }
+              }))
+            ]);
+          }}
+        />
       ))}
     </View>
   );
@@ -582,14 +570,22 @@ export default function FinanceScreen() {
 
       <AccountFormModal
         visible={isAccountModalVisible}
-        onClose={() => setIsAccountModalVisible(false)}
+        onClose={() => {
+          setIsAccountModalVisible(false);
+          setEditingAccount(undefined);
+        }}
         onSaveSuccess={fetchData}
+        account={editingAccount}
       />
 
       <CardFormModal
         visible={isCardModalVisible}
-        onClose={() => setIsCardModalVisible(false)}
+        onClose={() => {
+          setIsCardModalVisible(false);
+          setEditingCard(undefined);
+        }}
         onSaveSuccess={fetchData}
+        card={editingCard}
       />
 
       <TransactionDetailsModal

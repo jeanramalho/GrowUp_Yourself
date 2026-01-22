@@ -17,6 +17,7 @@ interface AccountFormModalProps {
     visible: boolean;
     onClose: () => void;
     onSaveSuccess: () => void;
+    account?: any; // Conta | null
 }
 
 const ACCOUNT_TYPES = [
@@ -29,6 +30,7 @@ export const AccountFormModal: React.FC<AccountFormModalProps> = ({
     visible,
     onClose,
     onSaveSuccess,
+    account
 }) => {
     const { colors, isDarkMode, spacing } = useAppTheme();
 
@@ -38,11 +40,17 @@ export const AccountFormModal: React.FC<AccountFormModalProps> = ({
 
     useEffect(() => {
         if (visible) {
-            setNome('');
-            setTipo('carteira');
-            setSaldoInicial('');
+            if (account) {
+                setNome(account.nome);
+                setTipo(account.tipo);
+                setSaldoInicial(account.saldo_inicial.toString().replace('.', ','));
+            } else {
+                setNome('');
+                setTipo('carteira');
+                setSaldoInicial('');
+            }
         }
-    }, [visible]);
+    }, [visible, account]);
 
     const handleSave = async () => {
         if (!nome.trim()) {
@@ -51,14 +59,26 @@ export const AccountFormModal: React.FC<AccountFormModalProps> = ({
         }
 
         try {
-            await financeService.createAccount({
-                nome,
-                tipo,
-                saldo_inicial: parseFloat(saldoInicial.replace(',', '.')) || 0,
-            });
+            const saldo = parseFloat(saldoInicial.replace(',', '.')) || 0;
+
+            if (account) {
+                await financeService.updateAccount(account.id, {
+                    nome,
+                    tipo,
+                    saldo_inicial: saldo,
+                });
+            } else {
+                await financeService.createAccount({
+                    nome,
+                    tipo,
+                    saldo_inicial: saldo,
+                });
+            }
 
             onSaveSuccess();
             onClose();
+            // Clear state only if creating? Or always?
+            // Better to clear.
             setNome('');
             setSaldoInicial('');
         } catch (error) {
@@ -79,7 +99,9 @@ export const AccountFormModal: React.FC<AccountFormModalProps> = ({
                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                         <MaterialCommunityIcons name="close" size={24} color={colors.text} />
                     </TouchableOpacity>
-                    <Text style={[styles.title, { color: colors.text }]}>Nova Conta / Vale</Text>
+                    <Text style={[styles.title, { color: colors.text }]}>
+                        {account ? 'Editar Conta / Vale' : 'Nova Conta / Vale'}
+                    </Text>
                     <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
                         <Text style={[styles.saveButtonText, { color: colors.primary }]}>Salvar</Text>
                     </TouchableOpacity>

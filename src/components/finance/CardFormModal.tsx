@@ -17,12 +17,14 @@ interface CardFormModalProps {
     visible: boolean;
     onClose: () => void;
     onSaveSuccess: () => void;
+    card?: any; // CartaoCredito | null
 }
 
 export const CardFormModal: React.FC<CardFormModalProps> = ({
     visible,
     onClose,
     onSaveSuccess,
+    card
 }) => {
     const { colors, isDarkMode, spacing } = useAppTheme();
 
@@ -34,13 +36,21 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
 
     useEffect(() => {
         if (visible) {
-            setNome('');
-            setDescricao('');
-            setLimite('');
-            setDiaFechamento('');
-            setDiaVencimento('');
+            if (card) {
+                setNome(card.nome);
+                setDescricao(card.descricao || '');
+                setLimite(card.limite.toString().replace('.', ','));
+                setDiaFechamento(card.dia_fechamento.toString());
+                setDiaVencimento(card.dia_vencimento.toString());
+            } else {
+                setNome('');
+                setDescricao('');
+                setLimite('');
+                setDiaFechamento('');
+                setDiaVencimento('');
+            }
         }
-    }, [visible]);
+    }, [visible, card]);
 
     const handleSave = async () => {
         if (!nome.trim() || !diaFechamento || !diaVencimento) {
@@ -49,21 +59,22 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
         }
 
         try {
-            await financeService.createCard({
+            const cardData = {
                 nome,
                 descricao,
                 limite: parseFloat(limite.replace(',', '.')) || 0,
                 dia_fechamento: parseInt(diaFechamento),
                 dia_vencimento: parseInt(diaVencimento),
-            });
+            };
+
+            if (card) {
+                await financeService.updateCard(card.id, cardData);
+            } else {
+                await financeService.createCard(cardData);
+            }
 
             onSaveSuccess();
             onClose();
-            setNome('');
-            setDescricao('');
-            setLimite('');
-            setDiaFechamento('');
-            setDiaVencimento('');
         } catch (error) {
             console.error("Save card error:", error);
             Alert.alert("Erro", "Não foi possível salvar o cartão.");
@@ -82,7 +93,9 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                         <MaterialCommunityIcons name="close" size={24} color={colors.text} />
                     </TouchableOpacity>
-                    <Text style={[styles.title, { color: colors.text }]}>Novo Cartão de Crédito</Text>
+                    <Text style={[styles.title, { color: colors.text }]}>
+                        {card ? 'Editar Cartão' : 'Novo Cartão'}
+                    </Text>
                     <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
                         <Text style={[styles.saveButtonText, { color: colors.primary }]}>Salvar</Text>
                     </TouchableOpacity>
