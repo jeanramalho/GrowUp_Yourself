@@ -14,12 +14,12 @@ export class LancamentoRepository extends Repository<LancamentoFinanceiro> {
 
     async getPlannedByMonth(monthYear: string): Promise<LancamentoFinanceiro[]> {
         // monthYear format YYYY-MM
-        const sql = `SELECT * FROM ${this.tableName} WHERE data LIKE ? AND planejado = 1`;
+        const sql = `SELECT * FROM ${this.tableName} WHERE data LIKE ? AND planejado = 1 ORDER BY data DESC`;
         return this.executeQuery<LancamentoFinanceiro>(sql, [`${monthYear}%`]);
     }
 
     async getRealByMonth(monthYear: string): Promise<LancamentoFinanceiro[]> {
-        const sql = `SELECT * FROM ${this.tableName} WHERE data LIKE ? AND planejado = 0`;
+        const sql = `SELECT * FROM ${this.tableName} WHERE data LIKE ? AND planejado = 0 ORDER BY data DESC`;
         return this.executeQuery<LancamentoFinanceiro>(sql, [`${monthYear}%`]);
     }
 }

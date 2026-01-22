@@ -198,7 +198,7 @@ export class FinanceService {
             !t.planejado &&
             new Date(t.data) >= startCycle &&
             new Date(t.data) <= endCycle
-        );
+        ).sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
     }
 
     async payInvoice(cardId: string, accountId: string, value: number) {
