@@ -146,6 +146,30 @@ export default function FinanceScreen() {
     ]);
   };
 
+  const handleDeleteAccount = async (id: string) => {
+    Alert.alert("Excluir", "Deseja excluir esta conta/vale?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir", style: "destructive", onPress: async () => {
+          await financeService.deleteAccount(id);
+          fetchData();
+        }
+      }
+    ]);
+  };
+
+  const handleDeleteCard = async (id: string) => {
+    Alert.alert("Excluir", "Deseja excluir este cartão?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir", style: "destructive", onPress: async () => {
+          await financeService.deleteCard(id);
+          fetchData();
+        }
+      }
+    ]);
+  };
+
   const renderTabs = () => (
     <View style={styles.tabsWrapper}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
