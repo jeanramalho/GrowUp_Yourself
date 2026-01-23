@@ -1,5 +1,5 @@
 import { Repository } from './Repository';
-import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito } from '../models';
+import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito, CategoriaFinanceira } from '../models';
 import { SQLiteDatabase } from 'expo-sqlite';
 
 export class LancamentoRepository extends Repository<LancamentoFinanceiro> {
@@ -22,6 +22,12 @@ export class LancamentoRepository extends Repository<LancamentoFinanceiro> {
         const sql = `SELECT * FROM ${this.tableName} WHERE data LIKE ? AND planejado = 0 ORDER BY data DESC`;
         return this.executeQuery<LancamentoFinanceiro>(sql, [`${monthYear}%`]);
     }
+
+    async getUpcomingPayments(limit: number): Promise<LancamentoFinanceiro[]> {
+        const today = new Date().toISOString().split('T')[0];
+        const sql = `SELECT * FROM ${this.tableName} WHERE planejado = 1 AND status = 'pendente' AND data >= ? ORDER BY data ASC LIMIT ?`;
+        return this.executeQuery<LancamentoFinanceiro>(sql, [today, limit]);
+    }
 }
 
 export class InvestimentoRepository extends Repository<Investimento> {
@@ -42,8 +48,8 @@ export class CartaoRepository extends Repository<CartaoCredito> {
     }
 }
 
-export class PlanningCategoryRepository extends Repository<any> {
+export class FinanceCategoryRepository extends Repository<CategoriaFinanceira> {
     constructor(db: SQLiteDatabase) {
-        super(db, 'categoria_planejamento');
+        super(db, 'categoria_financeira');
     }
 }

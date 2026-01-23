@@ -1,5 +1,5 @@
-import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito, CategoriaPlanejamento } from '../models';
-import { LancamentoRepository, InvestimentoRepository, ContaRepository, CartaoRepository, PlanningCategoryRepository } from '../repositories/FinanceRepository';
+import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito, CategoriaFinanceira } from '../models';
+import { LancamentoRepository, InvestimentoRepository, ContaRepository, CartaoRepository, FinanceCategoryRepository } from '../repositories/FinanceRepository';
 import { database } from '../repositories/Repository';
 
 export class FinanceService {
@@ -7,7 +7,7 @@ export class FinanceService {
     private _investimentoRepo: InvestimentoRepository | null = null;
     private _contaRepo: ContaRepository | null = null;
     private _cartaoRepo: CartaoRepository | null = null;
-    private _planningCategoryRepo: PlanningCategoryRepository | null = null;
+    // private _planningCategoryRepo: PlanningCategoryRepository | null = null; // Removed
 
     private get lancamentoRepo(): LancamentoRepository {
         if (!this._lancamentoRepo) {
@@ -37,11 +37,13 @@ export class FinanceService {
         return this._cartaoRepo;
     }
 
-    private get planningCategoryRepo(): PlanningCategoryRepository {
-        if (!this._planningCategoryRepo) {
-            this._planningCategoryRepo = new PlanningCategoryRepository(database.getDb());
+    private _financeCategoryRepo: FinanceCategoryRepository | null = null;
+
+    private get financeCategoryRepo(): FinanceCategoryRepository {
+        if (!this._financeCategoryRepo) {
+            this._financeCategoryRepo = new FinanceCategoryRepository(database.getDb());
         }
-        return this._planningCategoryRepo;
+        return this._financeCategoryRepo;
     }
 
     private generateId(): string {
@@ -412,24 +414,101 @@ export class FinanceService {
     }
 
     // Planning Categories
-    async getPlanningCategories(): Promise<CategoriaPlanejamento[]> {
-        return await this.planningCategoryRepo.list();
+    // Categories
+    async getCategories(): Promise<CategoriaFinanceira[]> {
+        return await this.financeCategoryRepo.list();
     }
 
-    async createPlanningCategory(category: Omit<CategoriaPlanejamento, 'id' | 'created_at'>): Promise<CategoriaPlanejamento> {
-        return await this.planningCategoryRepo.create({
+    async getActiveCategories(monthDate: Date): Promise<CategoriaFinanceira[]> {
+        // Return valid categories for the month (Permanent + Monthly ones for specific month)
+        // For "Monthly" logic, we might need to filter by creation date or specific metadata.
+        // Requirement: "quando não é a categoria só servirá para o mes atual"
+        // We can use created_at to check if it matches the month if not permanent.
+        const all = await this.financeCategoryRepo.list();
+        const startMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+        const endMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+        endMonth.setHours(23, 59, 59, 999);
+
+        return all.filter(c => {
+            if (c.arquivada) return false;
+            if (c.is_permanente) return true;
+
+            const created = new Date(c.created_at);
+            return created >= startMonth && created <= endMonth;
+        });
+    }
+
+    async createCategory(category: Omit<CategoriaFinanceira, 'id' | 'created_at' | 'arquivada'>): Promise<CategoriaFinanceira> {
+        return await this.financeCategoryRepo.create({
             ...category,
             id: this.generateId(),
+            arquivada: false,
             created_at: new Date().toISOString()
         });
     }
 
-    async updatePlanningCategory(id: string, category: Partial<CategoriaPlanejamento>): Promise<CategoriaPlanejamento> {
-        return await this.planningCategoryRepo.update(id, category);
+    async updateCategory(id: string, category: Partial<CategoriaFinanceira>): Promise<CategoriaFinanceira> {
+        return await this.financeCategoryRepo.update(id, category);
     }
 
-    async deletePlanningCategory(id: string): Promise<boolean> {
-        return await this.planningCategoryRepo.delete(id);
+    async deleteCategory(id: string): Promise<boolean> {
+        // Soft delete
+        return await this.financeCategoryRepo.update(id, { arquivada: true } as any);
+    }
+
+    // Planning Items
+    async createPlannedItem(item: Omit<LancamentoFinanceiro, 'id' | 'created_at' | 'planejado'> & { recorrente?: boolean }): Promise<LancamentoFinanceiro[]> {
+        const results: LancamentoFinanceiro[] = [];
+        const isRecurrent = item.recorrente;
+        const recurrenceId = isRecurrent ? this.generateId() : null;
+
+        // How many months to generate? Let's say 12 if recurrent, or 1 if not.
+        const count = isRecurrent ? 12 : 1;
+
+        for (let i = 0; i < count; i++) {
+            const date = new Date(item.data);
+            date.setMonth(date.getMonth() + i);
+
+            const newItem: LancamentoFinanceiro = {
+                ...item,
+                id: this.generateId(),
+                created_at: new Date().toISOString(),
+                data: date.toISOString().split('T')[0],
+                planejado: true,
+                status: 'pendente',
+                recorrencia_id: recurrenceId
+            };
+            // Remove 'recorrente' property as it's not in the model
+            delete (newItem as any).recorrente;
+
+            results.push(await this.lancamentoRepo.create(newItem));
+        }
+        return results;
+    }
+
+    async getUpcomingPayments(limit: number = 3): Promise<LancamentoFinanceiro[]> {
+        return await this.lancamentoRepo.getUpcomingPayments(limit);
+    }
+
+    async payPlannedItem(plannedId: string, accountId: string, date: string): Promise<void> {
+        const planned = await this.lancamentoRepo.read(plannedId);
+        if (!planned) throw new Error("Planning item not found");
+
+        // 1. Create real transaction
+        await this.createTransaction({
+            tipo: planned.tipo,
+            valor: planned.valor,
+            categoria_id: planned.categoria_id,
+            // Fallback for legacy items without category_id
+            categoria: planned.categoria,
+            data: date,
+            nota: planned.nota,
+            planejado: false,
+            conta_id: accountId
+        });
+
+        // 2. Mark planned as paid
+        await this.lancamentoRepo.update(plannedId, { status: 'pago' } as any);
     }
 }
 

@@ -71,7 +71,8 @@ export interface Execucao {
 export interface LancamentoFinanceiro {
   id: string;
   tipo: 'receita' | 'despesa';
-  categoria?: string | null;
+  categoria_id?: string | null;
+  status?: 'pendente' | 'pago';
   valor: number;
   data: string; // YYYY-MM-DD format
   nota?: string | null;
@@ -81,6 +82,7 @@ export interface LancamentoFinanceiro {
   parcelas_total?: number;
   parcela_atual?: number;
   id_grupo_parcela?: string | null;
+  recorrencia_id?: string | null;
   created_at: string;
 }
 
@@ -109,13 +111,17 @@ export interface CartaoCredito {
 }
 
 /**
- * Planning Category (Categoria de Planejamento)
+ * Finance Category (Categoria Financeira)
+ * Replaces hardcoded strings and CategoriaPlanejamento
  */
-export interface CategoriaPlanejamento {
+export interface CategoriaFinanceira {
   id: string;
   nome: string;
+  icone: string; // MaterialCommunityIcons name
+  cor: string; // Hex color
   tipo: 'receita' | 'despesa';
-  sistema: boolean; // 1 = true, 0 = false
+  is_permanente: boolean; // true = visible every month, false = only for created month
+  arquivada: boolean; // soft delete
   created_at: string;
 }
 
