@@ -320,9 +320,9 @@ export class FinanceService {
         await this.createTransaction({
             tipo: 'despesa',
             valor: value,
-            categoria: 'Pagamento Cartão',
+            // categoria: 'Pagamento Cartão', // Removed
             data: today,
-            nota: `Fatura Cartão ID: ${cardId}`,
+            nota: `Fatura Cartão ID: ${cardId} - Pagamento Cartão`,
             planejado: false,
             conta_id: accountId
         });
@@ -332,7 +332,7 @@ export class FinanceService {
         await this.createTransaction({
             tipo: 'receita',
             valor: value,
-            categoria: 'Pagamento de Fatura',
+            // categoria: 'Pagamento de Fatura', // Removed
             data: today,
             nota: 'Pagamento de Fatura',
             planejado: false,
@@ -453,7 +453,8 @@ export class FinanceService {
 
     async deleteCategory(id: string): Promise<boolean> {
         // Soft delete
-        return await this.financeCategoryRepo.update(id, { arquivada: true } as any);
+        await this.financeCategoryRepo.update(id, { arquivada: true } as any);
+        return true;
     }
 
     // Planning Items
@@ -500,7 +501,7 @@ export class FinanceService {
             valor: planned.valor,
             categoria_id: planned.categoria_id,
             // Fallback for legacy items without category_id
-            categoria: planned.categoria,
+            // categoria: planned.categoria,  // Removed
             data: date,
             nota: planned.nota,
             planejado: false,
