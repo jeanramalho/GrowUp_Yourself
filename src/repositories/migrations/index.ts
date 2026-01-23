@@ -289,6 +289,73 @@ export const migration004PlanningCategories: Migration = {
 };
 
 /**
+ * Planning Overhaul migration - New Category System + Planning Items
+ */
+export const migration005PlanningOverhaul: Migration = {
+  version: 5,
+  name: '005_planning_overhaul',
+  up: async (db: SQLiteDatabase) => {
+    await db.withTransactionAsync(async () => {
+      // Create categoria_financeira table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS categoria_financeira (
+          id TEXT PRIMARY KEY,
+          nome TEXT NOT NULL,
+          icone TEXT NOT NULL,
+          cor TEXT NOT NULL,
+          tipo TEXT NOT NULL, -- 'receita' or 'despesa'
+          is_permanente INTEGER NOT NULL DEFAULT 1,
+          arquivada INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      // Add new columns to lancamento_financeiro
+      try {
+        await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN categoria_id TEXT`);
+      } catch (e) { /* Ignore if exists */ }
+
+      try {
+        await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN status TEXT DEFAULT 'pendente'`);
+      } catch (e) { /* Ignore if exists */ }
+
+      try {
+        await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN recorrencia_id TEXT`);
+      } catch (e) { /* Ignore if exists */ }
+
+      // Migrate existing 'categoria_planejamento' (Legacy) to 'categoria_financeira' if needed
+      // For now, let's just seed some defaults for the New System if empty
+      const count = await db.getFirstAsync<{ c: number }>(`SELECT COUNT(*) as c FROM categoria_financeira`);
+      if ((count?.c || 0) === 0) {
+        const defaultCats = [
+          { name: 'Moradia', icon: 'home', color: '#EF4444' },
+          { name: 'Alimentação', icon: 'food', color: '#F59E0B' },
+          { name: 'Transporte', icon: 'car', color: '#3B82F6' },
+          { name: 'Lazer', icon: 'gamepad-variant', color: '#8B5CF6' },
+          { name: 'Saúde', icon: 'medical-bag', color: '#10B981' },
+          { name: 'Outros', icon: 'tag-outline', color: '#6B7280' },
+          { name: 'Salário', icon: 'cash', color: '#10B981', type: 'receita' }
+        ];
+
+        for (const cat of defaultCats) {
+          const id = `cat-${cat.name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+          await db.runAsync(
+            `INSERT OR IGNORE INTO categoria_financeira (id, nome, icone, cor, tipo, is_permanente, arquivada, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id, cat.name, cat.icon, cat.color, (cat as any).type || 'despesa', 1, 0, new Date().toISOString()]
+          );
+        }
+      }
+
+      // Record this migration
+      await db.runAsync(
+        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
+        [5, '005_planning_overhaul', new Date().toISOString()]
+      );
+    });
+  },
+};
+
+/**
  * Migration runner
  */
 export class MigrationRunner {
