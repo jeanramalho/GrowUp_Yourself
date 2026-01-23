@@ -302,7 +302,7 @@ export class MigrationRunner {
       migration001Init,
       migration002SeedPilares,
       migration003FinanceEnhancements,
-      migration004PlanningCategories,
+      migration005PlanningOverhaul,
     ];
   }
 
