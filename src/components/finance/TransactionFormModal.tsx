@@ -12,9 +12,10 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { financeService } from '@/services/FinanceService';
-import { LancamentoFinanceiro, Conta, CartaoCredito, CategoriaPlanejamento } from '@/models';
+import { LancamentoFinanceiro, Conta, CartaoCredito, CategoriaFinanceira } from '@/models';
 import { CurrencyInput } from '../ui/CurrencyInput';
 import { DatePickerInput } from '../ui/DatePickerInput';
+import { CategoryManagerModal } from './CategoryManagerModal';
 
 interface TransactionFormModalProps {
     visible: boolean;
@@ -33,7 +34,10 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
     const [formData, setFormData] = useState({
         tipo: 'despesa' as 'receita' | 'despesa',
-        categoria: 'Outros',
+        categoria_id: '',
+        categoria_nome: 'Outros',
+        categoria_icone: 'tag-outline',
+        categoria_cor: '#666',
         valor: '',
         data: new Date(),
         nota: '',
@@ -44,16 +48,14 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
     const [accounts, setAccounts] = useState<Conta[]>([]);
     const [cards, setCards] = useState<CartaoCredito[]>([]);
-    const [categories, setCategories] = useState<CategoriaPlanejamento[]>([]);
-    const [customCategory, setCustomCategory] = useState('');
-
     const [installmentType, setInstallmentType] = useState<'total' | 'parcela'>('total');
+
+    const [isCategoryPickerVisible, setIsCategoryPickerVisible] = useState(false);
 
     // Effect for loading data
     useEffect(() => {
         if (visible) {
             loadMethods();
-            financeService.getPlanningCategories().then(setCategories);
         }
     }, [visible]);
 
@@ -76,9 +78,34 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     parsedDate = new Date(y, m - 1, d);
                 }
 
+                // Try to find category details if ID exists, or use legacy name
+                let catDetails = {
+                    id: transactionToEdit.categoria_id || '',
+                    nome: transactionToEdit.categoria || 'Outros',
+                    icone: 'tag-outline',
+                    cor: '#666'
+                };
+
+                if (transactionToEdit.categoria_id) {
+                    financeService.getCategories().then(cats => {
+                        const found = cats.find(c => c.id === transactionToEdit.categoria_id);
+                        if (found) {
+                            setFormData(prev => ({
+                                ...prev,
+                                categoria_nome: found.nome,
+                                categoria_icone: found.icone,
+                                categoria_cor: found.cor
+                            }));
+                        }
+                    });
+                }
+
                 setFormData({
                     tipo: transactionToEdit.tipo,
-                    categoria: transactionToEdit.categoria || 'Outros',
+                    categoria_id: catDetails.id,
+                    categoria_nome: catDetails.nome,
+                    categoria_icone: catDetails.icone,
+                    categoria_cor: catDetails.cor,
                     valor: transactionToEdit.valor.toFixed(2).replace('.', ','),
                     data: parsedDate,
                     nota: transactionToEdit.nota || '',
@@ -91,7 +118,10 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 // RESET FORM
                 setFormData({
                     tipo: 'despesa',
-                    categoria: 'Outros',
+                    categoria_id: '',
+                    categoria_nome: 'Selecione...',
+                    categoria_icone: 'tag-plus-outline',
+                    categoria_cor: colors.textSecondary,
                     valor: '',
                     data: new Date(),
                     nota: '',
@@ -99,18 +129,10 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     pagamentoId: accounts.length > 0 ? accounts[0].id : '',
                     parcelas: '1',
                 });
-                setCustomCategory('');
                 setInstallmentType('total');
             }
         }
-    }, [visible, transactionToEdit]);
-
-    // Effect to set default account if not set (UX improvement)
-    useEffect(() => {
-        if (visible && !transactionToEdit && formData.metodo === 'conta' && !formData.pagamentoId && accounts.length > 0) {
-            setFormData(prev => ({ ...prev, pagamentoId: accounts[0].id }));
-        }
-    }, [accounts, visible, transactionToEdit]);
+    }, [visible, transactionToEdit, accounts]);
 
     const loadMethods = async () => {
         const accs = await financeService.getAccounts();
@@ -128,6 +150,11 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             return;
         }
 
+        if (!formData.categoria_id && formData.categoria_nome === 'Selecione...') {
+            Alert.alert("Erro", "Selecione uma categoria.");
+            return;
+        }
+
         try {
             // Determine final installment value passed to service
             let finalInstallmentValue = rawValue;
@@ -135,7 +162,6 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 finalInstallmentValue = rawValue / parcelasNum;
             }
 
-            // Format date to YYYY-MM-DD safely
             const year = formData.data.getFullYear();
             const month = String(formData.data.getMonth() + 1).padStart(2, '0');
             const day = String(formData.data.getDate()).padStart(2, '0');
@@ -143,7 +169,9 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
             const data: any = {
                 tipo: formData.tipo,
-                categoria: customCategory || formData.categoria,
+                categoria_id: formData.categoria_id,
+                // Fallback for legacy display
+                categoria: formData.categoria_nome,
                 valor: finalInstallmentValue,
                 data: dateStr,
                 nota: formData.nota,
@@ -170,10 +198,6 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             Alert.alert("Erro", "Não foi possível salvar a movimentação.");
         }
     };
-
-    const filteredCategories = categories.length > 0
-        ? categories.filter(c => c.tipo === formData.tipo)
-        : [{ id: '1', nome: 'Outros', tipo: formData.tipo, sistema: true, created_at: '' }];
 
     return (
         <Modal
@@ -222,6 +246,22 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 onValueChange={(val) => setFormData(p => ({ ...p, valor: val }))}
                                 placeholder="0,00"
                             />
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>Categoria</Text>
+                            <TouchableOpacity
+                                style={[styles.selector, { borderColor: colors.border, backgroundColor: colors.surface }]}
+                                onPress={() => setIsCategoryPickerVisible(true)}
+                            >
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                                    <View style={{ backgroundColor: (formData.categoria_cor) + '20', padding: 8, borderRadius: 8 }}>
+                                        <MaterialCommunityIcons name={formData.categoria_icone as any} size={20} color={formData.categoria_cor} />
+                                    </View>
+                                    <Text style={[styles.selectorText, { color: colors.text }]}>{formData.categoria_nome}</Text>
+                                </View>
+                                <MaterialCommunityIcons name="chevron-down" size={20} color={colors.textSecondary} />
+                            </TouchableOpacity>
                         </View>
 
                         <View style={styles.inputGroup}>
@@ -313,36 +353,22 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 )}
                             </View>
                         )}
-
-                        <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Categoria</Text>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryList}>
-                                {filteredCategories.map(cat => (
-                                    <TouchableOpacity
-                                        key={cat.id}
-                                        onPress={() => {
-                                            setFormData(p => ({ ...p, categoria: cat.nome }));
-                                            setCustomCategory('');
-                                        }}
-                                        style={[
-                                            styles.categoryChip,
-                                            { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, borderColor: formData.categoria === cat.nome && !customCategory ? colors.primary : colors.border }
-                                        ]}
-                                    >
-                                        <Text style={[styles.categoryText, { color: formData.categoria === cat.nome && !customCategory ? colors.primary : colors.textSecondary }]}>{cat.nome}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                            <TextInput
-                                style={[styles.input, { height: 44, marginTop: 8, fontSize: 14, backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, color: colors.text, borderColor: colors.border }]}
-                                value={customCategory}
-                                onChangeText={setCustomCategory}
-                                placeholder="Ou digite uma nova categoria..."
-                                placeholderTextColor={colors.textSecondary}
-                            />
-                        </View>
                     </View>
                 </ScrollView>
+
+                <CategoryManagerModal
+                    visible={isCategoryPickerVisible}
+                    onClose={() => setIsCategoryPickerVisible(false)}
+                    onSelect={(cat) => {
+                        setFormData(p => ({
+                            ...p,
+                            categoria_id: cat.id,
+                            categoria_nome: cat.nome,
+                            categoria_icone: cat.icone,
+                            categoria_cor: cat.cor
+                        }));
+                    }}
+                />
             </View>
         </Modal>
     );
@@ -363,9 +389,8 @@ const styles = StyleSheet.create({
     inputGroup: { gap: 8 },
     label: { fontSize: 14, fontWeight: '600', marginLeft: 4 },
     input: { height: 56, borderRadius: 16, paddingHorizontal: 16, fontSize: 16, borderWidth: 1 },
-    categoryList: { flexDirection: 'row' },
-    categoryChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, marginRight: 8 },
-    categoryText: { fontSize: 14, fontWeight: '600' },
+    selector: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: 16, borderWidth: 1 },
+    selectorText: { fontSize: 16, fontWeight: '500' },
     paymentSelector: { flexDirection: 'row', gap: 8, marginBottom: 8 },
     payMethodBtn: { paddingVertical: 8, paddingHorizontal: 16, borderWidth: 1, borderRadius: 8 },
     methodList: { flexDirection: 'row' },

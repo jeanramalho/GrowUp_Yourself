@@ -3,9 +3,9 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Activ
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { financeService } from '@/services/FinanceService';
-import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito } from '@/models';
+import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito, CategoriaFinanceira } from '@/models';
 import { TransactionFormModal } from '@/components/finance/TransactionFormModal';
-import { BudgetFormModal } from '@/components/finance/BudgetFormModal';
+import { PlanningFormModal } from '@/components/finance/PlanningFormModal';
 import { InvestmentFormModal } from '@/components/finance/InvestmentFormModal';
 import { AccountFormModal } from '@/components/finance/AccountFormModal';
 import { CardFormModal } from '@/components/finance/CardFormModal';
@@ -16,6 +16,10 @@ import { TransactionHistoryModal } from '@/components/finance/TransactionHistory
 import { SwipeableTransactionItem } from '@/components/finance/SwipeableTransactionItem';
 import { SwipeableAccountItem } from '@/components/finance/SwipeableAccountItem';
 import { SwipeableCardItem } from '@/components/finance/SwipeableCardItem';
+import { PlanningCard } from '@/components/finance/PlanningCard';
+import { CategoryManagerModal } from '@/components/finance/CategoryManagerModal';
+import { PlanningPaymentModal } from '@/components/finance/PlanningPaymentModal';
+import { PaymentReminderCard } from '@/components/finance/PaymentReminderCard';
 import { useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
@@ -44,6 +48,8 @@ export default function FinanceScreen() {
   const [plannedItems, setPlannedItems] = useState<LancamentoFinanceiro[]>([]);
   const [accounts, setAccounts] = useState<(Conta & { saldo_atual: number })[]>([]);
   const [cards, setCards] = useState<(CartaoCredito & { fatura: number })[]>([]);
+  const [categories, setCategories] = useState<CategoriaFinanceira[]>([]);
+  const [upcomingPayments, setUpcomingPayments] = useState<LancamentoFinanceiro[]>([]);
 
   // Filters
   const [filterType, setFilterType] = useState<'all' | 'receita' | 'despesa'>('all');
@@ -51,7 +57,7 @@ export default function FinanceScreen() {
 
   // Modals
   const [isTransactionModalVisible, setIsTransactionModalVisible] = useState(false);
-  const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
+  const [isPlanningModalVisible, setIsPlanningModalVisible] = useState(false);
   const [isInvestmentModalVisible, setIsInvestmentModalVisible] = useState(false);
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
   const [isCardModalVisible, setIsCardModalVisible] = useState(false);
@@ -59,6 +65,9 @@ export default function FinanceScreen() {
   const [isInvoiceModalVisible, setIsInvoiceModalVisible] = useState(false);
   const [isInvestmentDetailsModalVisible, setIsInvestmentDetailsModalVisible] = useState(false);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
+  const [isCategoryManagerVisible, setIsCategoryManagerVisible] = useState(false);
+  const [isPlanningPaymentModalVisible, setIsPlanningPaymentModalVisible] = useState(false);
+
   const [historyType, setHistoryType] = useState<'receita' | 'despesa'>('receita');
 
   const [selectedTransaction, setSelectedTransaction] = useState<LancamentoFinanceiro | null>(null);
@@ -66,6 +75,7 @@ export default function FinanceScreen() {
   const [selectedInvestment, setSelectedInvestment] = useState<Investimento | null>(null);
   const [editingAccount, setEditingAccount] = useState<Conta | undefined>(undefined);
   const [editingCard, setEditingCard] = useState<CartaoCredito | undefined>(undefined);
+  const [selectedPlanning, setSelectedPlanning] = useState<LancamentoFinanceiro | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -78,6 +88,8 @@ export default function FinanceScreen() {
       const planned = await financeService.getPlannedByMonth(today);
       const accs = await financeService.getAccountsWithBalance();
       const crds = await financeService.getCards();
+      const cats = await financeService.getCategories();
+      const upcoming = await financeService.getUpcomingPayments(3);
 
       const cardsWithFatura = await Promise.all(crds.map(async c => ({
         ...c,
@@ -91,6 +103,8 @@ export default function FinanceScreen() {
       setPlannedItems(planned);
       setAccounts(accs);
       setCards(cardsWithFatura);
+      setCategories(cats);
+      setUpcomingPayments(upcoming);
     } catch (error) {
       console.error("Error fetching finance data:", error);
     } finally {
@@ -164,6 +178,20 @@ export default function FinanceScreen() {
       {
         text: "Excluir", style: "destructive", onPress: async () => {
           await financeService.deleteCard(id);
+          fetchData();
+        }
+      }
+    ]);
+  };
+
+  const handleDeletePlanning = async (id: string) => {
+    Alert.alert("Excluir", "Deseja excluir este planejamento?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir", style: "destructive", onPress: async () => {
+          await financeService.deleteTransaction(id);
+          setIsPlanningPaymentModalVisible(false); // Close if open
+          setSelectedPlanning(null);
           fetchData();
         }
       }
@@ -244,6 +272,29 @@ export default function FinanceScreen() {
               Você utilizou {Math.round(summary.expenseUsagePercent)}% do orçamento planejado para este mês.
             </Text>
           </View>
+        </View>
+      )}
+
+      {/* Upcoming Payments */}
+      {upcomingPayments.length > 0 && (
+        <View style={{ marginTop: 24 }}>
+          <View style={[styles.sectionHeader, { marginBottom: 12 }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: 16 }]}>Próximos Pagamentos</Text>
+            <TouchableOpacity onPress={() => setActiveTab('Planejamento')}>
+              <Text style={{ color: colors.primary, fontSize: 12, fontWeight: 'bold' }}>Ver Todos</Text>
+            </TouchableOpacity>
+          </View>
+          {upcomingPayments.map(item => (
+            <PaymentReminderCard
+              key={item.id}
+              item={item}
+              category={categories.find(c => c.id === item.categoria_id)}
+              onPress={() => {
+                setSelectedPlanning(item);
+                setIsPlanningPaymentModalVisible(true);
+              }}
+            />
+          ))}
         </View>
       )}
 
@@ -377,27 +428,22 @@ export default function FinanceScreen() {
       </View>
 
       {filteredTransactions.length > 0 ? (
-        filteredTransactions.map(t => {
-          const isCard = !!t.cartao_id;
-          const isVoucher = accounts.find(a => a.id === t.conta_id && ['vale_alimentacao', 'vale_refeicao'].includes(a.tipo));
-
-          return (
-            <SwipeableTransactionItem
-              key={t.id}
-              transaction={t}
-              accounts={accounts}
-              onPress={() => {
-                setSelectedTransaction(t);
-                setIsDetailsModalVisible(true);
-              }}
-              onEdit={() => {
-                setSelectedTransaction(t);
-                setIsTransactionModalVisible(true);
-              }}
-              onDelete={() => handleDeleteTransaction(t.id)}
-            />
-          );
-        })
+        filteredTransactions.map(t => (
+          <SwipeableTransactionItem
+            key={t.id}
+            transaction={t}
+            accounts={accounts}
+            onPress={() => {
+              setSelectedTransaction(t);
+              setIsDetailsModalVisible(true);
+            }}
+            onEdit={() => {
+              setSelectedTransaction(t);
+              setIsTransactionModalVisible(true);
+            }}
+            onDelete={() => handleDeleteTransaction(t.id)}
+          />
+        ))
       ) : (
         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Nenhuma movimentação encontrada.</Text>
       )}
@@ -408,31 +454,43 @@ export default function FinanceScreen() {
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Objetivos Mensais</Text>
-        <TouchableOpacity onPress={() => setIsBudgetModalVisible(true)} style={styles.addButtonCircle}>
-          <MaterialCommunityIcons name="pencil" size={20} color="white" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <TouchableOpacity onPress={() => setIsCategoryManagerVisible(true)} style={[styles.addButtonCircle, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}>
+            <MaterialCommunityIcons name="tag-multiple" size={20} color={colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { setSelectedPlanning(null); setIsPlanningModalVisible(true); }} style={styles.addButtonCircle}>
+            <MaterialCommunityIcons name="plus" size={20} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {plannedItems.length > 0 ? (
         plannedItems.map(p => {
-          const realExp = recentTransactions.filter(t => t.tipo === 'despesa' && t.categoria === p.categoria).reduce((sum, t) => sum + t.valor, 0);
-          const percent = p.valor > 0 ? (realExp / p.valor) * 100 : 0;
+          // Calculate real spent for this category in this month (or specifically matched items if using ids)
+          // Legacy: Match by name. New: Match by ID.
+          const realExp = recentTransactions.filter(t =>
+            t.tipo === 'despesa' && !t.planejado &&
+            ((p.categoria_id && t.categoria_id === p.categoria_id) || (!p.categoria_id && t.categoria === p.categoria))
+          ).reduce((sum, t) => sum + t.valor, 0);
+
           return (
-            <View key={p.id} style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.border, flexDirection: 'column', gap: 12 }]}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-                <Text style={[styles.itemTitle, { color: colors.text }]}>{p.categoria}</Text>
-                <Text style={[styles.itemValue, { color: colors.text }]}>R$ {realExp.toFixed(0)} / R$ {p.valor.toFixed(0)}</Text>
-              </View>
-              <View style={styles.progressBarBg}>
-                <View style={[styles.progressBarFill, { width: `${Math.min(percent, 100)}%`, backgroundColor: percent > 100 ? colors.error : colors.primary }]} />
-              </View>
-            </View>
+            <PlanningCard
+              key={p.id}
+              item={p}
+              category={categories.find(c => c.id === p.categoria_id)}
+              realSpent={realExp}
+              onPress={() => {
+                setSelectedPlanning(p);
+                setIsPlanningPaymentModalVisible(true);
+              }}
+            />
           );
         })
       ) : (
-        <TouchableOpacity onPress={() => setIsBudgetModalVisible(true)} style={styles.emptyStateContainer}>
+        <TouchableOpacity onPress={() => setIsPlanningModalVisible(true)} style={styles.emptyStateContainer}>
           <MaterialCommunityIcons name="finance" size={48} color={colors.primary + '40'} />
-          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Defina seu planejamento clicando no lápis.</Text>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Nenhum planejamento para este mês.</Text>
+          <Text style={{ color: colors.primary, marginTop: 8 }}>Criar Novo</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -580,10 +638,14 @@ export default function FinanceScreen() {
         onSaveSuccess={fetchData}
       />
 
-      <BudgetFormModal
-        visible={isBudgetModalVisible}
-        onClose={() => setIsBudgetModalVisible(false)}
+      <PlanningFormModal
+        visible={isPlanningModalVisible}
+        onClose={() => {
+          setIsPlanningModalVisible(false);
+          setSelectedPlanning(null);
+        }}
         onSaveSuccess={fetchData}
+        planningToEdit={selectedPlanning} // For now we reuse creating for edit if needed
       />
 
       <InvestmentFormModal
@@ -655,6 +717,26 @@ export default function FinanceScreen() {
           fetchData();
         }}
       />
+
+      <CategoryManagerModal
+        visible={isCategoryManagerVisible}
+        onClose={() => setIsCategoryManagerVisible(false)}
+      // No onSelect, just managing
+      />
+
+      <PlanningPaymentModal
+        visible={isPlanningPaymentModalVisible}
+        onClose={() => setIsPlanningPaymentModalVisible(false)}
+        item={selectedPlanning}
+        category={categories.find(c => c.id === selectedPlanning?.categoria_id)}
+        accounts={accounts}
+        onPaySuccess={fetchData}
+        onEdit={() => {
+          setIsPlanningPaymentModalVisible(false);
+          setIsPlanningModalVisible(true); // Edit using PlanningForm
+        }}
+        onDelete={() => handleDeletePlanning(selectedPlanning?.id || '')}
+      />
     </View>
   );
 }
@@ -692,7 +774,7 @@ const styles = StyleSheet.create({
   alertTitle: { fontWeight: 'bold', marginBottom: 4 },
   alertDesc: { fontSize: 14, opacity: 0.8 },
 
-  statsGrid: { flexDirection: 'row', gap: 16 },
+  statsGrid: { flexDirection: 'row', gap: 16, marginTop: 12 },
   statCard: { flex: 1, padding: 20, borderRadius: 24, borderWidth: 1 },
   statHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   statLabel: { fontSize: 10, fontWeight: 'bold' },
@@ -717,15 +799,5 @@ const styles = StyleSheet.create({
   emptyText: { textAlign: 'center', marginTop: 24, fontStyle: 'italic' },
   emptyStateContainer: { alignItems: 'center', justifyContent: 'center', padding: 40, gap: 12 },
 
-  progressBarBg: { height: 8, backgroundColor: '#E2E8F0', borderRadius: 4, width: '100%', overflow: 'hidden' },
-  progressBarFill: { height: '100%', borderRadius: 4 },
-
-  cardItem: { padding: 20, borderRadius: 24, borderWidth: 1, gap: 16 },
-  cardInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  cardFaturaBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.03)', padding: 12, borderRadius: 16 },
-  faturaLabel: { fontSize: 12, fontWeight: '600' },
-  faturaValue: { fontSize: 18, fontWeight: 'bold' },
-  payBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  payBtnText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
   filterChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, borderWidth: 1, backgroundColor: 'transparent' },
 });
