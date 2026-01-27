@@ -27,6 +27,9 @@ export default function RootLayout() {
         const migrationRunner = new MigrationRunner(db);
         await migrationRunner.runMigrations();
 
+        // Load user profile from DB
+        await useUserStore.getState().loadFromDb();
+
         // Initialize notifications
         await notificationService.initialize();
         await notificationService.requestPermissions();

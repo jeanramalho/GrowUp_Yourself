@@ -17,6 +17,7 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     const { colors, isDarkMode } = useAppTheme();
     const { avatarPath, userName, getAvatarUri } = useUserStore();
     const firstName = userName.split(' ')[0];
+    const [imageError, setImageError] = useState(false);
 
     const avatarUri = getAvatarUri(); // Reconstruct URI for display
 
@@ -81,10 +82,11 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
                     <Text style={[styles.greetingText, { color: colors.text }]}>Olá, {firstName}</Text>
                 </View>
                 <TouchableOpacity onPress={onProfilePress} style={[styles.avatarContainer, { borderColor: 'rgba(59, 130, 246, 0.2)' }]}>
-                    {avatarUri ? (
+                    {avatarUri && !imageError ? (
                         <Image
                             source={{ uri: avatarUri }}
                             style={[styles.avatar, { backgroundColor: colors.surface }]}
+                            onError={() => setImageError(true)}
                         />
                     ) : (
                         <View style={[styles.avatar, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, justifyContent: 'center', alignItems: 'center' }]}>
