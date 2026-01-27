@@ -14,16 +14,15 @@ export default function ProfileScreen() {
   const { toggleTheme } = useThemeStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const {
-    const {
-      avatarPath,
-      setAvatar,
-      getAvatarUri,
-      notificationsEnabled,
-      toggleNotifications,
-      userName,
-      userLevel,
-      userTitle
-    } = useUserStore();
+    avatarPath,
+    setAvatar,
+    getAvatarUri,
+    notificationsEnabled,
+    toggleNotifications,
+    userName,
+    userLevel,
+    userTitle
+  } = useUserStore();
 
   const avatarUri = getAvatarUri(); // Reconstruct URI for display
 

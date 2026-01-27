@@ -15,8 +15,10 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     const insets = useSafeAreaInsets();
     const { colors, isDarkMode } = useAppTheme();
-    const { avatarUri, userName } = useUserStore();
+    const { avatarPath, userName, getAvatarUri } = useUserStore();
     const firstName = userName.split(' ')[0];
+
+    const avatarUri = getAvatarUri(); // Reconstruct URI for display
 
     const [progress, setProgress] = useState({
         'pilar-1': 0,
