@@ -1,98 +1,194 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
+import { Compromisso } from '@/models';
+import { relationshipService } from '@/services/RelationshipService';
+import { CompromissoFormModal } from '@/components/relationships/CompromissoFormModal';
 
 export default function RelationshipScreen() {
   const { colors, isDarkMode, shadows } = useAppTheme();
 
-  const events = [
-    { icon: 'coffee', title: 'Café com Mentoria', person: 'André S.', time: 'Amanhã, 10:00', type: 'Semanal', color: colors.blue500 },
-    { icon: 'heart', title: 'Jantar Romântico', person: 'Luiza', time: 'Sexta, 20:00', type: 'Mensal', color: '#EF4444' }, // Red for heart
-    { icon: 'gift', title: 'Aniversário', person: 'Maria Eduarda', time: '24 Out', type: 'Anual', color: '#F59E0B' },
-  ];
+  const [events, setEvents] = useState<Compromisso[]>([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [calendarDays, setCalendarDays] = useState<{ d: string; day: string; fullDate: string; active: boolean }[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedCompromisso, setSelectedCompromisso] = useState<Compromisso | null>(null);
 
-  const calendarDays = [
-    { d: '22', day: 'D' },
-    { d: '23', day: 'S' },
-    { d: '24', day: 'T', active: true },
-    { d: '25', day: 'Q' },
-    { d: '26', day: 'Q' },
-  ];
+  const fetchCompromissos = useCallback(async () => {
+    try {
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      const data = await relationshipService.getCompromissosByDate(dateStr);
+      setEvents(data);
+    } catch (error) {
+      console.error('Error fetching compromissos:', error);
+    }
+  }, [selectedDate]);
+
+  const generateCalendar = useCallback(() => {
+    const days = [];
+    const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+
+    // Generate 7 days starting from 3 days before selectedDate
+    for (let i = -2; i <= 4; i++) {
+      const d = new Date(selectedDate);
+      d.setDate(d.getDate() + i);
+      const fullDate = d.toISOString().split('T')[0];
+      days.push({
+        d: d.getDate().toString(),
+        day: weekDays[d.getDay()],
+        fullDate,
+        active: fullDate === selectedDate.toISOString().split('T')[0]
+      });
+    }
+    setCalendarDays(days);
+  }, [selectedDate]);
+
+  useEffect(() => {
+    generateCalendar();
+    fetchCompromissos();
+  }, [selectedDate, fetchCompromissos, generateCalendar]);
+
+  const handleDelete = (id: string) => {
+    Alert.alert('Excluir Encontro', 'Deseja realmente excluir este encontro?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: async () => {
+          await relationshipService.deleteCompromisso(id);
+          fetchCompromissos();
+        }
+      }
+    ]);
+  };
+
+  const getEventIcon = (title: string) => {
+    const t = title.toLowerCase();
+    if (t.includes('café') || t.includes('cafe')) return 'coffee';
+    if (t.includes('jantar') || t.includes('almoço') || t.includes('comida')) return 'silverware-fork-knife';
+    if (t.includes('reunião') || t.includes('trampo') || t.includes('trabalho')) return 'briefcase';
+    if (t.includes('presente') || t.includes('aniversário')) return 'gift';
+    if (t.includes('❤️') || t.includes('amor') || t.includes('romântico')) return 'heart';
+    return 'calendar-check';
+  };
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>Vínculos & Convivência</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Fortaleça suas conexões humanas.</Text>
-      </View>
-
-      {/* Calendar Strip */}
-      <View style={[styles.calendarStrip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        {calendarDays.map((date, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.calendarItem,
-              date.active && styles.calendarItemActive
-            ]}
-          >
-            <Text style={[
-              styles.calendarDay,
-              { color: date.active ? 'white' : colors.textSecondary }
-            ]}>{date.day}</Text>
-            <Text style={[
-              styles.calendarDate,
-              { color: date.active ? 'white' : colors.text, fontWeight: date.active ? 'bold' : 'normal' }
-            ]}>{date.d}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Upcoming Events */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionTitleRow}>
-            <MaterialCommunityIcons name="calendar-month-outline" size={20} color={colors.primary} />
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Próximos Encontros</Text>
-          </View>
-          <Text style={[styles.viewAllBadge, { color: colors.primary }]}>VER TODOS</Text>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <ScrollView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.text }]}>Vínculos & Convivência</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Fortaleça suas conexões humanas.</Text>
         </View>
 
-        {events.map((ev, i) => (
-          <View key={i} style={[styles.eventCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={[styles.eventIconBox, { backgroundColor: isDarkMode ? colors.gray800 : colors.blue50 }]}>
-              {/* @ts-ignore icon name */}
-              <MaterialCommunityIcons name={ev.icon} size={24} color={ev.icon === 'heart' ? '#EF4444' : colors.primary} />
+        {/* Calendar Strip */}
+        <View style={[styles.calendarStrip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          {calendarDays.map((date, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.calendarItem,
+                date.active && { backgroundColor: colors.primary }
+              ]}
+              onPress={() => setSelectedDate(new Date(date.fullDate))}
+            >
+              <Text style={[
+                styles.calendarDay,
+                { color: date.active ? 'white' : colors.textSecondary }
+              ]}>{date.day}</Text>
+              <Text style={[
+                styles.calendarDate,
+                { color: date.active ? 'white' : colors.text, fontWeight: date.active ? 'bold' : 'normal' }
+              ]}>{date.d}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Upcoming Events */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleRow}>
+              <MaterialCommunityIcons name="calendar-month-outline" size={20} color={colors.primary} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Encontros do Dia</Text>
             </View>
-            <View style={styles.eventInfo}>
-              <View style={styles.eventHeader}>
-                <Text style={[styles.eventTitle, { color: colors.text }]}>{ev.title}</Text>
-                <View style={[styles.eventTypeBadge, { backgroundColor: 'rgba(59, 130, 246, 0.1)' }]}>
-                  <Text style={[styles.eventTypeText, { color: colors.primary }]}>{ev.type}</Text>
-                </View>
+            <TouchableOpacity onPress={() => { setSelectedCompromisso(null); setIsModalVisible(true); }}>
+              <View style={[styles.addBtnSmall, { backgroundColor: colors.primary }]}>
+                <MaterialCommunityIcons name="plus" size={16} color="white" />
+                <Text style={styles.addBtnSmallText}>NOVO</Text>
               </View>
-              <Text style={[styles.eventSubtitle, { color: colors.textSecondary }]}>{ev.person} • {ev.time}</Text>
-            </View>
+            </TouchableOpacity>
           </View>
-        ))}
-      </View>
 
-      {/* Quick Action Banner */}
-      <View style={[styles.banner, shadows.md]}>
-        <Text style={styles.bannerTitle}>Crie memórias</Text>
-        <Text style={styles.bannerDesc}>Mande uma mensagem para alguém que você não fala há algum tempo.</Text>
-        <TouchableOpacity style={styles.bannerButton}>
-          <Text style={styles.bannerButtonText}>Sugerir contato</Text>
-        </TouchableOpacity>
-      </View>
+          {events.length > 0 ? (
+            events.map((ev) => (
+              <TouchableOpacity
+                key={ev.id}
+                onLongPress={() => handleDelete(ev.id)}
+                onPress={() => {
+                  setSelectedCompromisso(ev);
+                  setIsModalVisible(true);
+                }}
+              >
+                <View style={[styles.eventCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <View style={[styles.eventIconBox, { backgroundColor: isDarkMode ? colors.gray800 : colors.primary + '10' }]}>
+                    <MaterialCommunityIcons name={getEventIcon(ev.titulo) as any} size={24} color={colors.primary} />
+                  </View>
+                  <View style={styles.eventInfo}>
+                    <View style={styles.eventHeader}>
+                      <Text style={[styles.eventTitle, { color: colors.text }]}>{ev.titulo}</Text>
+                      <Text style={[styles.eventTime, { color: colors.textSecondary }]}>
+                        {new Date(ev.data_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      </Text>
+                    </View>
+                    <Text style={[styles.eventSubtitle, { color: colors.textSecondary }]}>
+                      {ev.com_quem || 'Alguém especial'}
+                    </Text>
+                    {ev.preparacao && (
+                      <View style={styles.noteBox}>
+                        <MaterialCommunityIcons name="notebook-outline" size={14} color={colors.textSecondary} />
+                        <Text style={[styles.noteText, { color: colors.textSecondary }]} numberOfLines={1}>
+                          {ev.preparacao}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <MaterialCommunityIcons name="calendar-blank" size={48} color={colors.textSecondary + '40'} />
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Nenhum encontro este dia.</Text>
+            </View>
+          )}
+        </View>
 
-    </ScrollView>
+        {/* Quick Action Banner */}
+        <View style={[styles.banner, shadows.md, { backgroundColor: colors.primary }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.bannerTitle}>Crie memórias</Text>
+            <Text style={styles.bannerDesc}>Mande uma mensagem para alguém que você não fala há algum tempo.</Text>
+            <TouchableOpacity style={styles.bannerButton}>
+              <Text style={[styles.bannerButtonText, { color: colors.primary }]}>Sugerir contato</Text>
+            </TouchableOpacity>
+          </View>
+          <MaterialCommunityIcons name="chat-processing-outline" size={64} color="rgba(255,255,255,0.2)" />
+        </View>
+
+      </ScrollView>
+
+      <CompromissoFormModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onSaveSuccess={fetchCompromissos}
+        compromissoToEdit={selectedCompromisso}
+      />
+    </View>
   );
 }
 
@@ -120,24 +216,17 @@ const styles = StyleSheet.create({
   calendarStrip: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: 12,
     borderRadius: 24,
     borderWidth: 1,
     marginBottom: 32,
   },
   calendarItem: {
     alignItems: 'center',
-    padding: 8,
+    padding: 10,
     borderRadius: 16,
-    width: 44,
+    width: 48,
     gap: 4,
-  },
-  calendarItemActive: {
-    backgroundColor: '#2563EB',
-    shadowColor: '#2563EB',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
   },
   calendarDay: {
     fontSize: 12,
@@ -165,18 +254,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  viewAllBadge: {
+  addBtnSmall: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  addBtnSmallText: {
+    color: 'white',
     fontSize: 10,
     fontWeight: 'bold',
-    letterSpacing: 1,
   },
   eventCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
     borderRadius: 24,
     borderWidth: 1,
     gap: 16,
+    marginBottom: 12,
   },
   eventIconBox: {
     width: 48,
@@ -187,7 +285,7 @@ const styles = StyleSheet.create({
   },
   eventInfo: {
     flex: 1,
-    gap: 4,
+    gap: 2,
   },
   eventHeader: {
     flexDirection: 'row',
@@ -198,23 +296,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  eventTypeBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-  },
-  eventTypeText: {
+  eventTime: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   eventSubtitle: {
+    fontSize: 14,
+  },
+  noteBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  noteText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    flex: 1,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+  },
+  emptyText: {
+    marginTop: 12,
     fontSize: 14,
   },
   banner: {
     padding: 24,
     borderRadius: 24,
-    backgroundColor: '#60A5FA', // fallback if gradient not available, mimicking from-blue-300 to-blue-500
-    // To approximate gradient: Just blue.
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   bannerTitle: {
     fontSize: 18,
@@ -236,7 +352,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   bannerButtonText: {
-    color: '#3B82F6',
     fontWeight: 'bold',
     fontSize: 12,
   },
