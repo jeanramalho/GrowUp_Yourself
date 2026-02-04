@@ -72,6 +72,7 @@ export interface LancamentoFinanceiro {
   id: string;
   tipo: 'receita' | 'despesa';
   categoria_id?: string | null;
+  categoria?: string | null; // Legacy support
   status?: 'pendente' | 'pago';
   valor: number;
   data: string; // YYYY-MM-DD format
