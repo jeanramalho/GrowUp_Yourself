@@ -23,6 +23,9 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
     const [show, setShow] = useState(false);
 
     const formatDate = (date: Date) => {
+        if (!date || isNaN(date.getTime())) {
+            return '-';
+        }
         return date.toLocaleDateString('pt-BR');
     };
 

@@ -145,7 +145,7 @@ export function PlanningFormModal({ visible, onClose, onSaveSuccess, planningToE
                     <View>
                         <Text style={[styles.label, { color: colors.textSecondary }]}>Data de Pagamento</Text>
                         <DatePickerInput
-                            date={date}
+                            value={date}
                             onChange={setDate}
                         />
                     </View>
