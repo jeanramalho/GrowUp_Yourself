@@ -80,7 +80,8 @@ export function PlanningFormModal({ visible, onClose, onSaveSuccess, planningToE
             };
 
             if (planningToEdit) {
-                await financeService.updateTransaction(planningToEdit.id, payload);
+                const { recorrente, ...updatePayload } = payload;
+                await financeService.updateTransaction(planningToEdit.id, updatePayload as any);
             } else {
                 await financeService.createPlannedItem(payload as any);
             }

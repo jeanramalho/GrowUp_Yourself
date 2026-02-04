@@ -20,6 +20,12 @@ export function PlanningPaymentModal({ visible, onClose, item, category, account
     const { colors, isDarkMode } = useAppTheme();
     const [isPaying, setIsPaying] = useState(false);
 
+    React.useEffect(() => {
+        if (!visible) {
+            setIsPaying(false);
+        }
+    }, [visible]);
+
     if (!item) return null;
 
     const handlePay = (accountId: string) => {

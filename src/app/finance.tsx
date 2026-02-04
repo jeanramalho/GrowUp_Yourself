@@ -57,7 +57,6 @@ export default function FinanceScreen() {
 
   // Modals
   const [isTransactionModalVisible, setIsTransactionModalVisible] = useState(false);
-  const [isPlanningModalVisible, setIsPlanningModalVisible] = useState(false);
   const [isInvestmentModalVisible, setIsInvestmentModalVisible] = useState(false);
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
   const [isCardModalVisible, setIsCardModalVisible] = useState(false);
@@ -66,7 +65,6 @@ export default function FinanceScreen() {
   const [isInvestmentDetailsModalVisible, setIsInvestmentDetailsModalVisible] = useState(false);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const [isCategoryManagerVisible, setIsCategoryManagerVisible] = useState(false);
-  const [isPlanningPaymentModalVisible, setIsPlanningPaymentModalVisible] = useState(false);
 
   const [historyType, setHistoryType] = useState<'receita' | 'despesa'>('receita');
 
@@ -76,6 +74,7 @@ export default function FinanceScreen() {
   const [editingAccount, setEditingAccount] = useState<Conta | undefined>(undefined);
   const [editingCard, setEditingCard] = useState<CartaoCredito | undefined>(undefined);
   const [selectedPlanning, setSelectedPlanning] = useState<LancamentoFinanceiro | null>(null);
+  const [activePlanningModal, setActivePlanningModal] = useState<'none' | 'details' | 'form'>('none');
 
   const fetchData = useCallback(async () => {
     try {
@@ -190,7 +189,7 @@ export default function FinanceScreen() {
       {
         text: "Excluir", style: "destructive", onPress: async () => {
           await financeService.deleteTransaction(id);
-          setIsPlanningPaymentModalVisible(false); // Close if open
+          setActivePlanningModal('none');
           setSelectedPlanning(null);
           fetchData();
         }
@@ -291,7 +290,7 @@ export default function FinanceScreen() {
               category={categories.find(c => c.id === item.categoria_id)}
               onPress={() => {
                 setSelectedPlanning(item);
-                setIsPlanningPaymentModalVisible(true);
+                setActivePlanningModal('details');
               }}
             />
           ))}
@@ -458,7 +457,7 @@ export default function FinanceScreen() {
           <TouchableOpacity onPress={() => setIsCategoryManagerVisible(true)} style={[styles.addButtonCircle, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}>
             <MaterialCommunityIcons name="tag-multiple" size={20} color={colors.text} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { setSelectedPlanning(null); setIsPlanningModalVisible(true); }} style={styles.addButtonCircle}>
+          <TouchableOpacity onPress={() => { setSelectedPlanning(null); setActivePlanningModal('form'); }} style={styles.addButtonCircle}>
             <MaterialCommunityIcons name="plus" size={20} color="white" />
           </TouchableOpacity>
         </View>
@@ -481,13 +480,13 @@ export default function FinanceScreen() {
               realSpent={realExp}
               onPress={() => {
                 setSelectedPlanning(p);
-                setIsPlanningPaymentModalVisible(true);
+                setActivePlanningModal('details');
               }}
             />
           );
         })
       ) : (
-        <TouchableOpacity onPress={() => setIsPlanningModalVisible(true)} style={styles.emptyStateContainer}>
+        <TouchableOpacity onPress={() => { setSelectedPlanning(null); setActivePlanningModal('form'); }} style={styles.emptyStateContainer}>
           <MaterialCommunityIcons name="finance" size={48} color={colors.primary + '40'} />
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Nenhum planejamento para este mês.</Text>
           <Text style={{ color: colors.primary, marginTop: 8 }}>Criar Novo</Text>
@@ -639,13 +638,13 @@ export default function FinanceScreen() {
       />
 
       <PlanningFormModal
-        visible={isPlanningModalVisible}
+        visible={activePlanningModal === 'form'}
         onClose={() => {
-          setIsPlanningModalVisible(false);
+          setActivePlanningModal('none');
           setSelectedPlanning(null);
         }}
         onSaveSuccess={fetchData}
-        planningToEdit={selectedPlanning} // For now we reuse creating for edit if needed
+        planningToEdit={selectedPlanning}
       />
 
       <InvestmentFormModal
@@ -725,19 +724,21 @@ export default function FinanceScreen() {
       />
 
       <PlanningPaymentModal
-        visible={isPlanningPaymentModalVisible}
-        onClose={() => setIsPlanningPaymentModalVisible(false)}
+        visible={activePlanningModal === 'details'}
+        onClose={() => {
+          setActivePlanningModal('none');
+          setSelectedPlanning(null);
+        }}
         item={selectedPlanning}
         category={categories.find(c => c.id === selectedPlanning?.categoria_id)}
         accounts={accounts}
         onPaySuccess={fetchData}
         onEdit={() => {
-          setIsPlanningPaymentModalVisible(false);
-          // Small delay to ensure the first modal is dismissed before opening the next one
-          // This avoids modal overlap/collision issues in React Native
+          setActivePlanningModal('none'); // Close first
+          // Wait for first modal to clear
           setTimeout(() => {
-            setIsPlanningModalVisible(true);
-          }, 300);
+            setActivePlanningModal('form');
+          }, 500);
         }}
         onDelete={() => handleDeletePlanning(selectedPlanning?.id || '')}
       />
