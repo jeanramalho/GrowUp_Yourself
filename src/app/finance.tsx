@@ -733,7 +733,11 @@ export default function FinanceScreen() {
         onPaySuccess={fetchData}
         onEdit={() => {
           setIsPlanningPaymentModalVisible(false);
-          setIsPlanningModalVisible(true); // Edit using PlanningForm
+          // Small delay to ensure the first modal is dismissed before opening the next one
+          // This avoids modal overlap/collision issues in React Native
+          setTimeout(() => {
+            setIsPlanningModalVisible(true);
+          }, 300);
         }}
         onDelete={() => handleDeletePlanning(selectedPlanning?.id || '')}
       />
