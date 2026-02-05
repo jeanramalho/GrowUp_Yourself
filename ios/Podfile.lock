@@ -5,7 +5,7 @@ PODS:
     - ExpoModulesCore
   - EXConstants (17.0.8):
     - ExpoModulesCore
-  - EXImageLoader (6.0.0):
+  - EXImageLoader (5.0.0):
     - ExpoModulesCore
     - React-Core
   - EXJSONUtils (0.14.0)
@@ -13,7 +13,7 @@ PODS:
     - ExpoModulesCore
   - EXNotifications (0.29.14):
     - ExpoModulesCore
-  - Expo (52.0.48):
+  - Expo (52.0.49):
     - ExpoModulesCore
   - expo-dev-client (5.0.20):
     - EXManifests
@@ -224,7 +224,7 @@ PODS:
     - Yoga
   - ExpoAsset (11.0.5):
     - ExpoModulesCore
-  - ExpoContacts (15.0.11):
+  - ExpoContacts (14.0.5):
     - ExpoModulesCore
   - ExpoCrypto (14.0.2):
     - ExpoModulesCore
@@ -234,11 +234,11 @@ PODS:
     - ExpoModulesCore
   - ExpoHead (4.0.22):
     - ExpoModulesCore
-  - ExpoImageManipulator (14.0.8):
+  - ExpoImageManipulator (13.0.6):
     - EXImageLoader
     - ExpoModulesCore
     - SDWebImageWebPCoder
-  - ExpoImagePicker (17.0.10):
+  - ExpoImagePicker (16.0.6):
     - ExpoModulesCore
   - ExpoKeepAwake (14.0.3):
     - ExpoModulesCore
@@ -1844,7 +1844,7 @@ PODS:
     - React-logger
     - React-perflogger
     - React-utils (= 0.76.9)
-  - RNCAsyncStorage (2.2.0):
+  - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNDateTimePicker (8.2.0):
     - React-Core
@@ -2294,23 +2294,23 @@ SPEC CHECKSUMS:
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   EXApplication: 27a524f5c3e671c6218220fba04752629466a1a9
   EXConstants: a1f35b9aabbb3c6791f8e67722579b1ffcdd3f18
-  EXImageLoader: e501c001bc40b8326605e82e6e80363c80fe06b5
+  EXImageLoader: 759063a65ab016b836f73972d3bb25404888713d
   EXJSONUtils: 01fc7492b66c234e395dcffdd5f53439c5c29c93
   EXManifests: 77e77c283c4c53a50b9bddebed25abe93f0b48f1
   EXNotifications: c024b19d69d31fbc22ed63682559cef38523da9e
-  Expo: df08d6ba6d04d146d4941ef58864db6bf6a04d7e
+  Expo: 03dca15247583ca0d09d3cee37fb2d5a0b878f04
   expo-dev-client: ca3ebc270cb0d3f26e6d9c3e1da19957ef4fcac1
   expo-dev-launcher: 11ea4216669a6e466dcb5ef1c23f4ad441605803
   expo-dev-menu: 2c332a184dc36a9a9f23f399cc8d834666495ece
   expo-dev-menu-interface: 00dc42302a72722fdecec3fa048de84a9133bcc4
   ExpoAsset: 0687fe05f5d051c4a34dd1f9440bd00858413cfe
-  ExpoContacts: d1f4aa128f7f3a6daa628f17bec09a51b367f8b3
+  ExpoContacts: 95526dcc8b50a65e61d569655f4cb05edb713cbb
   ExpoCrypto: 1eaf79360c8135af1f2ebb133394fd3513ca9a3d
   ExpoFileSystem: c8c19bf80d914c83dda3beb8569d7fb603be0970
   ExpoFont: 773955186469acc5108ff569712a2d243857475f
   ExpoHead: f3e37901afeb4b1412d1dd8c4fb957bd69087ddf
-  ExpoImageManipulator: 099b82d913588b3984253f186b84b129792cf2e3
-  ExpoImagePicker: 115fada5d2e90bf900dea64151953ca39f67b47b
+  ExpoImageManipulator: 43c7bb3ecccbe993054d2e9131c8dcbe54f1385b
+  ExpoImagePicker: 482b2a6198b365dd18b5a0cb6d4caeec880cb8e1
   ExpoKeepAwake: 2a5f15dd4964cba8002c9a36676319a3394c85c7
   ExpoLinearGradient: ee9efc5acb988b911320e964fab9b4cbdeb198c4
   ExpoLinking: 0381341519ca7180a3a057d20edb1cf6a908aaf4
@@ -2380,7 +2380,7 @@ SPEC CHECKSUMS:
   React-utils: 54df9ada708578c8ad40d92895d6fed03e0e8a9e
   ReactCodegen: 21a52ccddc6479448fc91903a437dd23ddc7366c
   ReactCommon: bfd3600989d79bc3acbe7704161b171a1480b9fd
-  RNCAsyncStorage: 23e56519cc41d3bade3c8d4479f7760cb1c11996
+  RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNDateTimePicker: 40ffda97d071a98a10fdca4fa97e3977102ccd14
   RNGestureHandler: 783a0ed6c92de677e2346d4250c5de028a1db698
   RNReanimated: 3cdb86c3a93fd28e76b497f0ead4019fc502c1c1

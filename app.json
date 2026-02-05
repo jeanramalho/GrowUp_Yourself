@@ -36,6 +36,12 @@
           "color": "#0A6CF0"
         }
       ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Precisamos acessar seus contatos para sugerir pessoas especiais para você se conectar."
+        }
+      ],
       "expo-router",
       "expo-sqlite",
       "@react-native-community/datetimepicker"
