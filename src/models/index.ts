@@ -151,3 +151,11 @@ export interface Compromisso {
   lembretes?: string | null;
   status?: string;
 }
+
+/**
+ * Suggested contact for relationship pillar
+ */
+export interface ContactSuggestion {
+  name: string;
+  phoneNumber: string;
+}

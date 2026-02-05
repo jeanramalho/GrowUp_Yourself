@@ -2,9 +2,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
-import { Compromisso } from '@/models';
+import { Compromisso, ContactSuggestion } from '@/models';
 import { relationshipService } from '@/services/RelationshipService';
 import { CompromissoFormModal } from '@/components/relationships/CompromissoFormModal';
+import { SuggestedContactModal } from '@/components/relationships/SuggestedContactModal';
 
 export default function RelationshipScreen() {
   const { colors, isDarkMode, shadows } = useAppTheme();
@@ -14,6 +15,8 @@ export default function RelationshipScreen() {
   const [calendarDays, setCalendarDays] = useState<{ d: string; day: string; fullDate: string; active: boolean }[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedCompromisso, setSelectedCompromisso] = useState<Compromisso | null>(null);
+  const [isContactModalVisible, setIsContactModalVisible] = useState(false);
+  const [suggestedContact, setSuggestedContact] = useState<ContactSuggestion | null>(null);
 
   const fetchCompromissos = useCallback(async () => {
     try {
@@ -61,6 +64,21 @@ export default function RelationshipScreen() {
         }
       }
     ]);
+  };
+
+  const handleSuggestContact = async () => {
+    try {
+      const contact = await relationshipService.getRandomContact();
+      if (contact) {
+        setSuggestedContact(contact);
+        setIsContactModalVisible(true);
+      } else {
+        Alert.alert('Nenhum contato encontrado', 'Não conseguimos encontrar contatos com números de telefone na sua agenda.');
+      }
+    } catch (error) {
+      console.error('Error suggesting contact:', error);
+      Alert.alert('Permissão Necessária', 'Precisamos de permissão para acessar seus contatos para esta funcionalidade.');
+    }
   };
 
   const getEventIcon = (title: string) => {
@@ -173,7 +191,7 @@ export default function RelationshipScreen() {
           <View style={{ flex: 1 }}>
             <Text style={styles.bannerTitle}>Crie memórias</Text>
             <Text style={styles.bannerDesc}>Mande uma mensagem para alguém que você não fala há algum tempo.</Text>
-            <TouchableOpacity style={styles.bannerButton}>
+            <TouchableOpacity style={styles.bannerButton} onPress={handleSuggestContact}>
               <Text style={[styles.bannerButtonText, { color: colors.primary }]}>Sugerir contato</Text>
             </TouchableOpacity>
           </View>
@@ -187,6 +205,13 @@ export default function RelationshipScreen() {
         onClose={() => setIsModalVisible(false)}
         onSaveSuccess={fetchCompromissos}
         compromissoToEdit={selectedCompromisso}
+      />
+
+      <SuggestedContactModal
+        visible={isContactModalVisible}
+        onClose={() => setIsContactModalVisible(false)}
+        contact={suggestedContact}
+        onSuggestAnother={handleSuggestContact}
       />
     </View>
   );

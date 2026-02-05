@@ -1,4 +1,5 @@
-import { Compromisso } from '../models';
+import * as Contacts from 'expo-contacts';
+import { Compromisso, ContactSuggestion } from '../models';
 import { CompromissoRepository } from '../repositories/CompromissoRepository';
 import { database } from '../repositories/Repository';
 
@@ -49,14 +50,40 @@ export class RelationshipService {
      */
     async getUpcomingCompromissos(limit: number = 3): Promise<Compromisso[]> {
         const now = new Date().toISOString();
-        const sql = `SELECT * FROM compromisso WHERE data_hora >= ? ORDER BY data_hora ASC LIMIT ?`;
-        // We use repository internal method to execute query for specific logic
-        // But since we want to keep it simple, let's just use list and filter if needed or add to repo
         const all = await this.getCompromissos();
         return all
             .filter(c => c.data_hora >= now)
             .sort((a, b) => a.data_hora.localeCompare(b.data_hora))
             .slice(0, limit);
+    }
+
+    async getRandomContact(): Promise<ContactSuggestion | null> {
+        const { status } = await Contacts.requestPermissionsAsync();
+        if (status !== 'granted') {
+            throw new Error('Permission to access contacts was denied');
+        }
+
+        const { data } = await Contacts.getContactsAsync({
+            fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
+        });
+
+        if (data.length === 0) {
+            return null;
+        }
+
+        // Filter contacts with at least one phone number
+        const contactsWithPhone = data.filter(c => c.phoneNumbers && c.phoneNumbers.length > 0);
+
+        if (contactsWithPhone.length === 0) {
+            return null;
+        }
+
+        const randomContact = contactsWithPhone[Math.floor(Math.random() * contactsWithPhone.length)];
+
+        return {
+            name: randomContact.name,
+            phoneNumber: randomContact.phoneNumbers![0].number || ''
+        };
     }
 }
 
