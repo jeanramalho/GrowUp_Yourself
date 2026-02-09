@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, Alert, ScrollView, Switch } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { relationshipService } from '@/services/RelationshipService';
 import { Compromisso } from '@/models';
 import { DatePickerInput } from '../ui/DatePickerInput';
+import { TimePickerInput } from '../ui/TimePickerInput';
 
 interface CompromissoFormModalProps {
     visible: boolean;
@@ -19,18 +20,20 @@ export function CompromissoFormModal({ visible, onClose, onSaveSuccess, compromi
     const [title, setTitle] = useState('');
     const [person, setPerson] = useState('');
     const [date, setDate] = useState(new Date());
+    const [time, setTime] = useState(new Date());
+    const [isAllDay, setIsAllDay] = useState(false);
     const [note, setNote] = useState('');
-    const [type, setType] = useState('Encontro'); // Default type
 
     useEffect(() => {
         if (visible) {
             if (compromissoToEdit) {
                 setTitle(compromissoToEdit.titulo);
                 setPerson(compromissoToEdit.com_quem || '');
-                setDate(new Date(compromissoToEdit.data_hora));
+                const d = new Date(compromissoToEdit.data_hora);
+                setDate(d);
+                setTime(d);
+                setIsAllDay(!!compromissoToEdit.is_all_day);
                 setNote(compromissoToEdit.preparacao || '');
-                // Status could be used for 'type' or similar, but for now we follow the design
-                // which has Weekly, Monthly etc. Let's keep it simple.
             } else {
                 resetForm();
             }
@@ -41,8 +44,9 @@ export function CompromissoFormModal({ visible, onClose, onSaveSuccess, compromi
         setTitle('');
         setPerson('');
         setDate(new Date());
+        setTime(new Date());
+        setIsAllDay(false);
         setNote('');
-        setType('Encontro');
     };
 
     const handleSave = async () => {
@@ -52,10 +56,19 @@ export function CompromissoFormModal({ visible, onClose, onSaveSuccess, compromi
         }
 
         try {
+            // Combine date and time
+            const finalDate = new Date(date);
+            if (isAllDay) {
+                finalDate.setHours(0, 0, 0, 0);
+            } else {
+                finalDate.setHours(time.getHours(), time.getMinutes(), 0, 0);
+            }
+
             const payload: Omit<Compromisso, 'id'> = {
                 titulo: title.trim(),
                 com_quem: person.trim() || null,
-                data_hora: date.toISOString(),
+                data_hora: finalDate.toISOString(),
+                is_all_day: isAllDay,
                 preparacao: note.trim() || null,
                 status: 'pendente'
             };
@@ -74,6 +87,23 @@ export function CompromissoFormModal({ visible, onClose, onSaveSuccess, compromi
         }
     };
 
+    const handleDelete = () => {
+        if (!compromissoToEdit) return;
+
+        Alert.alert('Excluir Encontro', 'Deseja realmente excluir este encontro?', [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+                text: 'Excluir',
+                style: 'destructive',
+                onPress: async () => {
+                    await relationshipService.deleteCompromisso(compromissoToEdit.id);
+                    onSaveSuccess();
+                    onClose();
+                }
+            }
+        ]);
+    };
+
     return (
         <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
             <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -86,9 +116,16 @@ export function CompromissoFormModal({ visible, onClose, onSaveSuccess, compromi
                             Gerencie seus momentos importantes
                         </Text>
                     </View>
-                    <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-                        <MaterialCommunityIcons name="close" size={24} color={colors.text} />
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                        {compromissoToEdit && (
+                            <TouchableOpacity onPress={handleDelete} style={styles.closeBtn}>
+                                <MaterialCommunityIcons name="delete-outline" size={24} color={colors.error} />
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+                            <MaterialCommunityIcons name="close" size={24} color={colors.text} />
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <ScrollView contentContainerStyle={{ padding: 24, gap: 24 }}>
@@ -114,12 +151,29 @@ export function CompromissoFormModal({ visible, onClose, onSaveSuccess, compromi
                         />
                     </View>
 
-                    <View>
-                        <Text style={[styles.label, { color: colors.textSecondary }]}>Quando?</Text>
+                    <View style={styles.allDayRow}>
+                        <Text style={[styles.label, { color: colors.textSecondary, marginBottom: 0 }]}>O dia todo</Text>
+                        <Switch
+                            value={isAllDay}
+                            onValueChange={setIsAllDay}
+                            trackColor={{ false: colors.border, true: colors.primary + '50' }}
+                            thumbColor={isAllDay ? colors.primary : colors.gray300}
+                        />
+                    </View>
+
+                    <View style={styles.dateTimeContainer}>
                         <DatePickerInput
+                            label="Data"
                             value={date}
                             onChange={setDate}
                         />
+                        {!isAllDay && (
+                            <TimePickerInput
+                                label="Horário"
+                                value={time}
+                                onChange={setTime}
+                            />
+                        )}
                     </View>
 
                     <View>
@@ -155,4 +209,6 @@ const styles = StyleSheet.create({
     input: { fontSize: 16, padding: 16, borderRadius: 16, borderWidth: 1 },
     saveBtn: { padding: 16, borderRadius: 16, alignItems: 'center', marginTop: 24 },
     saveBtnText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+    allDayRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    dateTimeContainer: { flexDirection: 'row', gap: 16 },
 });

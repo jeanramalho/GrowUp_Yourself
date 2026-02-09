@@ -81,7 +81,7 @@ export function RelationshipSummaryCard() {
                                 <View style={styles.itemInfo}>
                                     <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={1}>{item.titulo}</Text>
                                     <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
-                                        {formatDate(item.data_hora)} • {formatTime(item.data_hora)} • {item.com_quem || 'Alguém especial'}
+                                        {formatDate(item.data_hora)} • {item.is_all_day ? 'Dia Todo' : formatTime(item.data_hora)} • {item.com_quem || 'Alguém especial'}
                                     </Text>
                                 </View>
                                 <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textSecondary} />

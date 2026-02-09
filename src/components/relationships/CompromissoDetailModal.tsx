@@ -66,9 +66,9 @@ export function CompromissoDetailModal({ visible, onClose, compromisso }: Compro
                         </View>
 
                         <View style={styles.infoRow}>
-                            <MaterialCommunityIcons name="clock-outline" size={20} color={colors.textSecondary} />
+                            <MaterialCommunityIcons name={compromisso.is_all_day ? "calendar-clock" : "clock-outline"} size={20} color={colors.textSecondary} />
                             <Text style={[styles.infoText, { color: colors.text }]}>
-                                {formatTime(compromisso.data_hora)}
+                                {compromisso.is_all_day ? 'O dia todo' : formatTime(compromisso.data_hora)}
                             </Text>
                         </View>
 

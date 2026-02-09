@@ -125,7 +125,10 @@ export default function RelationshipScreen() {
                 styles.calendarItem,
                 date.active && { backgroundColor: colors.primary }
               ]}
-              onPress={() => setSelectedDate(new Date(date.fullDate))}
+              onPress={() => {
+                const [year, month, day] = date.fullDate.split('-').map(Number);
+                setSelectedDate(new Date(year, month - 1, day));
+              }}
             >
               <Text style={[
                 styles.calendarDay,
@@ -172,7 +175,7 @@ export default function RelationshipScreen() {
                     <View style={styles.eventHeader}>
                       <Text style={[styles.eventTitle, { color: colors.text }]}>{ev.titulo}</Text>
                       <Text style={[styles.eventTime, { color: colors.textSecondary }]}>
-                        {new Date(ev.data_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        {ev.is_all_day ? 'Dia Todo' : new Date(ev.data_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                       </Text>
                     </View>
                     <Text style={[styles.eventSubtitle, { color: colors.textSecondary }]}>
