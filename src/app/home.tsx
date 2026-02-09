@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         padding: 24,
+        paddingBottom: 120,
     },
     section: {
         marginBottom: 32,

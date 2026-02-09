@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     padding: 24,
     paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 120 : 100, // Space for CustomTabBar
+    paddingBottom: Platform.OS === 'ios' ? 120 : 110, // Standardized space for CustomTabBar
   },
   inputWrapper: {
     flexDirection: 'row',
