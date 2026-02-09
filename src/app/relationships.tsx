@@ -20,7 +20,10 @@ export default function RelationshipScreen() {
 
   const fetchCompromissos = useCallback(async () => {
     try {
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
       const data = await relationshipService.getCompromissosByDate(dateStr);
       setEvents(data);
     } catch (error) {
@@ -36,12 +39,21 @@ export default function RelationshipScreen() {
     for (let i = -2; i <= 4; i++) {
       const d = new Date(selectedDate);
       d.setDate(d.getDate() + i);
-      const fullDate = d.toISOString().split('T')[0];
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const dayRaw = String(d.getDate()).padStart(2, '0');
+      const fullDate = `${year}-${month}-${dayRaw}`;
+
+      const yearSelected = selectedDate.getFullYear();
+      const monthSelected = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const daySelected = String(selectedDate.getDate()).padStart(2, '0');
+      const selectedDateStr = `${yearSelected}-${monthSelected}-${daySelected}`;
+
       days.push({
         d: d.getDate().toString(),
         day: weekDays[d.getDay()],
         fullDate,
-        active: fullDate === selectedDate.toISOString().split('T')[0]
+        active: fullDate === selectedDateStr
       });
     }
     setCalendarDays(days);

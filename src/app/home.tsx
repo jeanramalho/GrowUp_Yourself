@@ -91,6 +91,37 @@ export default function HomeScreen() {
             contentContainerStyle={styles.contentContainer}
             showsVerticalScrollIndicator={false}
         >
+            {/* Visão dos Pilares Section */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { marginBottom: 16, color: colors.text }]}>Visão dos Pilares</Text>
+                <View style={styles.grid}>
+                    {pillars.map((p) => (
+                        <TouchableOpacity
+                            key={p.type}
+                            style={[styles.pillarCard, { backgroundColor: colors.surface, borderColor: colors.border }, shadows.sm]}
+                            onPress={() => handlePillarPress(p.type)}
+                        >
+                            <View style={styles.pillarContent}>
+                                <CircularProgress
+                                    size={68}
+                                    strokeWidth={4}
+                                    progress={p.progress}
+                                    color={p.color}
+                                    backgroundColor={colors.border}
+                                >
+                                    <MaterialCommunityIcons name={p.icon as any} size={28} color={p.color} />
+                                </CircularProgress>
+
+                                <View style={styles.pillarTextContainer}>
+                                    <Text style={[styles.pillarLabel, { color: colors.text }]}>{p.label}</Text>
+                                    <Text style={[styles.pillarProgressText, { color: colors.textSecondary }]}>{p.progress}% Completo</Text>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+
             {/* Metas de Hoje Section */}
             <View style={styles.section}>
                 <View style={styles.sectionHeader}>
@@ -150,37 +181,6 @@ export default function HomeScreen() {
 
             {/* Relationships Summary Section */}
             <RelationshipSummaryCard />
-
-            {/* Visão dos Pilares Section */}
-            <View style={[styles.section, { marginBottom: 100 }]}>
-                <Text style={[styles.sectionTitle, { marginBottom: 16, color: colors.text }]}>Visão dos Pilares</Text>
-                <View style={styles.grid}>
-                    {pillars.map((p) => (
-                        <TouchableOpacity
-                            key={p.type}
-                            style={[styles.pillarCard, { backgroundColor: colors.surface, borderColor: colors.border }, shadows.sm]}
-                            onPress={() => handlePillarPress(p.type)}
-                        >
-                            <View style={styles.pillarContent}>
-                                <CircularProgress
-                                    size={68}
-                                    strokeWidth={4}
-                                    progress={p.progress}
-                                    color={p.color}
-                                    backgroundColor={colors.border}
-                                >
-                                    <MaterialCommunityIcons name={p.icon as any} size={28} color={p.color} />
-                                </CircularProgress>
-
-                                <View style={styles.pillarTextContainer}>
-                                    <Text style={[styles.pillarLabel, { color: colors.text }]}>{p.label}</Text>
-                                    <Text style={[styles.pillarProgressText, { color: colors.textSecondary }]}>{p.progress}% Completo</Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </View>
         </ScrollView>
     );
 }

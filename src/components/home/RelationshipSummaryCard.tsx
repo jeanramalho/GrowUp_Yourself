@@ -5,7 +5,7 @@ import { useAppTheme } from '@/theme';
 import { useFocusEffect } from 'expo-router';
 import { relationshipService } from '@/services/RelationshipService';
 import { Compromisso } from '@/models';
-import { CompromissoFormModal } from '../relationships/CompromissoFormModal';
+import { CompromissoDetailModal } from '../relationships/CompromissoDetailModal';
 
 export function RelationshipSummaryCard() {
     const { colors, shadows, isDarkMode } = useAppTheme();
@@ -101,11 +101,10 @@ export function RelationshipSummaryCard() {
                 )}
             </View>
 
-            <CompromissoFormModal
+            <CompromissoDetailModal
                 visible={isModalVisible}
                 onClose={() => setIsModalVisible(false)}
-                onSaveSuccess={loadUpcoming}
-                compromissoToEdit={selectedCompromisso}
+                compromisso={selectedCompromisso}
             />
         </View>
     );

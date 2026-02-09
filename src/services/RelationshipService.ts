@@ -49,10 +49,10 @@ export class RelationshipService {
      * Helper to get upcoming commitments
      */
     async getUpcomingCompromissos(limit: number = 3): Promise<Compromisso[]> {
-        const now = new Date().toISOString();
+        const now = new Date();
         const all = await this.getCompromissos();
         return all
-            .filter(c => c.data_hora >= now)
+            .filter(c => new Date(c.data_hora) >= now)
             .sort((a, b) => a.data_hora.localeCompare(b.data_hora))
             .slice(0, limit);
     }
