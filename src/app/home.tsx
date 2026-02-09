@@ -6,6 +6,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { CircularProgress } from '@/components/ui/CircularProgress';
 import { habitService } from '@/services/HabitService';
 import { Meta } from '@/models';
+import { RelationshipSummaryCard } from '@/components/home/RelationshipSummaryCard';
 
 type HabitWithStatus = Meta & { completed: boolean; executionId?: string };
 
@@ -146,6 +147,9 @@ export default function HomeScreen() {
                     )}
                 </View>
             </View>
+
+            {/* Relationships Summary Section */}
+            <RelationshipSummaryCard />
 
             {/* Visão dos Pilares Section */}
             <View style={[styles.section, { marginBottom: 100 }]}>
