@@ -146,6 +146,7 @@ export interface Compromisso {
   titulo: string;
   com_quem?: string | null;
   data_hora: string; // ISO 8601 format
+  is_all_day?: boolean;
   recorrencia_rule?: string | null;
   preparacao?: string | null;
   lembretes?: string | null;
