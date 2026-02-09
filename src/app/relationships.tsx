@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Dimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { Compromisso, ContactSuggestion } from '@/models';
@@ -10,6 +10,7 @@ import { SuggestedContactModal } from '@/components/relationships/SuggestedConta
 export default function RelationshipScreen() {
   const { colors, isDarkMode, shadows } = useAppTheme();
 
+  const scrollRef = useRef<ScrollView>(null);
   const [events, setEvents] = useState<Compromisso[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState<{ d: string; day: string; fullDate: string; active: boolean }[]>([]);
@@ -34,11 +35,12 @@ export default function RelationshipScreen() {
   const generateCalendar = useCallback(() => {
     const days = [];
     const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    const today = new Date();
 
-    // Generate 7 days starting from 3 days before selectedDate
-    for (let i = -2; i <= 4; i++) {
-      const d = new Date(selectedDate);
-      d.setDate(d.getDate() + i);
+    // Generate range: 30 days past to 170 days future
+    for (let i = -30; i <= 170; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const dayRaw = String(d.getDate()).padStart(2, '0');
@@ -63,6 +65,26 @@ export default function RelationshipScreen() {
     generateCalendar();
     fetchCompromissos();
   }, [selectedDate, fetchCompromissos, generateCalendar]);
+
+  // Scroll to center selected date when calendar is ready or selected date changes
+  useEffect(() => {
+    if (calendarDays.length > 0) {
+      const selectedIndex = calendarDays.findIndex(d => d.active);
+      if (selectedIndex !== -1) {
+        const itemWidth = 48; // calendarItem width
+        const gap = 8;        // calendarScrollContent gap
+        const padding = 12;   // calendarScrollContent padding
+        const screenWidth = Dimensions.get('window').width;
+
+        const offset = (selectedIndex * (itemWidth + gap)) + padding - (screenWidth / 2) + (itemWidth / 2);
+
+        // Small delay to ensure ScrollView is ready
+        setTimeout(() => {
+          scrollRef.current?.scrollTo({ x: Math.max(0, offset), animated: true });
+        }, 300);
+      }
+    }
+  }, [calendarDays, selectedDate]);
 
   const handleDelete = (id: string) => {
     Alert.alert('Excluir Encontro', 'Deseja realmente excluir este encontro?', [
@@ -118,28 +140,35 @@ export default function RelationshipScreen() {
 
         {/* Calendar Strip */}
         <View style={[styles.calendarStrip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          {calendarDays.map((date, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.calendarItem,
-                date.active && { backgroundColor: colors.primary }
-              ]}
-              onPress={() => {
-                const [year, month, day] = date.fullDate.split('-').map(Number);
-                setSelectedDate(new Date(year, month - 1, day));
-              }}
-            >
-              <Text style={[
-                styles.calendarDay,
-                { color: date.active ? 'white' : colors.textSecondary }
-              ]}>{date.day}</Text>
-              <Text style={[
-                styles.calendarDate,
-                { color: date.active ? 'white' : colors.text, fontWeight: date.active ? 'bold' : 'normal' }
-              ]}>{date.d}</Text>
-            </TouchableOpacity>
-          ))}
+          <ScrollView
+            ref={scrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.calendarScrollContent}
+          >
+            {calendarDays.map((date, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.calendarItem,
+                  date.active && { backgroundColor: colors.primary }
+                ]}
+                onPress={() => {
+                  const [year, month, day] = date.fullDate.split('-').map(Number);
+                  setSelectedDate(new Date(year, month - 1, day));
+                }}
+              >
+                <Text style={[
+                  styles.calendarDay,
+                  { color: date.active ? 'white' : colors.textSecondary }
+                ]}>{date.day}</Text>
+                <Text style={[
+                  styles.calendarDate,
+                  { color: date.active ? 'white' : colors.text, fontWeight: date.active ? 'bold' : 'normal' }
+                ]}>{date.d}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Upcoming Events */}
@@ -254,12 +283,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   calendarStrip: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 12,
+    paddingVertical: 8,
     borderRadius: 24,
     borderWidth: 1,
     marginBottom: 32,
+    overflow: 'hidden',
+  },
+  calendarScrollContent: {
+    paddingHorizontal: 12,
+    gap: 8,
   },
   calendarItem: {
     alignItems: 'center',
