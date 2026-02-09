@@ -370,6 +370,7 @@ export class MigrationRunner {
       migration002SeedPilares,
       migration003FinanceEnhancements,
       migration005PlanningOverhaul,
+      migration006AddCompromissoAllDay,
     ];
   }
 
@@ -436,3 +437,24 @@ export class MigrationRunner {
     }
   }
 }
+
+/**
+ * Add is_all_day to compromisso
+ */
+export const migration006AddCompromissoAllDay: Migration = {
+  version: 6,
+  name: '006_add_compromisso_all_day',
+  up: async (db: SQLiteDatabase) => {
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.runAsync(`ALTER TABLE compromisso ADD COLUMN is_all_day INTEGER DEFAULT 0`);
+      } catch (e) { /* Ignore if exists */ }
+
+      // Record this migration
+      await db.runAsync(
+        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
+        [6, '006_add_compromisso_all_day', new Date().toISOString()]
+      );
+    });
+  },
+};
