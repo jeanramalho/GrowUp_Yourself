@@ -13,6 +13,7 @@ export default function RelationshipScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const [events, setEvents] = useState<Compromisso[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [visibleMonthYear, setVisibleMonthYear] = useState('');
   const [calendarDays, setCalendarDays] = useState<{ d: string; day: string; fullDate: string; active: boolean }[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedCompromisso, setSelectedCompromisso] = useState<Compromisso | null>(null);
@@ -86,6 +87,36 @@ export default function RelationshipScreen() {
     }
   }, [calendarDays, selectedDate]);
 
+  const formatMonthYear = (date: Date) => {
+    const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
+  const handleScroll = (event: any) => {
+    const offset = event.nativeEvent.contentOffset.x;
+    const itemWidth = 48;
+    const gap = 8;
+    const padding = 12;
+    const screenWidth = Dimensions.get('window').width;
+
+    // Calculate index of the item closest to the center
+    const centerOffset = offset + (screenWidth / 2) - padding;
+    const index = Math.max(0, Math.min(calendarDays.length - 1, Math.round(centerOffset / (itemWidth + gap))));
+
+    if (calendarDays[index]) {
+      const [y, m, d] = calendarDays[index].fullDate.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      const formatted = formatMonthYear(date);
+      if (formatted !== visibleMonthYear) {
+        setVisibleMonthYear(formatted);
+      }
+    }
+  };
+
+  useEffect(() => {
+    setVisibleMonthYear(formatMonthYear(selectedDate));
+  }, []);
+
   const handleDelete = (id: string) => {
     Alert.alert('Excluir Encontro', 'Deseja realmente excluir este encontro?', [
       { text: 'Cancelar', style: 'cancel' },
@@ -140,11 +171,16 @@ export default function RelationshipScreen() {
 
         {/* Calendar Strip */}
         <View style={[styles.calendarStrip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.calendarHeader}>
+            <Text style={[styles.calendarMonthYear, { color: colors.text }]}>{visibleMonthYear}</Text>
+          </View>
           <ScrollView
             ref={scrollRef}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.calendarScrollContent}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
           >
             {calendarDays.map((date, index) => (
               <TouchableOpacity
@@ -283,11 +319,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   calendarStrip: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderRadius: 24,
     borderWidth: 1,
     marginBottom: 32,
     overflow: 'hidden',
+  },
+  calendarHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  calendarMonthYear: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'capitalize',
   },
   calendarScrollContent: {
     paddingHorizontal: 12,
