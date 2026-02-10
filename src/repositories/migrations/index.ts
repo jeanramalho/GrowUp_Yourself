@@ -371,7 +371,9 @@ export class MigrationRunner {
       migration003FinanceEnhancements,
       migration005PlanningOverhaul,
       migration006AddCompromissoAllDay,
+      migration007HealthInit,
     ];
+
   }
 
   /**
@@ -458,3 +460,60 @@ export const migration006AddCompromissoAllDay: Migration = {
     });
   },
 };
+
+/**
+ * Health module initialization migration
+ */
+export const migration007HealthInit: Migration = {
+  version: 7,
+  name: '007_health_init',
+  up: async (db: SQLiteDatabase) => {
+    await db.withTransactionAsync(async () => {
+      // Create health_profile table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_profile (
+          id TEXT PRIMARY KEY,
+          weight REAL,
+          height REAL,
+          birthDate TEXT,
+          gender TEXT,
+          activityLevel TEXT,
+          waterGoal REAL,
+          updated_at TEXT NOT NULL
+        )`
+      );
+
+      // Create health_metrics table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_metrics (
+          id TEXT PRIMARY KEY,
+          type TEXT NOT NULL,
+          value REAL NOT NULL,
+          unit TEXT NOT NULL,
+          date TEXT NOT NULL,
+          notes TEXT,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      // Create health_chat_history table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_chat_history (
+          id TEXT PRIMARY KEY,
+          text TEXT NOT NULL,
+          sender TEXT NOT NULL, -- 'user' or 'ai'
+          timestamp TEXT NOT NULL,
+          type TEXT NOT NULL, -- 'text' or 'action'
+          metadata TEXT
+        )`
+      );
+
+      // Record this migration
+      await db.runAsync(
+        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
+        [7, '007_health_init', new Date().toISOString()]
+      );
+    });
+  },
+};
+
