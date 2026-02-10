@@ -1,9 +1,12 @@
 import { HealthRepository } from '../repositories/HealthRepository';
-import { HealthProfile, HealthMetric, ChatMessage } from '../models/health';
+import { UserRepository } from '../repositories/UserRepository';
+import { HealthMetric, ChatMessage } from '../models/health';
+import { UserProfile } from '../models'; // Import UserProfile from generic models
 import { database } from '../repositories/Repository';
 
 export class HealthService {
     private _repo: HealthRepository | null = null;
+    private _userRepo: UserRepository | null = null;
 
     private get repo(): HealthRepository {
         if (!this._repo) {
@@ -12,12 +15,25 @@ export class HealthService {
         return this._repo;
     }
 
-    async getProfile(): Promise<HealthProfile | null> {
-        return this.repo.getProfile();
+    private get userRepo(): UserRepository {
+        if (!this._userRepo) {
+            this._userRepo = new UserRepository(database.getDb());
+        }
+        return this._userRepo;
     }
 
-    async saveProfile(profile: HealthProfile): Promise<HealthProfile> {
-        return this.repo.saveProfile(profile);
+    /**
+     * Get the unified user profile (acting as health profile too)
+     */
+    async getProfile(): Promise<UserProfile | null> {
+        return this.userRepo.getProfile();
+    }
+
+    /**
+     * Save/Update user profile
+     */
+    async saveProfile(profile: UserProfile): Promise<UserProfile> {
+        return this.userRepo.saveProfile(profile);
     }
 
     async addMetric(metric: Omit<HealthMetric, 'created_at'>): Promise<HealthMetric> {
@@ -47,12 +63,13 @@ export class HealthService {
         return 'Obesidade';
     }
 
-    calculateBMR(weight: number, heightCm: number, age: number, gender: 'male' | 'female' | 'other'): number {
+    calculateBMR(weight: number, heightCm: number, age: number, gender: 'male' | 'female' | 'other' | null): number {
         // Harris-Benedict Equation
-        if (gender === 'male') {
-            return 88.362 + (13.397 * weight) + (4.799 * heightCm) - (5.677 * age);
-        } else {
+        // Default to male if null/unknown for now or handle appropriately
+        if (gender === 'female') {
             return 447.593 + (9.247 * weight) + (3.098 * heightCm) - (4.330 * age);
+        } else {
+            return 88.362 + (13.397 * weight) + (4.799 * heightCm) - (5.677 * age);
         }
     }
 
@@ -65,7 +82,7 @@ export class HealthService {
 
     async saveMessage(text: string, sender: 'user' | 'ai', type: 'text' | 'action' = 'text', metadata?: any): Promise<ChatMessage> {
         const message: ChatMessage = {
-            id: Date.now().toString(), // Simple ID for now
+            id: Date.now().toString(),
             text,
             sender,
             timestamp: new Date().toISOString(),
@@ -81,6 +98,33 @@ export class HealthService {
 
     async clearChat(): Promise<void> {
         return this.repo.clearChat();
+    }
+
+    /**
+     * Check for stale/mock messages and clear them if found.
+     * This creates a clean slate for the new AI.
+     */
+    async sanitizeHistory(): Promise<boolean> {
+        const history = await this.getChatHistory();
+        // Look for signature of stale/mock data 
+        const hasStaleData = history.some(msg =>
+            msg.text.includes('Recebi: "Dica de dieta"') ||
+            msg.text.includes('1.78m') ||
+            (msg.sender === 'ai' && msg.text.includes('fake')) // generic safeguard
+        );
+
+        if (hasStaleData) {
+            console.log('Sanitizing stale chat history...');
+            await this.clearChat();
+
+            // Add a "System Upgrade" message
+            await this.saveMessage(
+                'Atualizei meu sistema para uma nova versão de Inteligência Artificial. Agora sou mais inteligente e proativo! Como posso te ajudar hoje?',
+                'ai'
+            );
+            return true;
+        }
+        return false;
     }
 }
 
