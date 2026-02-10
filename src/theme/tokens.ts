@@ -23,7 +23,9 @@ export const colors = {
 
   // Neutral colors (from specification)
   white: '#FFFFFF',
+  text: '#212121', // Default text color
   black: '#000000',
+  background: '#F3F6FA', // Default app background
   gray100: '#F3F6FA', // Neutral Gray 1
   gray200: '#EEEEEE',
   gray300: '#E0E0E0',
