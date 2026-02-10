@@ -160,3 +160,4 @@ export interface ContactSuggestion {
   name: string;
   phoneNumber: string;
 }
+export * from './health';
