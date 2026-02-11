@@ -16,6 +16,91 @@ export interface Migration {
 }
 
 /**
+ * Migration runner
+ */
+export class MigrationRunner {
+  private db: SQLiteDatabase;
+  private migrations: Migration[] = [];
+
+  constructor(db: SQLiteDatabase) {
+    this.db = db;
+    // Register all migrations
+    this.migrations = [
+      migration001Init,
+      migration002SeedPilares,
+      migration003FinanceEnhancements,
+      migration005PlanningOverhaul,
+      migration006AddCompromissoAllDay,
+      migration007HealthInit,
+      migration008HealthEnhancements,
+    ];
+  }
+
+  /**
+   * Get current schema version
+   */
+  private async getCurrentVersion(): Promise<number> {
+    try {
+      const result = await this.db.getFirstAsync<{ version: number }>(
+        'SELECT MAX(version) as version FROM schema_version'
+      );
+      return result?.version ?? 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
+   * Run all pending migrations
+   */
+  async runMigrations(): Promise<void> {
+    const currentVersion = await this.getCurrentVersion();
+
+    for (const migration of this.migrations) {
+      if (migration.version > currentVersion) {
+        try {
+          console.log(`Applying migration: ${migration.name}`);
+          await migration.up(this.db);
+          console.log(`Migration ${migration.name} applied successfully`);
+        } catch (error) {
+          console.error(`Migration ${migration.name} failed:`, error);
+          throw error;
+        }
+      }
+    }
+  }
+
+  /**
+   * Rollback to a specific version
+   */
+  async rollback(targetVersion: number): Promise<void> {
+    const currentVersion = await this.getCurrentVersion();
+
+    for (let i = this.migrations.length - 1; i >= 0; i--) {
+      const migration = this.migrations[i];
+      if (migration.version > targetVersion && migration.version <= currentVersion) {
+        if (migration.down) {
+          try {
+            console.log(`Rolling back migration: ${migration.name}`);
+            await migration.down(this.db);
+            // Remove from schema_version
+            await this.db.withTransactionAsync(async () => {
+              await this.db.runAsync('DELETE FROM schema_version WHERE version = ?', [
+                migration.version,
+              ]);
+            });
+            console.log(`Migration ${migration.name} rolled back successfully`);
+          } catch (error) {
+            console.error(`Rollback of ${migration.name} failed:`, error);
+            throw error;
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
  * Initial schema migration - creates all tables
  */
 export const migration001Init: Migration = {
@@ -222,8 +307,6 @@ export const migration003FinanceEnhancements: Migration = {
       );
 
       // Update lancamento_financeiro
-      // Since SQLite doesn't support ADD COLUMN with FOREIGN KEY in one go easily or dropping columns, 
-      // we'll just add the columns. 
       await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN conta_id TEXT`);
       await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN cartao_id TEXT`);
       await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN parcelas_total INTEGER DEFAULT 1`);
@@ -240,49 +323,6 @@ export const migration003FinanceEnhancements: Migration = {
       await db.runAsync(
         `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
         [3, '003_finance_enhancements', new Date().toISOString()]
-      );
-    });
-  },
-};
-
-/**
- * Planning Categories migration
- */
-export const migration004PlanningCategories: Migration = {
-  version: 4,
-  name: '004_planning_categories',
-  up: async (db: SQLiteDatabase) => {
-    await db.withTransactionAsync(async () => {
-      // Create categoria_planejamento table
-      await db.runAsync(
-        `CREATE TABLE IF NOT EXISTS categoria_planejamento (
-          id TEXT PRIMARY KEY,
-          nome TEXT NOT NULL,
-          tipo TEXT NOT NULL, -- 'receita' or 'despesa'
-          sistema INTEGER DEFAULT 0, -- 1 = system default, 0 = user created
-          created_at TEXT NOT NULL
-        )`
-      );
-
-      // Seed default categories
-      const defaultCategories = [
-        'Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Outros', 'Salário', 'Freelance', 'V.A.', 'V.R.'
-      ];
-
-      for (const cat of defaultCategories) {
-        let type = 'despesa';
-        if (['Salário', 'Freelance'].includes(cat)) type = 'receita';
-
-        await db.runAsync(
-          `INSERT OR IGNORE INTO categoria_planejamento (id, nome, tipo, sistema, created_at) VALUES (?, ?, ?, ?, ?)`,
-          [`cat-${cat.toLowerCase().replace(/[^a-z0-9]/g, '')}`, cat, type, 1, new Date().toISOString()]
-        );
-      }
-
-      // Record this migration
-      await db.runAsync(
-        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
-        [4, '004_planning_categories', new Date().toISOString()]
       );
     });
   },
@@ -323,8 +363,7 @@ export const migration005PlanningOverhaul: Migration = {
         await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN recorrencia_id TEXT`);
       } catch (e) { /* Ignore if exists */ }
 
-      // Migrate existing 'categoria_planejamento' (Legacy) to 'categoria_financeira' if needed
-      // For now, let's just seed some defaults for the New System if empty
+      // Seed defaults for the New System if empty
       const count = await db.getFirstAsync<{ c: number }>(`SELECT COUNT(*) as c FROM categoria_financeira`);
       if ((count?.c || 0) === 0) {
         const defaultCats = [
@@ -354,143 +393,6 @@ export const migration005PlanningOverhaul: Migration = {
     });
   },
 };
-
-/**
- * Migration runner
- */
-export class MigrationRunner {
-  private db: SQLiteDatabase;
-  private migrations: Migration[] = [];
-
-  constructor(db: SQLiteDatabase) {
-    this.db = db;
-    // Register all migrations
-    this.migrations = [
-      migration001Init,
-      migration002SeedPilares,
-      migration003FinanceEnhancements,
-      migration005PlanningOverhaul,
-      migration006AddCompromissoAllDay,
-      migration007HealthInit,
-      migration008HealthEnhancements,
-    ];
-
-  }
-  // ... (rest of the class)
-}
-
-/**
- * Health enhancements migration - Exercise reports, Exams, and Profile updates
- */
-export const migration008HealthEnhancements: Migration = {
-  version: 8,
-  name: '008_health_enhancements',
-  up: async (db: SQLiteDatabase) => {
-    await db.withTransactionAsync(async () => {
-      // Add columns to health_profile
-      try {
-        await db.runAsync(`ALTER TABLE health_profile ADD COLUMN meta_peso REAL`);
-      } catch (e) { /* Ignore if exists */ }
-
-      try {
-        await db.runAsync(`ALTER TABLE health_profile ADD COLUMN last_monthly_checkin TEXT`);
-      } catch (e) { /* Ignore if exists */ }
-
-      // Create health_exercise_reports table
-      await db.runAsync(
-        `CREATE TABLE IF NOT EXISTS health_exercise_reports (
-          id TEXT PRIMARY KEY,
-          exercises TEXT NOT NULL,
-          duration INTEGER NOT NULL,
-          calories REAL NOT NULL,
-          date TEXT NOT NULL,
-          created_at TEXT NOT NULL
-        )`
-      );
-
-      // Create health_exams table
-      await db.runAsync(
-        `CREATE TABLE IF NOT EXISTS health_exams (
-          id TEXT PRIMARY KEY,
-          filename TEXT NOT NULL,
-          analysis TEXT NOT NULL,
-          date TEXT NOT NULL,
-          created_at TEXT NOT NULL
-        )`
-      );
-
-      // Record this migration
-      await db.runAsync(
-        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
-        [8, '008_health_enhancements', new Date().toISOString()]
-      );
-    });
-  },
-};
-
-  /**
-   * Get current schema version
-   */
-  private async getCurrentVersion(): Promise < number > {
-  try {
-    const result = await this.db.getFirstAsync<{ version: number }>(
-      'SELECT MAX(version) as version FROM schema_version'
-    );
-    return result?.version ?? 0;
-  } catch {
-    return 0;
-  }
-}
-
-  /**
-   * Run all pending migrations
-   */
-  async runMigrations(): Promise < void> {
-  const currentVersion = await this.getCurrentVersion();
-
-  for(const migration of this.migrations) {
-  if (migration.version > currentVersion) {
-    try {
-      console.log(`Applying migration: ${migration.name}`);
-      await migration.up(this.db);
-      console.log(`Migration ${migration.name} applied successfully`);
-    } catch (error) {
-      console.error(`Migration ${migration.name} failed:`, error);
-      throw error;
-    }
-  }
-}
-  }
-
-  /**
-   * Rollback to a specific version
-   */
-  async rollback(targetVersion: number): Promise < void> {
-  const currentVersion = await this.getCurrentVersion();
-
-  for(let i = this.migrations.length - 1; i >= 0; i--) {
-  const migration = this.migrations[i];
-  if (migration.version > targetVersion && migration.version <= currentVersion) {
-    if (migration.down) {
-      try {
-        console.log(`Rolling back migration: ${migration.name}`);
-        await migration.down(this.db);
-        // Remove from schema_version
-        await this.db.withTransactionAsync(async () => {
-          await this.db.runAsync('DELETE FROM schema_version WHERE version = ?', [
-            migration.version,
-          ]);
-        });
-        console.log(`Migration ${migration.name} rolled back successfully`);
-      } catch (error) {
-        console.error(`Rollback of ${migration.name} failed:`, error);
-        throw error;
-      }
-    }
-  }
-}
-  }
-}
 
 /**
  * Add is_all_day to compromisso
@@ -569,3 +471,51 @@ export const migration007HealthInit: Migration = {
   },
 };
 
+/**
+ * Health enhancements migration - Exercise reports, Exams, and Profile updates
+ */
+export const migration008HealthEnhancements: Migration = {
+  version: 8,
+  name: '008_health_enhancements',
+  up: async (db: SQLiteDatabase) => {
+    await db.withTransactionAsync(async () => {
+      // Add columns to health_profile
+      try {
+        await db.runAsync(`ALTER TABLE health_profile ADD COLUMN meta_peso REAL`);
+      } catch (e) { /* Ignore if exists */ }
+
+      try {
+        await db.runAsync(`ALTER TABLE health_profile ADD COLUMN last_monthly_checkin TEXT`);
+      } catch (e) { /* Ignore if exists */ }
+
+      // Create health_exercise_reports table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_exercise_reports (
+          id TEXT PRIMARY KEY,
+          exercises TEXT NOT NULL,
+          duration INTEGER NOT NULL,
+          calories REAL NOT NULL,
+          date TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      // Create health_exams table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_exams (
+          id TEXT PRIMARY KEY,
+          filename TEXT NOT NULL,
+          analysis TEXT NOT NULL,
+          date TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      // Record this migration
+      await db.runAsync(
+        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
+        [8, '008_health_enhancements', new Date().toISOString()]
+      );
+    });
+  },
+};

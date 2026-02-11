@@ -46,27 +46,24 @@ export class HealthRepository extends Repository<any> { // Using any for base be
     async updateProfile(id: string, profile: Partial<HealthProfile>): Promise<HealthProfile> {
         const sql = `
             UPDATE health_profile 
-            SET weight = ?, height = ?, birthDate = ?, gender = ?, activityLevel = ?, waterGoal = ?, updated_at = ?
+            SET weight = ?, height = ?, birthDate = ?, gender = ?, activityLevel = ?, waterGoal = ?, updated_at = ?, meta_peso = ?, last_monthly_checkin = ?
             WHERE id = ?
         `;
-        // Need to fetch existing to merge if partial, but for now assuming full update or handled by service
-        // Ideally repo handles the merge or service does. Let's assume service passes full object or we fetch here.
-        // For simplicity, let's assume the service handles the object completeness or we just update fields provided.
-        // But SQL update needs values. Let's do a smart update generator or just simple fixed fields for now.
-
         const existing = await this.getProfile();
         if (!existing) throw new Error('Profile not found');
 
         const merged = { ...existing, ...profile, updated_at: new Date().toISOString() };
 
         await this.executeStatement(sql, [
-            merged.weight,
-            merged.height,
-            merged.birthDate || null,
-            merged.gender,
-            merged.activityLevel,
-            merged.waterGoal,
+            merged.weight || merged.peso || null,
+            merged.height || merged.altura || null,
+            merged.birthDate || merged.data_nascimento || null,
+            merged.gender || merged.sexo || null,
+            merged.activityLevel || null,
+            merged.waterGoal || null,
             merged.updated_at,
+            merged.meta_peso || null,
+            merged.last_monthly_checkin || null,
             id
         ]);
         return merged;
@@ -93,6 +90,49 @@ export class HealthRepository extends Repository<any> { // Using any for base be
     async getMetrics(type: string, limit: number = 20): Promise<HealthMetric[]> {
         const sql = `SELECT * FROM health_metrics WHERE type = ? ORDER BY date DESC LIMIT ?`;
         return this.executeQuery<HealthMetric>(sql, [type, limit]);
+    }
+
+    // --- Exercise Reports ---
+    async saveExerciseReport(report: ExerciseReport): Promise<ExerciseReport> {
+        const sql = `
+            INSERT INTO health_exercise_reports (id, exercises, duration, calories, date, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        await this.executeStatement(sql, [
+            report.id,
+            report.exercises,
+            report.duration,
+            report.calories,
+            report.date,
+            report.created_at
+        ]);
+        return report;
+    }
+
+    async getExerciseReports(limit: number = 20): Promise<ExerciseReport[]> {
+        const sql = `SELECT * FROM health_exercise_reports ORDER BY date DESC LIMIT ?`;
+        return this.executeQuery<ExerciseReport>(sql, [limit]);
+    }
+
+    // --- Health Exams ---
+    async saveExam(exam: HealthExam): Promise<HealthExam> {
+        const sql = `
+            INSERT INTO health_exams (id, filename, analysis, date, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+        await this.executeStatement(sql, [
+            exam.id,
+            exam.filename,
+            exam.analysis,
+            exam.date,
+            exam.created_at
+        ]);
+        return exam;
+    }
+
+    async getExams(limit: number = 10): Promise<HealthExam[]> {
+        const sql = `SELECT * FROM health_exams ORDER BY date DESC LIMIT ?`;
+        return this.executeQuery<HealthExam>(sql, [limit]);
     }
 
     // --- Chat History ---
