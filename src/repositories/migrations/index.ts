@@ -372,71 +372,123 @@ export class MigrationRunner {
       migration005PlanningOverhaul,
       migration006AddCompromissoAllDay,
       migration007HealthInit,
+      migration008HealthEnhancements,
     ];
 
   }
+  // ... (rest of the class)
+}
+
+/**
+ * Health enhancements migration - Exercise reports, Exams, and Profile updates
+ */
+export const migration008HealthEnhancements: Migration = {
+  version: 8,
+  name: '008_health_enhancements',
+  up: async (db: SQLiteDatabase) => {
+    await db.withTransactionAsync(async () => {
+      // Add columns to health_profile
+      try {
+        await db.runAsync(`ALTER TABLE health_profile ADD COLUMN meta_peso REAL`);
+      } catch (e) { /* Ignore if exists */ }
+
+      try {
+        await db.runAsync(`ALTER TABLE health_profile ADD COLUMN last_monthly_checkin TEXT`);
+      } catch (e) { /* Ignore if exists */ }
+
+      // Create health_exercise_reports table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_exercise_reports (
+          id TEXT PRIMARY KEY,
+          exercises TEXT NOT NULL,
+          duration INTEGER NOT NULL,
+          calories REAL NOT NULL,
+          date TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      // Create health_exams table
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_exams (
+          id TEXT PRIMARY KEY,
+          filename TEXT NOT NULL,
+          analysis TEXT NOT NULL,
+          date TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      // Record this migration
+      await db.runAsync(
+        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
+        [8, '008_health_enhancements', new Date().toISOString()]
+      );
+    });
+  },
+};
 
   /**
    * Get current schema version
    */
-  private async getCurrentVersion(): Promise<number> {
-    try {
-      const result = await this.db.getFirstAsync<{ version: number }>(
-        'SELECT MAX(version) as version FROM schema_version'
-      );
-      return result?.version ?? 0;
-    } catch {
-      return 0;
-    }
+  private async getCurrentVersion(): Promise < number > {
+  try {
+    const result = await this.db.getFirstAsync<{ version: number }>(
+      'SELECT MAX(version) as version FROM schema_version'
+    );
+    return result?.version ?? 0;
+  } catch {
+    return 0;
   }
+}
 
   /**
    * Run all pending migrations
    */
-  async runMigrations(): Promise<void> {
-    const currentVersion = await this.getCurrentVersion();
+  async runMigrations(): Promise < void> {
+  const currentVersion = await this.getCurrentVersion();
 
-    for (const migration of this.migrations) {
-      if (migration.version > currentVersion) {
-        try {
-          console.log(`Applying migration: ${migration.name}`);
-          await migration.up(this.db);
-          console.log(`Migration ${migration.name} applied successfully`);
-        } catch (error) {
-          console.error(`Migration ${migration.name} failed:`, error);
-          throw error;
-        }
-      }
+  for(const migration of this.migrations) {
+  if (migration.version > currentVersion) {
+    try {
+      console.log(`Applying migration: ${migration.name}`);
+      await migration.up(this.db);
+      console.log(`Migration ${migration.name} applied successfully`);
+    } catch (error) {
+      console.error(`Migration ${migration.name} failed:`, error);
+      throw error;
     }
+  }
+}
   }
 
   /**
    * Rollback to a specific version
    */
-  async rollback(targetVersion: number): Promise<void> {
-    const currentVersion = await this.getCurrentVersion();
+  async rollback(targetVersion: number): Promise < void> {
+  const currentVersion = await this.getCurrentVersion();
 
-    for (let i = this.migrations.length - 1; i >= 0; i--) {
-      const migration = this.migrations[i];
-      if (migration.version > targetVersion && migration.version <= currentVersion) {
-        if (migration.down) {
-          try {
-            console.log(`Rolling back migration: ${migration.name}`);
-            await migration.down(this.db);
-            // Remove from schema_version
-            await this.db.withTransactionAsync(async () => {
-              await this.db.runAsync('DELETE FROM schema_version WHERE version = ?', [
-                migration.version,
-              ]);
-            });
-            console.log(`Migration ${migration.name} rolled back successfully`);
-          } catch (error) {
-            console.error(`Rollback of ${migration.name} failed:`, error);
-            throw error;
-          }
-        }
+  for(let i = this.migrations.length - 1; i >= 0; i--) {
+  const migration = this.migrations[i];
+  if (migration.version > targetVersion && migration.version <= currentVersion) {
+    if (migration.down) {
+      try {
+        console.log(`Rolling back migration: ${migration.name}`);
+        await migration.down(this.db);
+        // Remove from schema_version
+        await this.db.withTransactionAsync(async () => {
+          await this.db.runAsync('DELETE FROM schema_version WHERE version = ?', [
+            migration.version,
+          ]);
+        });
+        console.log(`Migration ${migration.name} rolled back successfully`);
+      } catch (error) {
+        console.error(`Rollback of ${migration.name} failed:`, error);
+        throw error;
       }
     }
+  }
+}
   }
 }
 
