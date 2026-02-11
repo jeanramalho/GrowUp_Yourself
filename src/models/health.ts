@@ -4,16 +4,21 @@
 
 /**
  * Health Profile
- * Stores user's physical attributes
+ * Stores user's physical attributes and check-in history
  */
 export interface HealthProfile {
-    id: string; // usually 'default' or tied to user_id
-    weight: number; // in kg
-    height: number; // in cm
-    birthDate?: string; // YYYY-MM-DD
-    gender: 'male' | 'female' | 'other';
-    activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
-    waterGoal: number; // in ml
+    id: string; // 'current_user'
+    weight?: number; // legacy field (peso used in implementation)
+    height?: number; // legacy field (altura used in implementation)
+    peso?: number; // in kg
+    altura?: number; // in cm
+    meta_peso?: number; // in kg
+    data_nascimento?: string; // YYYY-MM-DD
+    gender?: 'male' | 'female' | 'other' | null;
+    sexo?: 'male' | 'female' | 'other' | null; // legacy/unified
+    activityLevel?: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+    waterGoal?: number; // in ml
+    last_monthly_checkin?: string; // ISO string
     updated_at: string;
 }
 
@@ -32,6 +37,29 @@ export interface HealthMetric {
 }
 
 /**
+ * Exercise Report
+ */
+export interface ExerciseReport {
+    id: string;
+    exercises: string;
+    duration: number; // minutes
+    calories: number;
+    date: string; // YYYY-MM-DD
+    created_at: string;
+}
+
+/**
+ * Health Exam
+ */
+export interface HealthExam {
+    id: string;
+    filename: string;
+    analysis: string;
+    date: string; // YYYY-MM-DD
+    created_at: string;
+}
+
+/**
  * Chat Message
  * Structure for the offline AI chat history
  */
@@ -42,15 +70,15 @@ export interface ChatMessage {
     timestamp: string; // ISO string
     type: 'text' | 'action' | 'system';
     metadata?: {
-        actionType?: 'update_weight' | 'log_water' | 'set_goal';
+        actionType?: 'update_weight' | 'log_water' | 'set_goal' | 'exercise_report' | 'health_metrics' | 'analyze_exam' | 'weekly_diet' | 'monthly_checkin';
         actionValue?: any;
         relatedId?: string;
+        options?: { label: string; value: any }[]; // For Sim/Não buttons
     };
 }
 
 /**
- * Health Goal (extends the generic Meta but specific for Health context if needed)
- * For now we can reuse Meta from index.ts, but we might want specific health targets
+ * Health Goal
  */
 export interface HealthGoal {
     id: string;
@@ -63,3 +91,4 @@ export interface HealthGoal {
     endDate?: string;
     isActive: boolean;
 }
+
