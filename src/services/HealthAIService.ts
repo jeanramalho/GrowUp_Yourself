@@ -137,15 +137,20 @@ export class HealthAIService {
                     const bmi = healthService.calculateBMI(profile.peso, profile.altura);
                     const category = healthService.getBMICategory(bmi);
 
+                    const carb = Math.round(((tdee - 500) - (profile.peso * 2 * 4) - (Math.round(profile.peso * 0.8) * 9)) / 4);
+                    const sugar = Math.round(((tdee - 500) * 0.05) / 4); // 5% of TDEE for added sugars
+
                     responseText = `Suas métricas atuais:\n\n` +
                         `- **IMC:** ${bmi} (${category})\n` +
                         `- **TMB (Calorias em repouso):** ${bmr} kcal\n` +
                         `- **Gasto Diário (TDEE):** ${tdee} kcal\n` +
                         `- **Deficit Sugerido:** ${tdee - 500} kcal\n\n` +
-                        `Sugestão de ingestão diária:\n` +
+                        `Sugestão de ingestão diária (Meta de Perda de Peso):\n` +
                         `- **Água:** ${healthService.calculateWaterGoal(profile.peso)}ml\n` +
                         `- **Proteína:** ${profile.peso * 2}g\n` +
-                        `- **Gordura:** ${Math.round(profile.peso * 0.8)}g`;
+                        `- **Carboidratos:** ${carb}g\n` +
+                        `- **Gordura:** ${Math.round(profile.peso * 0.8)}g\n` +
+                        `- **Açúcar Máximo:** ${sugar}g`;
 
                     actionType = 'text';
                     metadata = { actionType: 'health_metrics' };
