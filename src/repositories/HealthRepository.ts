@@ -1,5 +1,5 @@
 import { Repository } from './Repository';
-import { HealthProfile, HealthMetric, ChatMessage } from '../models/health';
+import { HealthProfile, HealthMetric, ChatMessage, ExerciseReport, HealthExam } from '../models/health';
 import { SQLiteDatabase } from 'expo-sqlite';
 
 export class HealthRepository extends Repository<any> { // Using any for base because we handle multiple tables
@@ -10,8 +10,14 @@ export class HealthRepository extends Repository<any> { // Using any for base be
     // --- Profile ---
     async getProfile(): Promise<HealthProfile | null> {
         const sql = `SELECT * FROM health_profile LIMIT 1`;
-        const results = await this.executeQuery<HealthProfile>(sql);
-        return results.length > 0 ? results[0] : null;
+        const results = await this.executeQuery<any>(sql);
+        if (results.length === 0) return null;
+
+        const row = results[0];
+        return {
+            ...row,
+            data_nascimento: row.birthDate || row.data_nascimento // Handle both for migration safety
+        };
     }
 
     async saveProfile(profile: HealthProfile): Promise<HealthProfile> {
@@ -24,21 +30,21 @@ export class HealthRepository extends Repository<any> { // Using any for base be
     }
 
     async createProfile(profile: HealthProfile): Promise<HealthProfile> {
-        // Implementation depends on Repository generic structure, assuming basic insert
-        // Since we are bypassing generic create for specific table logic:
         const sql = `
-            INSERT INTO health_profile (id, weight, height, birthDate, gender, activityLevel, waterGoal, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO health_profile (id, weight, height, birthDate, gender, activityLevel, waterGoal, updated_at, meta_peso, last_monthly_checkin)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         await this.executeStatement(sql, [
             profile.id,
-            profile.weight,
-            profile.height,
-            profile.birthDate || null,
-            profile.gender,
-            profile.activityLevel,
-            profile.waterGoal,
-            profile.updated_at
+            profile.weight || profile.peso || null,
+            profile.height || profile.altura || null,
+            profile.data_nascimento || null,
+            profile.gender || profile.sexo || null,
+            profile.activityLevel || null,
+            profile.waterGoal || null,
+            profile.updated_at,
+            profile.meta_peso || null,
+            profile.last_monthly_checkin || null
         ]);
         return profile;
     }
@@ -57,7 +63,7 @@ export class HealthRepository extends Repository<any> { // Using any for base be
         await this.executeStatement(sql, [
             merged.weight || merged.peso || null,
             merged.height || merged.altura || null,
-            merged.birthDate || merged.data_nascimento || null,
+            merged.data_nascimento || null,
             merged.gender || merged.sexo || null,
             merged.activityLevel || null,
             merged.waterGoal || null,
