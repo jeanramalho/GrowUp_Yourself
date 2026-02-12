@@ -104,19 +104,36 @@ export class HealthService {
     }
 
     calculateCalories(exercise: string, durationMin: number): number {
-        // Very basic MET based calculation
-        // MET: Walking (3), Running (8), Cycling (6), Gym (5)
+        // Basic MET based calculation
         let met = 5;
         const lowerEx = exercise.toLowerCase();
-        if (lowerEx.includes('caminha')) met = 3.5;
-        if (lowerEx.includes('corrida') || lowerEx.includes('correr')) met = 8;
-        if (lowerEx.includes('pedal') || lowerEx.includes('bicicleta')) met = 6;
-        if (lowerEx.includes('musculação') || lowerEx.includes('academia')) met = 5;
-        if (lowerEx.includes('natação')) met = 7;
+
+        const metMap: Record<string, number> = {
+            'caminha': 3.5,
+            'corrida': 8,
+            'correr': 8,
+            'pedal': 6,
+            'bicicleta': 6,
+            'musculação': 5,
+            'academia': 5,
+            'natação': 7,
+            'futebol': 9,
+            'crossfit': 10,
+            'yoga': 2.5,
+            'pilates': 3
+        };
+
+        for (const [key, value] of Object.entries(metMap)) {
+            if (lowerEx.includes(key)) {
+                met = value;
+                break;
+            }
+        }
 
         // Formula: (MET * weight * 3.5) / 200 * duration
-        // We'll use a default weight of 70 if not found
-        return Math.round(met * 70 * (durationMin / 60) * 1.05); // Simplified
+        // We'll use a default weight of 75 if not found
+        const weight = 75;
+        return Math.round((met * weight * 3.5) / 200 * durationMin);
     }
 
     generateWorkoutSuggestion(lastReport?: ExerciseReport): string {

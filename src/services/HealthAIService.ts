@@ -135,7 +135,7 @@ export class HealthAIService {
 
                 if (durationMatch && hasExercises) {
                     const duration = parseInt(durationMatch[1]) * (lowerText.includes('hora') || lowerText.includes(' h') ? 60 : 1);
-                    const calories = await this.calculateCalories(userText, duration);
+                    const calories = healthService.calculateCalories(userText, duration);
                     const suggestion = healthService.generateWorkoutSuggestion();
 
                     await healthService.saveExerciseReport({
@@ -223,7 +223,7 @@ export class HealthAIService {
 
             // TOPIC CONSTRAINT CHECK
             else if (!this.isHealthRelated(userText)) {
-                responseText = "Sou uma IA focada em saúde, bem-estar, exercícios e dieta. Sinto muito, mas só posso ajudar com esses temas. Como posso te apoiar na sua jornada de saúde hoje?";
+                responseText = "Sou uma IA focada em saúde, bem-estar, exercícios e dieta. Sinto muito, mas ainda não fui treinada para falar sobre esse assunto. Como posso te apoiar na sua jornada de saúde hoje?";
             }
 
             // FALLBACK
@@ -237,9 +237,9 @@ export class HealthAIService {
     }
 
     private isHealthRelated(text: string): boolean {
-        const keywords = ['peso', 'altura', 'imc', 'dieta', 'treino', 'exercício', 'água', 'comer', 'saúde', 'dor', 'exame', 'médico', 'caloria', 'fome', 'sono', 'descanso', 'bem estar', 'hidratação'];
+        const keywords = ['peso', 'altura', 'imc', 'dieta', 'treino', 'exercício', 'água', 'comer', 'saúde', 'dor', 'exame', 'médico', 'caloria', 'fome', 'sono', 'descanso', 'bem estar', 'hidratação', 'atleta', 'musculação', 'corrida', 'caminhada', 'vida', 'corpo', 'mente', 'ansiedade', 'stress', 'estresse'];
         const lower = text.toLowerCase();
-        return keywords.some(k => lower.includes(k)) || nlp(text).match('(saúde|corpo|vida|bem|mal|doente|médico|remédio)').found;
+        return keywords.some(k => lower.includes(k)) || nlp(text).match('(saúde|corpo|vida|bem|mal|doente|médico|remédio|treino|comer|fome)').found;
     }
 
     private containsProfileData(text: string): boolean {
