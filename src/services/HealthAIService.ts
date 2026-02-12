@@ -128,11 +128,36 @@ export class HealthAIService {
                 responseText = this.getRandomResponse('greeting');
             }
 
-            // EXERCISE REPORT (Predefined message or manual)
-            else if (doc.match('(relatório|exercício|treino|fiz|malhei)').found && (doc.match('(exercício|relatório)').found || lowerText.includes('relatório de exercícios'))) {
-                responseText = "Que bom que você treinou! Quais exercícios você fez e por quanto tempo aproximadamente?";
-                actionType = 'text';
-                metadata = { actionType: 'exercise_report' };
+            // EXERCISE REPORT (One-shot or multi-step)
+            else if (doc.match('(relatório|exercício|treino|fiz|malhei|corri|pedalei|treinei)').found) {
+                const durationMatch = lowerText.match(/(\d+)\s*(min|m|hora|h)/);
+                const hasExercises = doc.match('(corrida|caminhada|musculação|academia|treino|futebol|natação|pedal|bicicleta)').found || lowerText.length > 20;
+
+                if (durationMatch && hasExercises) {
+                    const duration = parseInt(durationMatch[1]) * (lowerText.includes('hora') || lowerText.includes(' h') ? 60 : 1);
+                    const calories = await this.calculateCalories(userText, duration);
+                    const suggestion = healthService.generateWorkoutSuggestion();
+
+                    await healthService.saveExerciseReport({
+                        exercises: userText,
+                        duration: duration,
+                        calories: calories,
+                        date: new Date().toISOString().split('T')[0]
+                    });
+
+                    responseText = `Registro feito! Você queimou cerca de **${calories} calorias**. No seu próximo treino, sugiro: **${suggestion}**.`;
+
+                    // Also check for activity update
+                    const profile = await healthService.getProfile();
+                    if (profile && (!profile.activityLevel || profile.activityLevel === 'sedentary')) {
+                        responseText += `\n\nNotei que você está se exercitando! Quer que eu considere isso para ajustar seu nível de atividade física?`;
+                        metadata = { actionType: 'suggest_activity_update' };
+                    }
+                } else {
+                    responseText = "Que bom que você treinou! Quais exercícios você fez e por quanto tempo aproximadamente?";
+                    actionType = 'text';
+                    metadata = { actionType: 'exercise_report' };
+                }
             }
 
             // HEALTH METRICS
