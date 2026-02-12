@@ -14,9 +14,13 @@ export class HealthRepository extends Repository<any> { // Using any for base be
         if (results.length === 0) return null;
 
         const row = results[0];
+        // Ensure both naming conventions are present
         return {
             ...row,
-            data_nascimento: row.birthDate || row.data_nascimento // Handle both for migration safety
+            peso: row.weight,
+            altura: row.height,
+            sexo: row.gender,
+            data_nascimento: row.birthDate || row.data_nascimento
         };
     }
 
@@ -34,19 +38,23 @@ export class HealthRepository extends Repository<any> { // Using any for base be
             INSERT INTO health_profile (id, weight, height, birthDate, gender, activityLevel, waterGoal, updated_at, meta_peso, last_monthly_checkin)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
+        const weight = profile.weight ?? profile.peso ?? null;
+        const height = profile.height ?? profile.altura ?? null;
+        const gender = profile.gender ?? profile.sexo ?? null;
+
         await this.executeStatement(sql, [
             profile.id,
-            profile.weight || profile.peso || null,
-            profile.height || profile.altura || null,
+            weight,
+            height,
             profile.data_nascimento || null,
-            profile.gender || profile.sexo || null,
+            gender,
             profile.activityLevel || null,
             profile.waterGoal || null,
             profile.updated_at,
             profile.meta_peso || null,
             profile.last_monthly_checkin || null
         ]);
-        return profile;
+        return { ...profile, weight, height, gender };
     }
 
     async updateProfile(id: string, profile: Partial<HealthProfile>): Promise<HealthProfile> {
@@ -60,11 +68,15 @@ export class HealthRepository extends Repository<any> { // Using any for base be
 
         const merged = { ...existing, ...profile, updated_at: new Date().toISOString() };
 
+        const weight = merged.weight ?? merged.peso ?? null;
+        const height = merged.height ?? merged.altura ?? null;
+        const gender = merged.gender ?? merged.sexo ?? null;
+
         await this.executeStatement(sql, [
-            merged.weight || merged.peso || null,
-            merged.height || merged.altura || null,
+            weight,
+            height,
             merged.data_nascimento || null,
-            merged.gender || merged.sexo || null,
+            gender,
             merged.activityLevel || null,
             merged.waterGoal || null,
             merged.updated_at,
@@ -72,7 +84,7 @@ export class HealthRepository extends Repository<any> { // Using any for base be
             merged.last_monthly_checkin || null,
             id
         ]);
-        return merged;
+        return { ...merged, weight, height, gender };
     }
 
     // --- Metrics ---

@@ -88,7 +88,15 @@ export class HealthAIService {
                 date: new Date().toISOString().split('T')[0]
             });
 
-            responseText = `Excelente! Você queimou aproximadamente **${calories} calorias**. No seu próximo treino, sugiro focar em: **${suggestion}**.`;
+            // Potential activity level update if they report consistent exercise
+            const profile = await healthService.getProfile();
+            if (profile && (!profile.activityLevel || profile.activityLevel === 'sedentary')) {
+                // Proactively suggest updating activity level
+                metadata = { actionType: 'suggest_activity_update' };
+                responseText = `Excelente! Você queimou aproximadamente **${calories} calorias**. No seu próximo treino, sugiro focar em: **${suggestion}**.\n\nNotei que você está se exercitando! Quer que eu atualize seu nível de atividade física para calcular suas metas com mais precisão?`;
+            } else {
+                responseText = `Excelente! Você queimou aproximadamente **${calories} calorias**. No seu próximo treino, sugiro focar em: **${suggestion}**.`;
+            }
         }
 
         else if (lastActionType === 'weekly_diet' && lastAiMsg?.text.includes('o que você tem em casa')) {
@@ -173,9 +181,19 @@ export class HealthAIService {
                 metadata = { actionType: 'analyze_exam' };
             }
 
-            // UPDATE PROFILE (Weight/Height)
-            else if (doc.match('#Value').found && doc.match('(kg|kilos|quilos|cm|centimetros|metros|m|peso|altura)').found) {
+            // UPDATE PROFILE (Weight/Height/Activity)
+            else if (this.containsProfileData(lowerText)) {
                 responseText = await this.handleProfileUpdate(lowerText);
+            }
+
+            // ACTIVITY LEVEL INQUIRY
+            else if (doc.match('(nível|nivel|atividade|frequencia|frequência|exercito|treino)').found && doc.match('(física|dia|semana|sedentario|ativo)').found) {
+                const level = this.detectActivityLevel(lowerText);
+                if (level) {
+                    responseText = await this.handleProfileUpdate(lowerText);
+                } else {
+                    responseText = "Para eu entender melhor seu nível de atividade, me diga: com que frequência você se exercita por semana? (Ex: 3 vezes por semana, todo dia, ou se é sedentário).";
+                }
             }
 
             // TOPIC CONSTRAINT CHECK
@@ -199,6 +217,34 @@ export class HealthAIService {
         return keywords.some(k => lower.includes(k)) || nlp(text).match('(saúde|corpo|vida|bem|mal|doente|médico|remédio)').found;
     }
 
+    private containsProfileData(text: string): boolean {
+        const hasWeight = text.match(/(\d+([.,]\d+)?)\s*(kg|kilos|quilos)/);
+        const hasHeight = text.match(/(\d+([.,]\d+)?)\s*(cm|centimetros|metros|m)/);
+        const hasActivity = this.detectActivityLevel(text) !== null;
+        return !!(hasWeight || hasHeight || hasActivity);
+    }
+
+    private detectActivityLevel(text: string): HealthProfile['activityLevel'] | null {
+        const lower = text.toLowerCase();
+
+        // Very Active
+        if (lower.match(/(todo dia|todos os dias|6 vezes|7 vezes|pesado|atleta|extremamente)/)) return 'very_active';
+
+        // Active
+        if (lower.match(/(4 vezes|5 vezes|frequente|ativo|intensamente)/)) return 'active';
+
+        // Moderate
+        if (lower.match(/(3 vezes|moderado|regularmente|academia)/)) return 'moderate';
+
+        // Light
+        if (lower.match(/(1 vez|2 vezes|caminhada|leve|pouco)/)) return 'light';
+
+        // Sedentary
+        if (lower.match(/(sedentário|não faço|nunca|escritório|sentado|parado)/)) return 'sedentary';
+
+        return null;
+    }
+
     private async handleProfileUpdate(text: string): Promise<string> {
         let profile = await healthService.getProfile();
         if (!profile) {
@@ -211,11 +257,13 @@ export class HealthAIService {
         let updates: string[] = [];
         const weightMatch = text.match(/(\d+([.,]\d+)?)\s*(kg|kilos|quilos)/);
         const heightMatch = text.match(/(\d+([.,]\d+)?)\s*(cm|centimetros|metros|m)/);
+        const extractedActivity = this.detectActivityLevel(text);
 
         if (weightMatch) {
             const weight = parseFloat(weightMatch[1].replace(',', '.'));
             profile.peso = weight;
-            updates.push(`peso para ${weight}kg`);
+            profile.weight = weight;
+            updates.push(`peso (${weight}kg)`);
             await healthService.addMetric({ id: Date.now().toString(), type: 'weight', value: weight, unit: 'kg', date: new Date().toISOString().split('T')[0] });
         }
 
@@ -223,14 +271,20 @@ export class HealthAIService {
             let height = parseFloat(heightMatch[1].replace(',', '.'));
             if (height < 3) height = height * 100;
             profile.altura = Math.round(height);
-            updates.push(`altura para ${profile.altura}cm`);
+            profile.height = Math.round(height);
+            updates.push(`altura (${profile.altura}cm)`);
+        }
+
+        if (extractedActivity) {
+            profile.activityLevel = extractedActivity;
+            updates.push(`nível de atividade (${healthService.getActivityLevelLabel(extractedActivity)})`);
         }
 
         if (updates.length > 0) {
             await healthService.saveProfile(profile);
-            return `Entendido. Atualizei seu ${updates.join(' e ')}.`;
+            return `Entendido! Atualizei seu ${updates.join(', ')}. Isso me ajuda a ser mais preciso nas suas metas.`;
         }
-        return "Consegui identificar medidas, mas não entendi se era peso ou altura. Tente: '70kg' ou '175cm'.";
+        return "Consegui identificar que você enviou dados, mas não entendi exatamente o que atualizar. Tente: 'Meu peso é 70kg' ou 'Treino 3 vezes por semana'.";
     }
 
     private getRandomResponse(type: 'greeting' | 'fallback'): string {

@@ -8,17 +8,17 @@
  */
 export interface HealthProfile {
     id: string; // 'current_user'
-    weight?: number; // legacy field (peso used in implementation)
-    height?: number; // legacy field (altura used in implementation)
-    peso?: number; // in kg
-    altura?: number; // in cm
-    meta_peso?: number; // in kg
-    data_nascimento?: string; // YYYY-MM-DD
+    weight?: number | null; // legacy field (peso used in implementation)
+    height?: number | null; // legacy field (altura used in implementation)
+    peso?: number | null; // in kg
+    altura?: number | null; // in cm
+    meta_peso?: number | null; // in kg
+    data_nascimento?: string | null; // YYYY-MM-DD
     gender?: 'male' | 'female' | 'other' | null;
     sexo?: 'male' | 'female' | 'other' | null; // legacy/unified
-    activityLevel?: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
-    waterGoal?: number; // in ml
-    last_monthly_checkin?: string; // ISO string
+    activityLevel?: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | null;
+    waterGoal?: number | null; // in ml
+    last_monthly_checkin?: string | null; // ISO string
     updated_at: string;
 }
 

@@ -50,17 +50,27 @@ export class HealthService {
      * Save/Update user profile
      */
     async saveProfile(profile: HealthProfile): Promise<HealthProfile> {
-        const saved = await this.repo.saveProfile(profile);
+        const weight = profile.peso || profile.weight;
+        const height = profile.altura || profile.height;
+
+        const saved = await this.repo.saveProfile({
+            ...profile,
+            peso: weight,
+            weight: weight,
+            altura: height,
+            height: height
+        });
+
         // Sync back to user_profile if possible for consistency
         try {
             const userProfile = await this.userRepo.getProfile();
             if (userProfile) {
                 await this.userRepo.saveProfile({
                     ...userProfile,
-                    peso: profile.peso || userProfile.peso,
-                    altura: profile.altura || userProfile.altura,
+                    peso: weight || userProfile.peso,
+                    altura: height || userProfile.altura,
                     meta_peso: profile.meta_peso || userProfile.meta_peso,
-                    sexo: (profile.sexo as any) || userProfile.sexo,
+                    sexo: (profile.sexo || profile.gender || userProfile.sexo) as any,
                     updated_at: new Date().toISOString()
                 });
             }
@@ -152,6 +162,17 @@ export class HealthService {
             'very_active': 1.9
         };
         return Math.round(bmr * (multipliers[activityLevel] || 1.2));
+    }
+
+    getActivityLevelLabel(level: string): string {
+        const labels: Record<string, string> = {
+            'sedentary': 'Sedentário',
+            'light': 'Levemente Ativo',
+            'moderate': 'Moderado',
+            'active': 'Muito Ativo',
+            'very_active': 'Extremamente Ativo'
+        };
+        return labels[level] || 'Desconhecido';
     }
 
     calculateWaterGoal(weight: number): number {
