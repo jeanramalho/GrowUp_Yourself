@@ -303,17 +303,17 @@ export class HealthAIService {
     private extractHeight(text: string): number | null {
         const lower = text.toLowerCase();
 
-        // 1. Explicit units (cm or m)
-        const unitMatch = lower.match(/(\d+([.,]\d+)?)\s*(cm|centimetros|metros|m)/);
+        // 1. Spoken format "1 metro e 75" or "1 e 75"
+        const spoken = lower.match(/(?:1|um)\s*(?:metro[s]?)?\s*e\s*(\d{2})/);
+        if (spoken) {
+            return 100 + parseInt(spoken[1]);
+        }
+
+        // 2. Explicit units (cm or m)
+        const unitMatch = lower.match(/(\d+([.,]\d+)?)\s*(cm|cent[ií]metros|metros|m\b)/);
         if (unitMatch) {
             let val = parseFloat(unitMatch[1].replace(',', '.'));
             return val < 3 ? Math.round(val * 100) : Math.round(val);
-        }
-
-        // 2. Spoken format "1 metro e 75" or "1 e 75"
-        const spoken = lower.match(/1\s*(?:metro)?\s*e\s*(\d{2})/);
-        if (spoken) {
-            return 100 + parseInt(spoken[1]);
         }
 
         // 3. Contextual word 'altura'
@@ -335,7 +335,7 @@ export class HealthAIService {
 
     private extractDuration(text: string): number | null {
         const lower = text.toLowerCase();
-        const match = lower.match(/(\d+)\s*(min|m|hora|h)/);
+        const match = lower.match(/(\d+)\s*(minutos?|min|horas?|h\b)/);
         if (match) {
             const val = parseInt(match[1]);
             return (lower.includes('hora') || lower.includes(' h')) ? val * 60 : val;
@@ -344,7 +344,7 @@ export class HealthAIService {
     }
 
     private isExerciseContext(text: string): boolean {
-        const keywords = ['treino', 'academia', 'musculação', 'corrida', 'esteira', 'bicicleta', 'crossfit', 'natação'];
+        const keywords = ['trein', 'academia', 'musculação', 'corri', 'esteira', 'bicicleta', 'crossfit', 'natação', 'malh', 'exercíci', 'exercici'];
         return keywords.some(k => text.toLowerCase().includes(k));
     }
 
