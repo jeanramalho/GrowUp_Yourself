@@ -129,12 +129,11 @@ export class HealthAIService {
             }
 
             // EXERCISE REPORT (One-shot or multi-step)
-            else if (doc.match('(relatório|exercício|treino|fiz|malhei|corri|pedalei|treinei)').found) {
-                const durationMatch = lowerText.match(/(\d+)\s*(min|m|hora|h)/);
-                const hasExercises = doc.match('(corrida|caminhada|musculação|academia|treino|futebol|natação|pedal|bicicleta)').found || lowerText.length > 20;
+            else if (doc.match('(relatório|exercício|treino|fiz|malhei|corri|pedalei|treinei)').found || this.isExerciseContext(lowerText)) {
+                let duration = this.extractDuration(lowerText);
+                const hasExercises = doc.match('(corrida|caminhada|musculação|academia|treino|futebol|natação|pedal|bicicleta)').found || lowerText.length > 20 || this.isExerciseContext(lowerText);
 
-                if (durationMatch && hasExercises) {
-                    const duration = parseInt(durationMatch[1]) * (lowerText.includes('hora') || lowerText.includes(' h') ? 60 : 1);
+                if (duration && hasExercises) {
                     const calories = healthService.calculateCalories(userText, duration);
                     const suggestion = healthService.generateWorkoutSuggestion();
 
@@ -243,31 +242,110 @@ export class HealthAIService {
     }
 
     private containsProfileData(text: string): boolean {
-        const hasWeight = text.match(/(\d+([.,]\d+)?)\s*(kg|kilos|quilos)/);
-        const hasHeight = text.match(/(\d+([.,]\d+)?)\s*(cm|centimetros|metros|m)/);
-        const hasActivity = this.detectActivityLevel(text) !== null;
-        return !!(hasWeight || hasHeight || hasActivity);
+        const weight = this.extractWeight(text);
+        const height = this.extractHeight(text);
+        const activity = this.detectActivityLevel(text);
+
+        return weight !== null || height !== null || activity !== null;
     }
 
     private detectActivityLevel(text: string): HealthProfile['activityLevel'] | null {
         const lower = text.toLowerCase();
 
         // Very Active
-        if (lower.match(/(todo dia|todos os dias|6 vezes|7 vezes|pesado|atleta|extremamente)/)) return 'very_active';
+        if (lower.match(/(todo dia|todos os dias|6 vezes|7 vezes|pesado|atleta|extremamente|diariamente|treino muito)/)) return 'very_active';
 
         // Active
-        if (lower.match(/(4 vezes|5 vezes|frequente|ativo|intensamente)/)) return 'active';
+        if (lower.match(/(4 vezes|5 vezes|frequente|ativo|intensamente|quase todo)/)) return 'active';
 
         // Moderate
-        if (lower.match(/(3 vezes|moderado|regularmente|academia)/)) return 'moderate';
+        if (lower.match(/(3 vezes|moderado|regularmente|academia|musculação)/)) return 'moderate';
 
         // Light
-        if (lower.match(/(1 vez|2 vezes|caminhada|leve|pouco)/)) return 'light';
+        if (lower.match(/(1 vez|2 vezes|caminhada|leve|pouco|às vezes|de vez em quando)/)) return 'light';
 
         // Sedentary
-        if (lower.match(/(sedentário|não faço|nunca|escritório|sentado|parado)/)) return 'sedentary';
+        if (lower.match(/(sedentário|sedentario|não faço|nunca|escritório|sentado|parado|nenhum)/)) return 'sedentary';
 
         return null;
+    }
+
+    private extractWeight(text: string): number | null {
+        // Cases: "70kg", "70 kilos", "peso 70", "meu peso é 70.5"
+        const lower = text.toLowerCase();
+
+        // 1. Explicit units
+        const withUnit = lower.match(/(?:peso\s+)?(\d+([.,]\d+)?)\s*(kg|kilos|quilos)/);
+        if (withUnit) return parseFloat(withUnit[1].replace(',', '.'));
+
+        // 2. Contextual (number follows word 'peso' or 'pesando')
+        if (lower.includes('peso') || lower.includes('pesando')) {
+            const contextMatch = lower.match(/(?:peso|pesando)(?:.*?)\s+(\d+([.,]\d+)?)/);
+            if (contextMatch) {
+                const value = parseFloat(contextMatch[1].replace(',', '.'));
+                // Basic sanity check to avoid matching years/heights by accident
+                if (value > 30 && value < 200) return value;
+            }
+
+            // Just raw numbers if "peso" is in phrase
+            const numbers = lower.match(/\b(\d{2,3}(?:[.,]\d)?)\b/g);
+            if (numbers) {
+                for (let num of numbers) {
+                    const val = parseFloat(num.replace(',', '.'));
+                    if (val > 30 && val < 200) return val;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private extractHeight(text: string): number | null {
+        const lower = text.toLowerCase();
+
+        // 1. Explicit units (cm or m)
+        const unitMatch = lower.match(/(\d+([.,]\d+)?)\s*(cm|centimetros|metros|m)/);
+        if (unitMatch) {
+            let val = parseFloat(unitMatch[1].replace(',', '.'));
+            return val < 3 ? Math.round(val * 100) : Math.round(val);
+        }
+
+        // 2. Spoken format "1 metro e 75" or "1 e 75"
+        const spoken = lower.match(/1\s*(?:metro)?\s*e\s*(\d{2})/);
+        if (spoken) {
+            return 100 + parseInt(spoken[1]);
+        }
+
+        // 3. Contextual word 'altura'
+        if (lower.includes('altura')) {
+            const numbers = lower.match(/\b(\d{3})\b/); // e.g. "175"
+            if (numbers) {
+                const val = parseInt(numbers[1]);
+                if (val > 100 && val < 250) return val;
+            }
+
+            const decimal = lower.match(/\b(1[.,]\d{2})\b/); // e.g. "1.75"
+            if (decimal) {
+                return Math.round(parseFloat(decimal[1].replace(',', '.')) * 100);
+            }
+        }
+
+        return null;
+    }
+
+    private extractDuration(text: string): number | null {
+        const lower = text.toLowerCase();
+        const match = lower.match(/(\d+)\s*(min|m|hora|h)/);
+        if (match) {
+            const val = parseInt(match[1]);
+            return (lower.includes('hora') || lower.includes(' h')) ? val * 60 : val;
+        }
+        return null;
+    }
+
+    private isExerciseContext(text: string): boolean {
+        const keywords = ['treino', 'academia', 'musculação', 'corrida', 'esteira', 'bicicleta', 'crossfit', 'natação'];
+        return keywords.some(k => text.toLowerCase().includes(k));
     }
 
     private async handleProfileUpdate(text: string): Promise<string> {
@@ -280,24 +358,21 @@ export class HealthAIService {
         }
 
         let updates: string[] = [];
-        const weightMatch = text.match(/(\d+([.,]\d+)?)\s*(kg|kilos|quilos)/);
-        const heightMatch = text.match(/(\d+([.,]\d+)?)\s*(cm|centimetros|metros|m)/);
+        const weightValue = this.extractWeight(text);
+        const heightValue = this.extractHeight(text);
         const extractedActivity = this.detectActivityLevel(text);
 
-        if (weightMatch) {
-            const weight = parseFloat(weightMatch[1].replace(',', '.'));
-            profile.peso = weight;
-            profile.weight = weight;
-            updates.push(`peso (${weight}kg)`);
-            await healthService.addMetric({ id: Date.now().toString(), type: 'weight', value: weight, unit: 'kg', date: new Date().toISOString().split('T')[0] });
+        if (weightValue !== null) {
+            profile.peso = weightValue;
+            profile.weight = weightValue;
+            updates.push(`peso (${weightValue}kg)`);
+            await healthService.addMetric({ id: Date.now().toString(), type: 'weight', value: weightValue, unit: 'kg', date: new Date().toISOString().split('T')[0] });
         }
 
-        if (heightMatch) {
-            let height = parseFloat(heightMatch[1].replace(',', '.'));
-            if (height < 3) height = height * 100;
-            profile.altura = Math.round(height);
-            profile.height = Math.round(height);
-            updates.push(`altura (${profile.altura}cm)`);
+        if (heightValue !== null) {
+            profile.altura = heightValue;
+            profile.height = heightValue;
+            updates.push(`altura (${heightValue}cm)`);
         }
 
         if (extractedActivity) {
