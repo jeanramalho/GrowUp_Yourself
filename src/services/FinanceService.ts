@@ -1,6 +1,7 @@
 import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito, CategoriaFinanceira } from '../models';
 import { LancamentoRepository, InvestimentoRepository, ContaRepository, CartaoRepository, FinanceCategoryRepository } from '../repositories/FinanceRepository';
 import { database } from '../repositories/Repository';
+import { DeviceEventEmitter } from 'react-native';
 
 export class FinanceService {
     private _lancamentoRepo: LancamentoRepository | null = null;
@@ -198,15 +199,20 @@ export class FinanceService {
             };
             results.push(await this.lancamentoRepo.create(newTransaction));
         }
+        DeviceEventEmitter.emit('metrics_updated');
         return results;
     }
 
     async updateTransaction(id: string, transaction: Partial<LancamentoFinanceiro>): Promise<LancamentoFinanceiro> {
-        return await this.lancamentoRepo.update(id, transaction);
+        const t = await this.lancamentoRepo.update(id, transaction);
+        DeviceEventEmitter.emit('metrics_updated');
+        return t;
     }
 
     async deleteTransaction(id: string): Promise<boolean> {
-        return await this.lancamentoRepo.delete(id);
+        const res = await this.lancamentoRepo.delete(id);
+        DeviceEventEmitter.emit('metrics_updated');
+        return res;
     }
 
     async getTransactionsByMonth(date: Date): Promise<LancamentoFinanceiro[]> {
@@ -338,6 +344,7 @@ export class FinanceService {
             planejado: false,
             cartao_id: cardId
         });
+        DeviceEventEmitter.emit('metrics_updated');
     }
 
     async getDailySpending(date: Date) {
@@ -510,6 +517,7 @@ export class FinanceService {
 
         // 2. Mark planned as paid
         await this.lancamentoRepo.update(plannedId, { status: 'pago' } as any);
+        DeviceEventEmitter.emit('metrics_updated');
     }
 }
 
