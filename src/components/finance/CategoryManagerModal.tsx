@@ -186,7 +186,7 @@ export function CategoryManagerModal({ visible, onClose, onSelect }: CategoryMan
                                     style={[styles.typeBtn, isPermanent && { backgroundColor: colors.primary + '20', borderColor: colors.primary }]}
                                     onPress={() => setIsPermanent(true)}
                                 >
-                                    <MaterialCommunityIcons name="infinite" size={20} color={isPermanent ? colors.primary : colors.textSecondary} style={{ marginRight: 8 }} />
+                                    <MaterialCommunityIcons name="infinity" size={20} color={isPermanent ? colors.primary : colors.textSecondary} style={{ marginRight: 8 }} />
                                     <Text style={{ color: isPermanent ? colors.primary : colors.textSecondary, fontWeight: 'bold' }}>Permanente</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity

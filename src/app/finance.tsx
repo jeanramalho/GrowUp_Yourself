@@ -287,7 +287,7 @@ export default function FinanceScreen() {
             <PaymentReminderCard
               key={item.id}
               item={item}
-              category={categories.find(c => c.id === item.categoria_id)}
+              category={item.categoria_id ? categories.find(c => c.id === item.categoria_id) : undefined}
               onPress={() => {
                 setSelectedPlanning(item);
                 setActivePlanningModal('details');
@@ -476,7 +476,7 @@ export default function FinanceScreen() {
             <PlanningCard
               key={p.id}
               item={p}
-              category={categories.find(c => c.id === p.categoria_id)}
+              category={p.categoria_id ? categories.find(c => c.id === p.categoria_id) : undefined}
               realSpent={realExp}
               onPress={() => {
                 setSelectedPlanning(p);
@@ -730,7 +730,7 @@ export default function FinanceScreen() {
           setSelectedPlanning(null);
         }}
         item={selectedPlanning}
-        category={categories.find(c => c.id === selectedPlanning?.categoria_id)}
+        category={selectedPlanning?.categoria_id ? categories.find(c => c.id === selectedPlanning.categoria_id) : undefined}
         accounts={accounts}
         onPaySuccess={fetchData}
         onEdit={() => {

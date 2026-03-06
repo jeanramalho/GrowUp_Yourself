@@ -107,7 +107,7 @@ export class NotificationService {
       let triggerInput: Notifications.NotificationTriggerInput;
 
       if (trigger instanceof Date) {
-        triggerInput = trigger;
+        triggerInput = { date: trigger, type: 'date' } as Notifications.NotificationTriggerInput;
       } else if (typeof trigger === 'string') {
         // Parse HH:MM format - use seconds since midnight for daily trigger
         const [hours, minutes] = trigger.split(':').map(Number);
