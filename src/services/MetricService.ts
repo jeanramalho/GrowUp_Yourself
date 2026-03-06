@@ -1,6 +1,7 @@
 import { habitService } from './HabitService';
 import { financeService } from './FinanceService';
 import { relationshipService } from './RelationshipService';
+import { DeviceEventEmitter } from 'react-native';
 
 export interface PillarMetrics {
     'pilar-1': number;
@@ -70,6 +71,10 @@ export class MetricService {
 
         const completed = monthCompromissos.filter(c => c.status === 'concluida').length;
         return Math.round((completed / monthCompromissos.length) * 100);
+    }
+
+    notifyMetricsChanged() {
+        DeviceEventEmitter.emit('metrics_updated');
     }
 }
 

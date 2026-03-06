@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CircularProgress } from '@/components/ui/CircularProgress';
 import { useUserStore } from '@/store/userStore';
 import { metricService } from '@/services/MetricService';
-import { useFocusEffect } from 'expo-router';
+import { DeviceEventEmitter } from 'react-native';
 
 interface HeaderProps {
     onProfilePress?: () => void;
@@ -38,11 +38,17 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
         }
     }, []);
 
-    useFocusEffect(
-        useCallback(() => {
+    useEffect(() => {
+        // Initial load
+        loadProgress();
+
+        // Listen for updates
+        const listener = DeviceEventEmitter.addListener('metrics_updated', () => {
             loadProgress();
-        }, [loadProgress])
-    );
+        });
+
+        return () => listener.remove();
+    }, [loadProgress]);
 
     const renderPillar = (icon: any, progressValue: number, color: string) => (
         <View style={styles.pillarItem}>
