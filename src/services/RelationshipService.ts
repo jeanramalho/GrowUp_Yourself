@@ -2,6 +2,7 @@ import * as Contacts from 'expo-contacts';
 import { Compromisso, ContactSuggestion } from '../models';
 import { CompromissoRepository } from '../repositories/CompromissoRepository';
 import { database } from '../repositories/Repository';
+import { DeviceEventEmitter } from 'react-native';
 
 export class RelationshipService {
     private _compromissoRepo: CompromissoRepository | null = null;
@@ -38,11 +39,17 @@ export class RelationshipService {
     }
 
     async updateCompromisso(id: string, compromisso: Partial<Compromisso>): Promise<Compromisso> {
-        return await this.compromissoRepo.update(id, compromisso);
+        const updated = await this.compromissoRepo.update(id, compromisso);
+        if (compromisso.status !== undefined) {
+            DeviceEventEmitter.emit('metrics_updated');
+        }
+        return updated;
     }
 
     async deleteCompromisso(id: string): Promise<boolean> {
-        return await this.compromissoRepo.delete(id);
+        const res = await this.compromissoRepo.delete(id);
+        DeviceEventEmitter.emit('metrics_updated');
+        return res;
     }
 
     /**

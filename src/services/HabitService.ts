@@ -1,6 +1,7 @@
 import { Meta, Execucao } from '../models';
 import { MetaRepository, ExecucaoRepository } from '../repositories/HabitRepository';
 import { database } from '../repositories/Repository';
+import { DeviceEventEmitter } from 'react-native';
 
 export class HabitService {
     private _metaRepo: MetaRepository | null = null;
@@ -110,6 +111,7 @@ export class HabitService {
             };
             await this.execRepo.create(exec);
         }
+        DeviceEventEmitter.emit('metrics_updated');
     }
 
     /**
