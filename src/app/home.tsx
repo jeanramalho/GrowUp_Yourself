@@ -5,6 +5,7 @@ import { useAppTheme } from '@/theme';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { CircularProgress } from '@/components/ui/CircularProgress';
 import { habitService } from '@/services/HabitService';
+import { metricService } from '@/services/MetricService';
 import { Meta } from '@/models';
 import { RelationshipSummaryCard } from '@/components/home/RelationshipSummaryCard';
 
@@ -41,16 +42,13 @@ export default function HomeScreen() {
             setActiveHabits(todayHabits);
 
             // Load Pillar Progress
-            const p1 = await habitService.getMonthlyProgress('pilar-1', now);
-            const p2 = await habitService.getMonthlyProgress('pilar-2', now);
-            const p3 = await habitService.getMonthlyProgress('pilar-3', now);
-            const p4 = await habitService.getMonthlyProgress('pilar-4', now);
+            const metrics = await metricService.getMonthlyMetrics(now);
 
             setPillars(prev => prev.map(p => {
-                if (p.id === 'pilar-1') return { ...p, progress: p1 };
-                if (p.id === 'pilar-2') return { ...p, progress: p2 };
-                if (p.id === 'pilar-3') return { ...p, progress: p3 };
-                if (p.id === 'pilar-4') return { ...p, progress: p4 };
+                if (p.id === 'pilar-1') return { ...p, progress: metrics['pilar-1'] };
+                if (p.id === 'pilar-2') return { ...p, progress: metrics['pilar-2'] };
+                if (p.id === 'pilar-3') return { ...p, progress: metrics['pilar-3'] };
+                if (p.id === 'pilar-4') return { ...p, progress: metrics['pilar-4'] };
                 return p;
             }));
         } catch (error) {

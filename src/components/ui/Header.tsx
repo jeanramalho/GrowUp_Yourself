@@ -5,7 +5,7 @@ import { useAppTheme } from '@/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CircularProgress } from '@/components/ui/CircularProgress';
 import { useUserStore } from '@/store/userStore';
-import { habitService } from '@/services/HabitService';
+import { metricService } from '@/services/MetricService';
 import { useFocusEffect } from 'expo-router';
 
 interface HeaderProps {
@@ -31,17 +31,8 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     const loadProgress = useCallback(async () => {
         try {
             const now = new Date();
-            const p1 = await habitService.getMonthlyProgress('pilar-1', now);
-            const p2 = await habitService.getMonthlyProgress('pilar-2', now);
-            const p3 = await habitService.getMonthlyProgress('pilar-3', now);
-            const p4 = await habitService.getMonthlyProgress('pilar-4', now);
-
-            setProgress({
-                'pilar-1': p1,
-                'pilar-2': p2,
-                'pilar-3': p3,
-                'pilar-4': p4,
-            });
+            const metrics = await metricService.getMonthlyMetrics(now);
+            setProgress(metrics);
         } catch (error) {
             console.error("Error loading header progress:", error);
         }
