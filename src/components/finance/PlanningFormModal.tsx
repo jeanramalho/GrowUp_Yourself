@@ -16,7 +16,7 @@ interface PlanningFormModalProps {
 }
 
 export function PlanningFormModal({ visible, onClose, onSaveSuccess, planningToEdit }: PlanningFormModalProps) {
-    const { colors, isDarkMode } = useAppTheme();
+    const { colors } = useAppTheme();
 
     const [value, setValue] = useState('');
     const [date, setDate] = useState(new Date());
@@ -80,7 +80,7 @@ export function PlanningFormModal({ visible, onClose, onSaveSuccess, planningToE
             };
 
             if (planningToEdit) {
-                const { recorrente, ...updatePayload } = payload;
+                const { recorrente: _unused, ...updatePayload } = payload;
                 await financeService.updateTransaction(planningToEdit.id, updatePayload as any);
             } else {
                 await financeService.createPlannedItem(payload as any);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { LancamentoFinanceiro } from '@/models';
@@ -15,10 +15,10 @@ interface TransactionHistoryModalProps {
 }
 
 export const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({ visible, onClose, type, onEdit, onDelete }) => {
-    const { colors, isDarkMode } = useAppTheme();
+    const { colors } = useAppTheme();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [transactions, setTransactions] = useState<LancamentoFinanceiro[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
 
     useEffect(() => {
         if (visible) {

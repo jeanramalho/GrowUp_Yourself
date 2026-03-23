@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
@@ -27,7 +27,7 @@ export const SwipeableTransactionItem: React.FC<SwipeableTransactionItemProps> =
         swipeableRef.current?.close();
     };
 
-    const renderRightActions = (progress: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
+    const renderRightActions = () => {
         return (
             <View style={styles.rightActionsContainer}>
                 <TouchableOpacity

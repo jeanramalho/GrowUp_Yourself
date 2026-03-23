@@ -12,7 +12,7 @@ interface CategoryManagerModalProps {
 }
 
 export function CategoryManagerModal({ visible, onClose, onSelect }: CategoryManagerModalProps) {
-    const { colors, isDarkMode } = useAppTheme();
+    const { colors } = useAppTheme();
     const [categories, setCategories] = useState<CategoriaFinanceira[]>([]);
     const [viewMode, setViewMode] = useState<'list' | 'create'>('list');
 

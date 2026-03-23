@@ -21,8 +21,7 @@ export function PlanningCard({ item, category, realSpent, onPress }: PlanningCar
     const dateObj = new Date(item.data);
     const formattedDate = dateObj.toLocaleDateString('pt-BR');
 
-    // Status Color
-    const statusColor = isOverBudget ? colors.error : (item.status === 'pago' ? colors.success : colors.primary);
+
 
     return (
         <TouchableOpacity

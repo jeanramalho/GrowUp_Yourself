@@ -29,7 +29,7 @@ export const InvestmentFormModal: React.FC<InvestmentFormModalProps> = ({
     investmentToEdit,
     onSaveSuccess,
 }) => {
-    const { colors, isDarkMode, spacing } = useAppTheme();
+    const { colors, isDarkMode } = useAppTheme();
 
     const [formData, setFormData] = useState({
         nome: '',

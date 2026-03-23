@@ -17,7 +17,7 @@ interface PlanningPaymentModalProps {
 }
 
 export function PlanningPaymentModal({ visible, onClose, item, category, accounts, onPaySuccess, onEdit, onDelete }: PlanningPaymentModalProps) {
-    const { colors, isDarkMode } = useAppTheme();
+    const { colors } = useAppTheme();
     const [isPaying, setIsPaying] = useState(false);
 
     React.useEffect(() => {

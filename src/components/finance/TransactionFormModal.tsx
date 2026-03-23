@@ -12,7 +12,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { financeService } from '@/services/FinanceService';
-import { LancamentoFinanceiro, Conta, CartaoCredito, CategoriaFinanceira } from '@/models';
+import { LancamentoFinanceiro, Conta, CartaoCredito } from '@/models';
 import { CurrencyInput } from '../ui/CurrencyInput';
 import { DatePickerInput } from '../ui/DatePickerInput';
 import { CategoryManagerModal } from './CategoryManagerModal';
@@ -79,7 +79,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 }
 
                 // Try to find category details if ID exists, or use legacy name
-                let catDetails = {
+                const catDetails = {
                     id: transactionToEdit.categoria_id || '',
                     nome: transactionToEdit.categoria || 'Outros',
                     icone: 'tag-outline',

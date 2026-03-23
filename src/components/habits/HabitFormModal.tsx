@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { habitService } from '@/services/HabitService';
 import { Meta } from '@/models';
 
