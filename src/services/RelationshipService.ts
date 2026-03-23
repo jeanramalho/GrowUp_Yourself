@@ -4,7 +4,7 @@ import { CompromissoRepository } from '../repositories/CompromissoRepository';
 import { database } from '../repositories/Repository';
 import { DeviceEventEmitter } from 'react-native';
 
-export class RelationshipService {
+class RelationshipService {
     private _compromissoRepo: CompromissoRepository | null = null;
 
     private get compromissoRepo(): CompromissoRepository {

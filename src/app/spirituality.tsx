@@ -11,7 +11,7 @@ import { useFocusEffect } from 'expo-router';
 type HabitWithStatus = Meta & { completed: boolean; executionId?: string };
 
 export default function SpiritualityScreen() {
-  const { colors, isDarkMode, shadows } = useAppTheme();
+  const { colors, shadows } = useAppTheme();
   const pilarId = 'pilar-1'; // Spirituality
 
   // State

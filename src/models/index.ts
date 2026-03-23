@@ -18,15 +18,6 @@ export interface UserProfile {
   updated_at: string;
 }
 
-/**
- * Pillar (Pilar) - represents one of the four life areas
- */
-export interface Pilar {
-  id: string;
-  nome: string;
-  icone?: string | null;
-  ordem: number;
-}
 
 /**
  * Goal (Meta) - a weekly target in one of the pillars

@@ -8,7 +8,7 @@ import { SQLiteDatabase } from 'expo-sqlite';
 /**
  * Migration interface
  */
-export interface Migration {
+interface Migration {
   version: number;
   name: string;
   up: (db: SQLiteDatabase) => Promise<void>;

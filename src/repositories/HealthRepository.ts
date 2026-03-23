@@ -171,7 +171,6 @@ export class HealthRepository extends Repository<any> { // Using any for base be
     }
 
     async getChatHistory(limit: number = 50): Promise<ChatMessage[]> {
-        const sql = `SELECT * FROM health_chat_history ORDER BY timestamp ASC LIMIT ?`; // Chat usually shown ASC by time, but we might want last N messages.
         // Actually usually we want last N messages but in ASC order.
         // So: SELECT * FROM (SELECT * FROM table ORDER BY timestamp DESC LIMIT N) ORDER BY timestamp ASC
         const innerSql = `SELECT * FROM health_chat_history ORDER BY timestamp DESC LIMIT ?`;

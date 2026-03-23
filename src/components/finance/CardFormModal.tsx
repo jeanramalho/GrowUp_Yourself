@@ -26,7 +26,7 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
     onSaveSuccess,
     card
 }) => {
-    const { colors, isDarkMode, spacing } = useAppTheme();
+    const { colors, isDarkMode } = useAppTheme();
 
     const [nome, setNome] = useState('');
     const [descricao, setDescricao] = useState('');

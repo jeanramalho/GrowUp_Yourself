@@ -3,7 +3,7 @@ import { MetaRepository, ExecucaoRepository } from '../repositories/HabitReposit
 import { database } from '../repositories/Repository';
 import { DeviceEventEmitter } from 'react-native';
 
-export class HabitService {
+class HabitService {
     private _metaRepo: MetaRepository | null = null;
     private _execRepo: ExecucaoRepository | null = null;
 

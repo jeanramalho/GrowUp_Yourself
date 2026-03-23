@@ -9,7 +9,7 @@ import { SQLiteDatabase } from 'expo-sqlite';
  * Generic Repository interface for CRUD operations
  * Enables future migration to cloud storage
  */
-export interface IRepository<T> {
+interface IRepository<T> {
   create(item: T): Promise<T>;
   read(id: string): Promise<T | null>;
   update(id: string, item: Partial<T>): Promise<T>;
@@ -22,6 +22,14 @@ export interface IRepository<T> {
  * Base Repository class that wraps SQLite database
  * Subclasses implement specific table operations
  */
+interface IRepository<T> {
+  create(item: T): Promise<T>;
+  read(id: string): Promise<T | null>;
+  update(id: string, item: Partial<T>): Promise<T>;
+  delete(id: string): Promise<boolean>;
+  list(): Promise<T[]>;
+}
+
 export class Repository<T extends { id: string }> implements IRepository<T> {
   protected db: SQLiteDatabase;
   protected tableName: string;

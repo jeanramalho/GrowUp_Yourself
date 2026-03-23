@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { useThemeStore } from '@/store/themeStore';
@@ -10,11 +10,10 @@ import * as FileSystem from 'expo-file-system';
 import { PersonalInfoModal } from '@/components/profile/PersonalInfoModal';
 
 export default function ProfileScreen() {
-  const { colors, isDarkMode, spacing, typography, borderRadius } = useAppTheme();
+  const { colors, isDarkMode } = useAppTheme();
   const { toggleTheme } = useThemeStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const {
-    avatarPath,
     setAvatar,
     getAvatarUri,
     notificationsEnabled,

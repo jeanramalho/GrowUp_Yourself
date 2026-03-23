@@ -32,7 +32,7 @@ export const AccountFormModal: React.FC<AccountFormModalProps> = ({
     onSaveSuccess,
     account
 }) => {
-    const { colors, isDarkMode, spacing } = useAppTheme();
+    const { colors, isDarkMode } = useAppTheme();
 
     const [nome, setNome] = useState('');
     const [tipo, setTipo] = useState<any>('carteira');

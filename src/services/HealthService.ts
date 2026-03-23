@@ -1,7 +1,6 @@
 import { HealthRepository } from '../repositories/HealthRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { HealthMetric, ChatMessage, ExerciseReport, HealthExam, HealthProfile } from '../models/health';
-import { UserProfile } from '../models'; // Import UserProfile from generic models
 import { database } from '../repositories/Repository';
 
 export class HealthService {
@@ -136,7 +135,7 @@ export class HealthService {
         return Math.round((met * weight * 3.5) / 200 * durationMin);
     }
 
-    generateWorkoutSuggestion(lastReport?: ExerciseReport): string {
+    generateWorkoutSuggestion(): string {
         const options = [
             "Treino de musculação focado em membros superiores e 20 min de cardio.",
             "Treino de musculação focado em membros inferiores e abdômen.",

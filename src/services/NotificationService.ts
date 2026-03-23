@@ -8,20 +8,12 @@ import * as Notifications from 'expo-notifications';
 /**
  * Notification configuration
  */
-export interface NotificationConfig {
+interface NotificationConfig {
   title: string;
   body: string;
   data?: Record<string, any>;
 }
 
-/**
- * Scheduled notification result
- */
-export interface ScheduledNotification {
-  id: string;
-  title: string;
-  body: string;
-}
 
 /**
  * Notification trigger options
@@ -38,7 +30,7 @@ export interface NotificationTrigger {
  * Service for managing notifications
  * Wrapper around expo-notifications with typed interfaces
  */
-export class NotificationService {
+class NotificationService {
   private initialized = false;
 
   /**

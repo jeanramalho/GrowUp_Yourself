@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Alert, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { financeService } from '@/services/FinanceService';
@@ -21,8 +21,6 @@ import { CategoryManagerModal } from '@/components/finance/CategoryManagerModal'
 import { PlanningPaymentModal } from '@/components/finance/PlanningPaymentModal';
 import { PaymentReminderCard } from '@/components/finance/PaymentReminderCard';
 import { useFocusEffect } from 'expo-router';
-
-const { width } = Dimensions.get('window');
 
 type TabType = 'Resumo' | 'Lançamentos' | 'Planejamento' | 'Investimentos' | 'Gestão';
 

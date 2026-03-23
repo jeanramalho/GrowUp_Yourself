@@ -3,14 +3,16 @@ import { financeService } from './FinanceService';
 import { relationshipService } from './RelationshipService';
 import { DeviceEventEmitter } from 'react-native';
 
-export interface PillarMetrics {
+
+
+interface PillarMetrics {
     'pilar-1': number;
     'pilar-2': number;
     'pilar-3': number;
     'pilar-4': number;
 }
 
-export class MetricService {
+class MetricService {
     /**
      * Calcula as métricas mensais para todos os 4 pilares.
      * @param date Data de referência para o mês desejado

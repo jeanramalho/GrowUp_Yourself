@@ -3,7 +3,7 @@ import { LancamentoRepository, InvestimentoRepository, ContaRepository, CartaoRe
 import { database } from '../repositories/Repository';
 import { DeviceEventEmitter } from 'react-native';
 
-export class FinanceService {
+class FinanceService {
     private _lancamentoRepo: LancamentoRepository | null = null;
     private _investimentoRepo: InvestimentoRepository | null = null;
     private _contaRepo: ContaRepository | null = null;

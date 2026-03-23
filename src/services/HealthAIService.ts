@@ -1,4 +1,4 @@
-import { HealthService, healthService } from './HealthService';
+import { healthService } from './HealthService';
 import { ChatMessage, HealthProfile } from '../models/health';
 import nlp from 'compromise';
 
@@ -14,7 +14,6 @@ export class HealthAIService {
      */
     async checkIn(): Promise<ChatMessage | null> {
         const profile = await healthService.getProfile();
-        const now = new Date();
 
         // 1. Initial Profile Data Check
         if (!profile || !profile.peso || !profile.altura) {
@@ -47,7 +46,7 @@ export class HealthAIService {
 
     async processMessage(userText: string): Promise<ChatMessage> {
         // 1. Save user message
-        const userMsg = await healthService.saveMessage(userText, 'user', 'text');
+        await healthService.saveMessage(userText, 'user', 'text');
 
         // 2. Artificial Delay (Thinking...) - 1s
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -130,7 +129,7 @@ export class HealthAIService {
 
             // EXERCISE REPORT (One-shot or multi-step)
             else if (doc.match('(relatório|exercício|treino|fiz|malhei|corri|pedalei|treinei)').found || this.isExerciseContext(lowerText)) {
-                let duration = this.extractDuration(lowerText);
+                const duration = this.extractDuration(lowerText);
                 const hasExercises = doc.match('(corrida|caminhada|musculação|academia|treino|futebol|natação|pedal|bicicleta)').found || lowerText.length > 20 || this.isExerciseContext(lowerText);
 
                 if (duration && hasExercises) {
@@ -290,7 +289,7 @@ export class HealthAIService {
             // Just raw numbers if "peso" is in phrase
             const numbers = lower.match(/\b(\d{2,3}(?:[.,]\d)?)\b/g);
             if (numbers) {
-                for (let num of numbers) {
+                for (const num of numbers) {
                     const val = parseFloat(num.replace(',', '.'));
                     if (val > 30 && val < 200) return val;
                 }
@@ -312,7 +311,7 @@ export class HealthAIService {
         // 2. Explicit units (cm or m)
         const unitMatch = lower.match(/(\d+([.,]\d+)?)\s*(cm|cent[ií]metros|metros|m\b)/);
         if (unitMatch) {
-            let val = parseFloat(unitMatch[1].replace(',', '.'));
+            const val = parseFloat(unitMatch[1].replace(',', '.'));
             return val < 3 ? Math.round(val * 100) : Math.round(val);
         }
 
@@ -357,7 +356,7 @@ export class HealthAIService {
             } as HealthProfile;
         }
 
-        let updates: string[] = [];
+        const updates: string[] = [];
         const weightValue = this.extractWeight(text);
         const heightValue = this.extractHeight(text);
         const extractedActivity = this.detectActivityLevel(text);
