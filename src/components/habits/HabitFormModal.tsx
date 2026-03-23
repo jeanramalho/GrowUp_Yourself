@@ -7,13 +7,11 @@ import {
     TouchableOpacity,
     TextInput,
     ScrollView,
-    KeyboardAvoidingView,
-    Platform,
     Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { habitService } from '@/services/HabitService';
 import { Meta } from '@/models';
 
@@ -42,7 +40,6 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
     habitToEdit,
     onSaveSuccess,
 }) => {
-    const insets = useSafeAreaInsets();
     const { colors, isDarkMode, spacing } = useAppTheme();
 
     const [formData, setFormData] = useState({

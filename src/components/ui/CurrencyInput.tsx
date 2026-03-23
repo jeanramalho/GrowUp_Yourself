@@ -24,11 +24,11 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({ value, onValueChan
     const handleBlur = () => {
         if (!displayValue) return;
 
-        let cleanVal = displayValue.replace(/[^\d,]/g, ''); // Allow digits and comma only
+        const cleanVal = displayValue.replace(/[^\d,]/g, ''); // Allow digits and comma only
         if (!cleanVal) return;
 
         // Replace comma with dot for number parsing
-        let numVal = parseFloat(cleanVal.replace(',', '.'));
+        const numVal = parseFloat(cleanVal.replace(',', '.'));
 
         if (!isNaN(numVal)) {
             // Format to 2 decimal places

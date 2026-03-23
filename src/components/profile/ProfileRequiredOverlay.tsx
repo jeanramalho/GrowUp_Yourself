@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { PersonalInfoModal } from './PersonalInfoModal';
 
 export const ProfileRequiredOverlay = () => {
-    const { colors, spacing, borderRadius } = useAppTheme();
+    const { colors } = useAppTheme();
     const [isModalVisible, setIsModalVisible] = useState(false);
 
     return (

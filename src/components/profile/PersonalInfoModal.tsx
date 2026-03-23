@@ -24,7 +24,7 @@ interface PersonalInfoModalProps {
 
 export const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({ visible, onClose }) => {
     const insets = useSafeAreaInsets();
-    const { colors, isDarkMode, spacing, borderRadius } = useAppTheme();
+    const { colors, isDarkMode, spacing } = useAppTheme();
     const {
         userName,
         gender,

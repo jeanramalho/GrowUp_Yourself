@@ -15,7 +15,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     const insets = useSafeAreaInsets();
     const { colors, isDarkMode } = useAppTheme();
-    const { avatarPath, userName, getAvatarUri } = useUserStore();
+    const { userName, getAvatarUri } = useUserStore();
     const firstName = userName.split(' ')[0];
     const [imageError, setImageError] = useState(false);
 

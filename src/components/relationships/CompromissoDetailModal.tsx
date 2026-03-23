@@ -11,7 +11,7 @@ interface CompromissoDetailModalProps {
 }
 
 export function CompromissoDetailModal({ visible, onClose, compromisso }: CompromissoDetailModalProps) {
-    const { colors, isDarkMode, shadows } = useAppTheme();
+    const { colors, isDarkMode } = useAppTheme();
 
     if (!compromisso) return null;
 

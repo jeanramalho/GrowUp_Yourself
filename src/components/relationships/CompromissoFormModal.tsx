@@ -15,7 +15,7 @@ interface CompromissoFormModalProps {
 }
 
 export function CompromissoFormModal({ visible, onClose, onSaveSuccess, compromissoToEdit }: CompromissoFormModalProps) {
-    const { colors, isDarkMode } = useAppTheme();
+    const { colors } = useAppTheme();
 
     const [title, setTitle] = useState('');
     const [person, setPerson] = useState('');

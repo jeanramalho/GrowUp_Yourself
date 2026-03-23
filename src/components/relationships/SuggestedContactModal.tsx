@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Linking, Platform } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/theme';
 import { ContactSuggestion } from '@/models';
