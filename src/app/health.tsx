@@ -27,6 +27,52 @@ interface QuickActionItem {
   color: string;
 }
 
+const MessageBubble = React.memo(({ item, isDarkMode, colors, onOptionSelect }: {
+  item: ChatMessage;
+  isDarkMode: boolean;
+  colors: any;
+  onOptionSelect: (opt: any) => void
+}) => {
+  const isAI = item.sender === 'ai';
+  return (
+    <View style={[
+      styles.msgContainer,
+      !isAI ? styles.msgUser : styles.msgAssistant
+    ]}>
+      <View style={[
+        styles.msgBubble,
+        !isAI
+          ? { backgroundColor: '#2563EB', borderTopRightRadius: 4 }
+          : {
+            backgroundColor: colors.surface,
+            borderTopLeftRadius: 4,
+            borderWidth: 1,
+            borderColor: colors.border
+          }
+      ]}>
+        <Text style={[
+          styles.msgText,
+          !isAI ? { color: 'white' } : { color: colors.text }
+        ]}>{item.text}</Text>
+
+        {item.metadata?.options && isAI && (
+          <View style={styles.optionsContainer}>
+            {item.metadata.options.map((opt: any, idx: number) => (
+              <TouchableOpacity
+                key={idx}
+                style={[styles.optionButton, { borderColor: colors.primary }]}
+                onPress={() => onOptionSelect(opt)}
+              >
+                <Text style={[styles.optionText, { color: colors.primary }]}>{opt.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+    </View>
+  );
+});
+
 export default function HealthScreen() {
   const { colors, isDarkMode } = useAppTheme();
   const insets = useSafeAreaInsets();
@@ -132,7 +178,7 @@ export default function HealthScreen() {
 
   // Quick Actions Configuration
   const quickActions: QuickActionItem[] = [
-    { icon: "fitness-center", label: "Exercício", text: "Relatório de exercícios", color: colors.sky500 ?? '#0EA5E9' },
+    { icon: "dumbbell", label: "Exercício", text: "Relatório de exercícios", color: colors.sky500 ?? '#0EA5E9' },
     { icon: "chart-bar", label: "Métricas", text: "Métricas de saúde", color: colors.primary ?? '#3b82f6' },
     { icon: "file-document-outline", label: "Exame", text: "Analisar exame", color: colors.warning ?? '#f59e0b' },
     { icon: "food-apple-outline", label: "Dieta", text: "Dieta semanal", color: colors.success ?? '#22c55e' },
@@ -147,6 +193,17 @@ export default function HealthScreen() {
       <Text style={[styles.quickActionLabel, { color: isDarkMode ? colors.gray300 : '#334155' }]}>{item.label}</Text>
     </TouchableOpacity>
   );
+
+  const renderMessage = React.useCallback(({ item }: { item: ChatMessage }) => (
+    <MessageBubble 
+      item={item} 
+      isDarkMode={isDarkMode} 
+      colors={colors} 
+      onOptionSelect={onOptionSelect} 
+    />
+  ), [isDarkMode, colors, onOptionSelect]);
+
+  const keyExtractor = React.useCallback((item: ChatMessage) => item.id, []);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 10 }]}>
@@ -180,51 +237,16 @@ export default function HealthScreen() {
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={item => item.id}
+        keyExtractor={keyExtractor}
         contentContainerStyle={styles.chatContent}
         style={styles.chatList}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        renderItem={({ item }) => {
-          const isAI = item.sender === 'ai';
-          return (
-            <View style={[
-              styles.msgContainer,
-              !isAI ? styles.msgUser : styles.msgAssistant
-            ]}>
-              <View style={[
-                styles.msgBubble,
-                !isAI
-                  ? { backgroundColor: '#2563EB', borderTopRightRadius: 4 }
-                  : {
-                    backgroundColor: colors.surface,
-                    borderTopLeftRadius: 4,
-                    borderWidth: 1,
-                    borderColor: colors.border
-                  }
-              ]}>
-                <Text style={[
-                  styles.msgText,
-                  !isAI ? { color: 'white' } : { color: colors.text }
-                ]}>{item.text}</Text>
-
-                {item.metadata?.options && isAI && (
-                  <View style={styles.optionsContainer}>
-                    {item.metadata.options.map((opt: any, idx: number) => (
-                      <TouchableOpacity
-                        key={idx}
-                        style={[styles.optionButton, { borderColor: colors.primary }]}
-                        onPress={() => onOptionSelect(opt)}
-                      >
-                        <Text style={[styles.optionText, { color: colors.primary }]}>{opt.label}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-            </View>
-          );
-        }}
+        renderItem={renderMessage}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === 'android'}
         ListFooterComponent={
           loading ? (
             <View style={styles.msgContainer}>
