@@ -24,24 +24,35 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
     children,
     style,
 }) => {
-    const radius = (size - strokeWidth) / 2;
+    // Safety checks for progress value
+    const safeProgress = (progress === undefined || progress === null || isNaN(progress) || !isFinite(progress)) 
+        ? 0 
+        : Math.max(0, Math.min(100, progress));
+
+    // Safety checks for layout dimensions
+    const safeSize = (size === undefined || size === null || isNaN(size) || size <= 0) ? 60 : size;
+    const safeStrokeWidth = (strokeWidth === undefined || strokeWidth === null || isNaN(strokeWidth) || strokeWidth < 0) ? 4 : strokeWidth;
+
+    const radius = Math.max(0, (safeSize - safeStrokeWidth) / 2);
     const circumference = 2 * Math.PI * radius;
     const progressValue = useSharedValue(0);
 
     useEffect(() => {
-        progressValue.value = withTiming(progress, { duration: 1000 });
-    }, [progress]);
+        progressValue.value = withTiming(safeProgress, { duration: 1000 });
+    }, [safeProgress]);
 
     const animatedProps = useAnimatedProps(() => {
-        const strokeDashoffset = circumference - (circumference * progressValue.value) / 100;
+        // Ensure progressValue.value is safe during animation
+        const currentVal = (isNaN(progressValue.value) || !isFinite(progressValue.value)) ? 0 : progressValue.value;
+        const strokeDashoffset = circumference - (circumference * currentVal) / 100;
         return {
-            strokeDashoffset,
+            strokeDashoffset: isNaN(strokeDashoffset) ? circumference : strokeDashoffset,
         };
     });
 
     return (
-        <View style={[styles.container, { width: size, height: size }, style]}>
-            <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <View style={[styles.container, { width: safeSize, height: safeSize }, style]}>
+            <Svg width={safeSize} height={safeSize} viewBox={`0 0 ${safeSize} ${safeSize}`}>
                 {/* Background Circle */}
                 <Circle
                     cx={size / 2}
