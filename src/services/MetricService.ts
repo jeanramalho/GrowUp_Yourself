@@ -20,23 +20,24 @@ class MetricService {
      */
     async getMonthlyMetrics(date: Date): Promise<PillarMetrics> {
         try {
+            // Helper to sanitize progress
+            const sanitize = (val: number) => {
+                if (val === undefined || val === null || isNaN(val) || !isFinite(val)) return 0;
+                return Math.max(0, Math.min(100, Math.round(val)));
+            };
+
             // Pilar 1: Espiritualidade (Metas de Hábitos)
-            const p1 = await habitService.getMonthlyProgress('pilar-1', date);
+            const p1 = sanitize(await habitService.getMonthlyProgress('pilar-1', date));
 
             // Pilar 2: Saúde (Metas de Hábitos)
-            const p2 = await habitService.getMonthlyProgress('pilar-2', date);
+            const p2 = sanitize(await habitService.getMonthlyProgress('pilar-2', date));
 
             // Pilar 3: Finanças (Gastos vs Planejado)
             const financeSummary = await financeService.getMonthSummary(date);
-            // Limitamos a 100% caso o usuário gaste mais que o planejado (para a barra não quebrar, o UI trata > 90%)
-            let p3 = Math.round(financeSummary.expenseUsagePercent);
-            if (isNaN(p3) || !isFinite(p3)) p3 = 0;
-            // Removed Math.min(..., 100) from backend, let UI handle it, or maybe cap at 100?
-            // Usually progress circle needs 0-100. Let's cap at 100 for the circle progress prop.
-            if (p3 > 100) p3 = 100;
+            const p3 = sanitize(financeSummary.expenseUsagePercent);
 
             // Pilar 4: Relacionamentos (Compromissos Cumpridos no Mês)
-            const p4 = await this.calculateRelationshipsProgress(date);
+            const p4 = sanitize(await this.calculateRelationshipsProgress(date));
 
             return {
                 'pilar-1': p1,
