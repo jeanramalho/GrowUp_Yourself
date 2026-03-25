@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 465 129" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-1151.5002,-1060.687247)">
+        <g transform="matrix(1.122147,0,0,1.122147,980.476793,-240.307199)">
+            <text x="226.182px" y="1273.145px" style="font-family:'Helvetica-Bold', 'Helvetica';font-weight:700;font-size:50px;fill:url(#_Linear1);">YOURSELF</text>
+        </g>
+        <g transform="matrix(1.90571,0,0,1.90571,393.465062,-1646.51393)">
+            <g transform="matrix(50,0,0,50,643.717659,1456.974666)">
+            </g>
+            <text x="395.475px" y="1456.975px" style="font-family:'Arial-Black', 'Arial Black', sans-serif;font-weight:900;font-size:50px;fill:url(#_Linear2);">GR<tspan x="475.163px 515.959px 565.959px " y="1456.975px 1456.975px 1456.975px ">OWU</tspan>P</text>
+        </g>
+    </g>
+    <defs>
+        <linearGradient id="_Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(344.795468,0,0,344.795468,182.706353,1190.828275)"><stop offset="0" style="stop-color:rgb(43,147,197);stop-opacity:1"/><stop offset="0.54" style="stop-color:rgb(18,108,151);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(8,93,133);stop-opacity:1"/></linearGradient>
+        <linearGradient id="_Linear2" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(203.027312,0,0,203.027312,415.61151,1439.091365)"><stop offset="0" style="stop-color:rgb(43,147,197);stop-opacity:1"/><stop offset="0.54" style="stop-color:rgb(18,108,151);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(8,93,133);stop-opacity:1"/></linearGradient>
+    </defs>
+</svg>
