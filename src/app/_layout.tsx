@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, useRouter } from 'expo-router';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
-import { theme } from '@/theme';
+import { View, StyleSheet, Image } from 'react-native';
+import { theme, useAppTheme } from '@/theme';
 import { CustomTabBar } from '@/components/ui/CustomTabBar';
 import { Header } from '@/components/ui/Header';
 import { useUserStore } from '@/store/userStore';
@@ -16,7 +16,20 @@ import * as SplashScreen from 'expo-splash-screen';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+function SplashView() {
+  return (
+    <View style={styles.splashContainer}>
+      <Image
+        source={require('@/assets/Logo Growup Yourself.png')}
+        style={styles.splashLogo}
+        resizeMode="contain"
+      />
+    </View>
+  );
+}
+
 export default function RootLayout() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { isProfileComplete, userName } = useUserStore();
   const [isInitialized, setIsInitialized] = useState(false);
@@ -52,7 +65,7 @@ export default function RootLayout() {
   }, []);
 
   if (!isInitialized) {
-    return null;
+    return <SplashView />;
   }
 
   // If profile is not complete AND there's no name (legacy/reset), show overlay
@@ -97,5 +110,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  splashContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0F172A',
+  },
+  splashLogo: {
+    width: 80,
+    height: 80,
   },
 });
