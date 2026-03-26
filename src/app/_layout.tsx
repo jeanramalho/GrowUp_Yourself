@@ -11,6 +11,10 @@ import { MigrationRunner } from '@/repositories/migrations';
 import { notificationService } from '@/services/NotificationService';
 import * as SQLite from 'expo-sqlite';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const router = useRouter();
@@ -36,8 +40,11 @@ export default function RootLayout() {
 
         console.log('Database and services initialized successfully');
         setIsInitialized(true);
+        await SplashScreen.hideAsync();
       } catch (error) {
         console.error('Failed to initialize app:', error);
+        // Ensure we still hide it in case of error so the app isn't stuck
+        await SplashScreen.hideAsync();
       }
     };
 
@@ -45,11 +52,7 @@ export default function RootLayout() {
   }, []);
 
   if (!isInitialized) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+    return null;
   }
 
   // If profile is not complete AND there's no name (legacy/reset), show overlay
