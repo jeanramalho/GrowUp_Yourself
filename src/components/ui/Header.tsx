@@ -75,7 +75,11 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
         ]}>
             <View style={styles.topRow}>
                 <View style={styles.greetingContainer}>
-                    <Text style={[styles.brandText, { color: colors.primary }]}>GROWUP YOURSELF</Text>
+                    <Image
+                        source={require('@/assets/Logo Growup Yourself texto.png')}
+                        style={styles.logoImage}
+                        resizeMode="contain"
+                    />
                     <Text style={[styles.greetingText, { color: colors.text }]}>Olá, {firstName}</Text>
                 </View>
                 <TouchableOpacity onPress={onProfilePress} style={[styles.avatarContainer, { borderColor: 'rgba(59, 130, 246, 0.2)' }]}>
@@ -119,12 +123,10 @@ const styles = StyleSheet.create({
     greetingContainer: {
         flexDirection: 'column',
     },
-    brandText: {
-        fontSize: 10,
-        fontWeight: '900',
-        letterSpacing: 2,
+    logoImage: {
+        height: 16,
+        width: 60, // 16 * (466/130) is approx 57.35, rounding to 60 for better fit
         marginBottom: 4,
-        textTransform: 'uppercase',
     },
     greetingText: {
         fontSize: 20,
