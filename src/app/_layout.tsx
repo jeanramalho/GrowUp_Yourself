@@ -16,18 +16,6 @@ import * as SplashScreen from 'expo-splash-screen';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-function SplashView() {
-  return (
-    <View style={styles.splashContainer}>
-      <Image
-        source={require('@/assets/Logo Growup Yourself.png')}
-        style={styles.splashLogo}
-        resizeMode="contain"
-      />
-    </View>
-  );
-}
-
 export default function RootLayout() {
   const { colors } = useAppTheme();
   const router = useRouter();
@@ -65,7 +53,7 @@ export default function RootLayout() {
   }, []);
 
   if (!isInitialized) {
-    return <SplashView />;
+    return null;
   }
 
   // If profile is not complete AND there's no name (legacy/reset), show overlay
@@ -110,15 +98,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  splashContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0F172A',
-  },
-  splashLogo: {
-    width: 80,
-    height: 80,
   },
 });

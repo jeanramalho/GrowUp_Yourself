@@ -24,8 +24,8 @@
                         <constraints>
                             <constraint firstItem="EXPO-SplashScreen" firstAttribute="centerX" secondItem="EXPO-ContainerView" secondAttribute="centerX" id="center-x-logo"/>
                             <constraint firstItem="EXPO-SplashScreen" firstAttribute="centerY" secondItem="EXPO-ContainerView" secondAttribute="centerY" id="center-y-logo"/>
-                            <constraint firstItem="EXPO-SplashScreen" firstAttribute="width" constant="120" id="width-logo"/>
-                            <constraint firstItem="EXPO-SplashScreen" firstAttribute="height" constant="120" id="height-logo"/>
+                            <constraint firstItem="EXPO-SplashScreen" firstAttribute="width" constant="180" id="width-logo"/>
+                            <constraint firstItem="EXPO-SplashScreen" firstAttribute="height" constant="180" id="height-logo"/>
                         </constraints>
                         <color key="backgroundColor" name="SplashScreenBackground"/>
                     </view>

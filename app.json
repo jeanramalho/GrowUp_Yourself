@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash/splash-logo-padded.png",
+      "image": "./src/assets/Logo Growup Yourself.png",
       "resizeMode": "contain",
       "backgroundColor": "#0F172A"
     },
