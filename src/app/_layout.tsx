@@ -11,10 +11,6 @@ import { MigrationRunner } from '@/repositories/migrations';
 import { notificationService } from '@/services/NotificationService';
 import * as SQLite from 'expo-sqlite';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import * as SplashScreen from 'expo-splash-screen';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { colors } = useAppTheme();
@@ -41,11 +37,8 @@ export default function RootLayout() {
 
         console.log('Database and services initialized successfully');
         setIsInitialized(true);
-        await SplashScreen.hideAsync();
       } catch (error) {
         console.error('Failed to initialize app:', error);
-        // Ensure we still hide it in case of error so the app isn't stuck
-        await SplashScreen.hideAsync();
       }
     };
 
