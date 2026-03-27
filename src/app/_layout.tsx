@@ -22,6 +22,13 @@ export default function RootLayout() {
   const { isProfileComplete, userName } = useUserStore();
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const onLayoutRootView = React.useCallback(async () => {
+    if (isInitialized) {
+      // Hide the splash screen ONLY when the first frame of the app content is ready
+      await SplashScreen.hideAsync();
+    }
+  }, [isInitialized]);
+
   useEffect(() => {
     const initApp = async () => {
       try {
@@ -41,8 +48,6 @@ export default function RootLayout() {
 
         console.log('Database and services initialized successfully');
         setIsInitialized(true);
-        // Hide the blank splash screen as soon as we are ready
-        await SplashScreen.hideAsync();
       } catch (error) {
         console.error('Failed to initialize app:', error);
       }
@@ -65,7 +70,7 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <View style={styles.container}>
         <Header onProfilePress={() => router.push('/profile')} />
         <Tabs
