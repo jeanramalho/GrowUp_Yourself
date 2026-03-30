@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Image, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, StatusBar } from 'react-native';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
   withTiming, 
-  withDelay, 
   Easing,
   runOnJS,
-  withSequence
 } from 'react-native-reanimated';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 interface SplashScreenProps {
   isVisible: boolean;
@@ -24,14 +22,14 @@ export function SplashScreen({ isVisible, onAnimationComplete }: SplashScreenPro
   const [shouldRender, setShouldRender] = useState(true);
 
   useEffect(() => {
-    // Initial logo fade-in
+    // Initial logo fade-in and scale-up
     logoOpacity.value = withTiming(1, { duration: 1000, easing: Easing.out(Easing.exp) });
     scale.value = withTiming(1, { duration: 1200, easing: Easing.out(Easing.back(1.5)) });
   }, []);
 
   useEffect(() => {
     if (!isVisible) {
-      // Start exit animation
+      // Start exit animation when isVisible becomes false
       opacity.value = withTiming(0, { 
         duration: 800, 
         easing: Easing.inOut(Easing.ease) 
@@ -42,13 +40,13 @@ export function SplashScreen({ isVisible, onAnimationComplete }: SplashScreenPro
         }
       });
       
-      // Slight scale up on exit for a "zooming into app" effect
-      scale.value = withTiming(1.2, { 
+      // Slight scale out on exit for a "zooming into app" effect
+      scale.value = withTiming(1.15, { 
         duration: 800, 
         easing: Easing.inOut(Easing.ease) 
       });
     }
-  }, [isVisible]);
+  }, [isVisible, onAnimationComplete]);
 
   const containerStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -63,6 +61,7 @@ export function SplashScreen({ isVisible, onAnimationComplete }: SplashScreenPro
 
   return (
     <Animated.View style={[styles.container, containerStyle]}>
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent />
       <Animated.Image
         source={require('../../../assets/icon.png')}
         style={[styles.logo, logoStyle]}
