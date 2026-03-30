@@ -8,7 +8,8 @@
     "backgroundColor": "#0F172A",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#0F172A"
+      "backgroundColor": "#0F172A",
+      "resizeMode": "contain"
     },
     "assetBundlePatterns": [
       "**/*"

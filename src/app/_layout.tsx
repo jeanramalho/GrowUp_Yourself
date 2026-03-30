@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Tabs, useRouter } from 'expo-router';
-import { View, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { theme, useAppTheme } from '@/theme';
 import { CustomTabBar } from '@/components/ui/CustomTabBar';
 import { Header } from '@/components/ui/Header';
@@ -11,23 +11,29 @@ import { MigrationRunner } from '@/repositories/migrations';
 import { notificationService } from '@/services/NotificationService';
 import * as SQLite from 'expo-sqlite';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import * as SplashScreen from 'expo-splash-screen';
+import * as ExpoSplashScreen from 'expo-splash-screen';
+import { SplashScreen } from '@/components/ui/SplashScreen';
 
-// Keep the blank splash screen visible while we fetch resources
-SplashScreen.preventAutoHideAsync();
+// Keep the native splash screen visible while JS loads
+ExpoSplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { isProfileComplete, userName } = useUserStore();
+  
+  // App initialization states
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isSplashAnimationComplete, setIsSplashAnimationComplete] = useState(false);
 
-  const onLayoutRootView = React.useCallback(async () => {
-    if (isInitialized) {
-      // Hide the splash screen ONLY when the first frame of the app content is ready
-      await SplashScreen.hideAsync();
+  // Hide native splash screen once the JS Splash component is ready
+  const onSplashLayout = useCallback(async () => {
+    try {
+      await ExpoSplashScreen.hideAsync();
+    } catch (e) {
+      console.warn('Error hiding native splash:', e);
     }
-  }, [isInitialized]);
+  }, []);
 
   useEffect(() => {
     const initApp = async () => {
@@ -47,57 +53,65 @@ export default function RootLayout() {
         await notificationService.requestPermissions();
 
         console.log('Database and services initialized successfully');
-        setIsInitialized(true);
+        
+        // Wait at least a bit more to show the beautiful splash logo if init was too fast
+        setTimeout(() => setIsInitialized(true), 500);
       } catch (error) {
         console.error('Failed to initialize app:', error);
+        setIsInitialized(true); // Still proceed, or show an error screen
       }
     };
 
     initApp();
   }, []);
 
-  if (!isInitialized) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#0F172A' }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
-  }
-
-  // If profile is not complete AND there's no name (legacy/reset), show overlay
-  if (!isProfileComplete && !userName) {
-    return <ProfileRequiredOverlay />;
-  }
+  // Show splash overlay while not initialized or while animation is running
+  const showSplash = !isInitialized || !isSplashAnimationComplete;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <View style={styles.container}>
-        <Header onProfilePress={() => router.push('/profile')} />
-        <Tabs
-          tabBar={(props) => <CustomTabBar {...props} />}
-          screenOptions={{
-            headerShown: false,
-            // Background color for screens
-            sceneStyle: { backgroundColor: theme.colors.background },
-          }}
-        >
-          <Tabs.Screen name="home" />
-          <Tabs.Screen name="spirituality" />
-          <Tabs.Screen name="health" />
-          <Tabs.Screen name="finance" />
-          <Tabs.Screen name="relationships" />
-
-          {/* Hidden Screens */}
-          <Tabs.Screen
-            name="profile"
-            options={{
-              href: null,
-              tabBarStyle: { display: 'none' },
-            }}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      {showSplash && (
+        <View style={StyleSheet.absoluteFill} onLayout={onSplashLayout}>
+          <SplashScreen 
+            isVisible={!isInitialized} 
+            onAnimationComplete={() => setIsSplashAnimationComplete(true)} 
           />
-          <Tabs.Screen name="index" options={{ href: null }} />
-        </Tabs>
-      </View>
+        </View>
+      )}
+
+      {isInitialized && (
+        <View style={styles.container}>
+          {(!isProfileComplete && !userName) ? (
+            <ProfileRequiredOverlay />
+          ) : (
+            <>
+              <Header onProfilePress={() => router.push('/profile')} />
+              <Tabs
+                tabBar={(props) => <CustomTabBar {...props} />}
+                screenOptions={{
+                  headerShown: false,
+                  sceneStyle: { backgroundColor: theme.colors.background },
+                }}
+              >
+                <Tabs.Screen name="home" />
+                <Tabs.Screen name="spirituality" />
+                <Tabs.Screen name="health" />
+                <Tabs.Screen name="finance" />
+                <Tabs.Screen name="relationships" />
+
+                <Tabs.Screen
+                  name="profile"
+                  options={{
+                    href: null,
+                    tabBarStyle: { display: 'none' },
+                  }}
+                />
+                <Tabs.Screen name="index" options={{ href: null }} />
+              </Tabs>
+            </>
+          )}
+        </View>
+      )}
     </GestureHandlerRootView>
   );
 }
@@ -108,3 +122,4 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
 });
+
