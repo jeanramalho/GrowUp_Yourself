@@ -6,8 +6,10 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { CircularProgress } from '@/components/ui/CircularProgress';
 import { habitService } from '@/services/HabitService';
 import { metricService } from '@/services/MetricService';
+import { notificationService } from '@/services/NotificationService';
 import { Meta } from '@/models';
 import { RelationshipSummaryCard } from '@/components/home/RelationshipSummaryCard';
+import { useEffect } from 'react';
 
 type HabitWithStatus = Meta & { completed: boolean; executionId?: string };
 
@@ -31,6 +33,11 @@ export default function HomeScreen() {
         { type: 'relationships', id: 'pilar-4', icon: 'account-group', label: "Relações", progress: 0, color: colors.blue300 },
     ]);
     const [loading, setLoading] = useState(true);
+
+    // Solicitar permissões de notificação de forma não bloqueante assim que entrar na home
+    useEffect(() => {
+        notificationService.requestPermissions().catch(console.error);
+    }, []);
 
     const loadData = useCallback(async () => {
         try {

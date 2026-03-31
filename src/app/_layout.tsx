@@ -39,7 +39,6 @@ export default function RootLayout() {
 
         // Initialize notifications
         await notificationService.initialize();
-        await notificationService.requestPermissions();
 
         console.log('Database and services initialized successfully');
       } catch (error) {
@@ -62,8 +61,7 @@ export default function RootLayout() {
   }, [isInitialized]);
 
   if (!isInitialized) {
-    // Return null or a subtle solid view while the native splash is still covering the app
-    return <View style={styles.splashBackground} />;
+    return null;
   }
 
   return (
