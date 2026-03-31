@@ -22,9 +22,9 @@ export const migration001Init: Migration = {
   version: 1,
   name: '001_init',
   up: async (db: SQLiteDatabase) => {
-    await db.transactionAsync(async (tx) => {
+    await db.withTransactionAsync(async () => {
       // Create user_profile table
-      await tx.executeSqlAsync(
+      await db.runAsync(
         `CREATE TABLE IF NOT EXISTS user_profile (
           id TEXT PRIMARY KEY,
           nome TEXT NOT NULL,
@@ -39,7 +39,7 @@ export const migration001Init: Migration = {
       );
 
       // Create pilar table
-      await tx.executeSqlAsync(
+      await db.runAsync(
         `CREATE TABLE IF NOT EXISTS pilar (
           id TEXT PRIMARY KEY,
           nome TEXT NOT NULL,
@@ -49,7 +49,7 @@ export const migration001Init: Migration = {
       );
 
       // Create meta table
-      await tx.executeSqlAsync(
+      await db.runAsync(
         `CREATE TABLE IF NOT EXISTS meta (
           id TEXT PRIMARY KEY,
           pilar_id TEXT NOT NULL,
@@ -67,10 +67,10 @@ export const migration001Init: Migration = {
         )`
       );
 
-      await tx.executeSqlAsync(`CREATE INDEX IF NOT EXISTS idx_meta_pilar ON meta(pilar_id)`);
+      await db.runAsync(`CREATE INDEX IF NOT EXISTS idx_meta_pilar ON meta(pilar_id)`);
 
       // Create execucao table
-      await tx.executeSqlAsync(
+      await db.runAsync(
         `CREATE TABLE IF NOT EXISTS execucao (
           id TEXT PRIMARY KEY,
           meta_id TEXT NOT NULL,
@@ -84,10 +84,10 @@ export const migration001Init: Migration = {
         )`
       );
 
-      await tx.executeSqlAsync(`CREATE INDEX IF NOT EXISTS idx_execucao_meta ON execucao(meta_id)`);
+      await db.runAsync(`CREATE INDEX IF NOT EXISTS idx_execucao_meta ON execucao(meta_id)`);
 
       // Create lancamento_financeiro table
-      await tx.executeSqlAsync(
+      await db.runAsync(
         `CREATE TABLE IF NOT EXISTS lancamento_financeiro (
           id TEXT PRIMARY KEY,
           tipo TEXT NOT NULL,
@@ -101,7 +101,7 @@ export const migration001Init: Migration = {
       );
 
       // Create investimento table
-      await tx.executeSqlAsync(
+      await db.runAsync(
         `CREATE TABLE IF NOT EXISTS investimento (
           id TEXT PRIMARY KEY,
           nome TEXT NOT NULL,
@@ -113,7 +113,7 @@ export const migration001Init: Migration = {
       );
 
       // Create compromisso table
-      await tx.executeSqlAsync(
+      await db.runAsync(
         `CREATE TABLE IF NOT EXISTS compromisso (
           id TEXT PRIMARY KEY,
           titulo TEXT NOT NULL,
@@ -127,7 +127,7 @@ export const migration001Init: Migration = {
       );
 
       // Create schema_version table to track migrations
-      await tx.executeSqlAsync(
+      await db.runAsync(
         `CREATE TABLE IF NOT EXISTS schema_version (
           version INTEGER PRIMARY KEY,
           name TEXT NOT NULL,
@@ -136,25 +136,25 @@ export const migration001Init: Migration = {
       );
 
       // Record this migration
-      await tx.executeSqlAsync(
+      await db.runAsync(
         `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
         [1, '001_init', new Date().toISOString()]
       );
-    }, false); // false = not readOnly
+    });
   },
 
   down: async (db: SQLiteDatabase) => {
     // Drop tables in reverse order of creation
-    await db.transactionAsync(async (tx) => {
-      await tx.executeSqlAsync('DROP TABLE IF EXISTS schema_version');
-      await tx.executeSqlAsync('DROP TABLE IF EXISTS compromisso');
-      await tx.executeSqlAsync('DROP TABLE IF EXISTS investimento');
-      await tx.executeSqlAsync('DROP TABLE IF EXISTS lancamento_financeiro');
-      await tx.executeSqlAsync('DROP TABLE IF EXISTS execucao');
-      await tx.executeSqlAsync('DROP TABLE IF EXISTS meta');
-      await tx.executeSqlAsync('DROP TABLE IF EXISTS pilar');
-      await tx.executeSqlAsync('DROP TABLE IF EXISTS user_profile');
-    }, false); // false = not readOnly
+    await db.withTransactionAsync(async () => {
+      await db.runAsync('DROP TABLE IF EXISTS schema_version');
+      await db.runAsync('DROP TABLE IF EXISTS compromisso');
+      await db.runAsync('DROP TABLE IF EXISTS investimento');
+      await db.runAsync('DROP TABLE IF EXISTS lancamento_financeiro');
+      await db.runAsync('DROP TABLE IF EXISTS execucao');
+      await db.runAsync('DROP TABLE IF EXISTS meta');
+      await db.runAsync('DROP TABLE IF EXISTS pilar');
+      await db.runAsync('DROP TABLE IF EXISTS user_profile');
+    });
   },
 };
 
@@ -172,20 +172,20 @@ export const migration002SeedPilares: Migration = {
       { id: 'pilar-4', nome: 'Relacionamentos', icone: 'people', ordem: 3 },
     ];
 
-    await db.transactionAsync(async (tx) => {
+    await db.withTransactionAsync(async () => {
       for (const pilar of pilares) {
-        await tx.executeSqlAsync(
+        await db.runAsync(
           `INSERT OR IGNORE INTO pilar (id, nome, icone, ordem) VALUES (?, ?, ?, ?)`,
           [pilar.id, pilar.nome, pilar.icone, pilar.ordem]
         );
       }
 
       // Record this migration
-      await tx.executeSqlAsync(
+      await db.runAsync(
         `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
         [2, '002_seed_pilares', new Date().toISOString()]
       );
-    }, false); // false = not readOnly
+    });
   },
 };
 
@@ -210,15 +210,10 @@ export class MigrationRunner {
    */
   private async getCurrentVersion(): Promise<number> {
     try {
-      let version = 0;
-      await this.db.transactionAsync(async (tx) => {
-        const result = await tx.executeSqlAsync(
-          'SELECT MAX(version) as version FROM schema_version'
-        );
-        const rows = result.rows as unknown as Array<{ version: number }>;
-        version = rows?.[0]?.version ?? 0;
-      }, true); // true = readOnly
-      return version;
+      const result = await this.db.getFirstAsync<{ version: number }>(
+        'SELECT MAX(version) as version FROM schema_version'
+      );
+      return result?.version ?? 0;
     } catch {
       return 0;
     }
@@ -258,11 +253,11 @@ export class MigrationRunner {
             console.log(`Rolling back migration: ${migration.name}`);
             await migration.down(this.db);
             // Remove from schema_version
-            await this.db.transactionAsync(async (tx) => {
-              await tx.executeSqlAsync('DELETE FROM schema_version WHERE version = ?', [
+            await this.db.withTransactionAsync(async () => {
+              await this.db.runAsync('DELETE FROM schema_version WHERE version = ?', [
                 migration.version,
               ]);
-            }, false); // false = not readOnly
+            });
             console.log(`Migration ${migration.name} rolled back successfully`);
           } catch (error) {
             console.error(`Rollback of ${migration.name} failed:`, error);
