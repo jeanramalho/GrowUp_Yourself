@@ -12,6 +12,8 @@ import { notificationService } from '@/services/NotificationService';
 import * as SQLite from 'expo-sqlite';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { useCallback } from 'react';
 
 // Keep the native splash screen visible while app initializes
 SplashScreen.preventAutoHideAsync();
@@ -51,12 +53,21 @@ export default function RootLayout() {
     initApp();
   }, []);
 
-  // Once initialized and the first UI is ready, hide the native splash screen
+  // Remove the automatic hide in useEffect as we will hide onLayout instead
+  /*
   useEffect(() => {
     if (isInitialized) {
       SplashScreen.hideAsync().catch(() => {
         // Safe Catch: ignore errors if splash is already hidden
       });
+    }
+  }, [isInitialized]);
+  */
+
+  const onLayoutRootView = useCallback(async () => {
+    if (isInitialized) {
+      // Hide the splash screen only when the layout is ready to avoid the black screen
+      await SplashScreen.hideAsync();
     }
   }, [isInitialized]);
 
@@ -65,7 +76,8 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
+      <StatusBar style="light" backgroundColor="#0F172A" translucent />
       <View style={styles.container}>
         {(!isProfileComplete && !userName) ? (
           <ProfileRequiredOverlay />
