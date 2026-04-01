@@ -9,7 +9,7 @@ import { SQLiteDatabase } from 'expo-sqlite';
  * Generic Repository interface for CRUD operations
  * Enables future migration to cloud storage
  */
-interface IRepository<T> {
+export interface IRepository<T> {
   create(item: T): Promise<T>;
   read(id: string): Promise<T | null>;
   update(id: string, item: Partial<T>): Promise<T>;
@@ -22,14 +22,6 @@ interface IRepository<T> {
  * Base Repository class that wraps SQLite database
  * Subclasses implement specific table operations
  */
-interface IRepository<T> {
-  create(item: T): Promise<T>;
-  read(id: string): Promise<T | null>;
-  update(id: string, item: Partial<T>): Promise<T>;
-  delete(id: string): Promise<boolean>;
-  list(): Promise<T[]>;
-}
-
 export class Repository<T extends { id: string }> implements IRepository<T> {
   protected db: SQLiteDatabase;
   protected tableName: string;
@@ -44,8 +36,7 @@ export class Repository<T extends { id: string }> implements IRepository<T> {
    */
   protected async executeQuery<R>(sql: string, params: any[] = []): Promise<R[]> {
     try {
-      const results = await this.db.getAllAsync<R>(sql, params);
-      return results || [];
+      return await this.db.getAllAsync<R>(sql, params);
     } catch (error) {
       console.error(`Query error in ${this.tableName}:`, error);
       throw error;
@@ -156,7 +147,7 @@ export class Database {
   async initialize(dbInstance: SQLiteDatabase): Promise<void> {
     this.db = dbInstance;
     // Enable foreign keys
-    await this.db.execAsync('PRAGMA foreign_keys = ON');
+    await this.db.execAsync('PRAGMA foreign_keys = ON;');
   }
 
   /**
@@ -178,27 +169,6 @@ export class Database {
   }
 
   /**
-   * Delete all data from all tables (Except schema_version)
-   */
-  async clearAllData(): Promise<void> {
-    const db = this.getDb();
-    const tables = [
-      'execucao',
-      'meta',
-      'lancamento_financeiro',
-      'investimento',
-      'compromisso',
-      'user_profile',
-    ];
-
-    await db.withTransactionAsync(async () => {
-      for (const table of tables) {
-        await db.runAsync(`DELETE FROM ${table}`);
-      }
-    });
-  }
-
-  /**
    * Close the database connection
    */
   async close(): Promise<void> {
@@ -209,4 +179,7 @@ export class Database {
   }
 }
 
+/**
+ * Singleton database instance to be used across the app
+ */
 export const database = new Database();

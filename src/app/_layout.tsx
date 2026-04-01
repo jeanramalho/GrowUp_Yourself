@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Tabs, useRouter } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
-import { theme, useAppTheme } from '@/theme';
+import { theme } from '@/theme';
 import { CustomTabBar } from '@/components/ui/CustomTabBar';
 import { Header } from '@/components/ui/Header';
 import { useUserStore } from '@/store/userStore';
@@ -12,16 +12,15 @@ import { notificationService } from '@/services/NotificationService';
 import * as SQLite from 'expo-sqlite';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 
 // Keep the native splash screen visible while app initializes
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { colors } = useAppTheme();
   const router = useRouter();
   const { isProfileComplete, userName } = useUserStore();
-  
-  // App initialization states
+
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -30,16 +29,12 @@ export default function RootLayout() {
         const db = await SQLite.openDatabaseAsync('growup_yourself.db');
         await database.initialize(db);
 
-        // Run migrations
         const migrationRunner = new MigrationRunner(db);
         await migrationRunner.runMigrations();
 
-        // Load user profile from DB
         await useUserStore.getState().loadFromDb();
 
-        // Initialize notifications
         await notificationService.initialize();
-        await notificationService.requestPermissions();
 
         console.log('Database and services initialized successfully');
       } catch (error) {
@@ -52,22 +47,19 @@ export default function RootLayout() {
     initApp();
   }, []);
 
-  // Once initialized and the first UI is ready, hide the native splash screen
-  useEffect(() => {
+  const onLayoutRootView = useCallback(async () => {
     if (isInitialized) {
-      SplashScreen.hideAsync().catch(() => {
-        // Safe Catch: ignore errors if splash is already hidden
-      });
+      await SplashScreen.hideAsync();
     }
   }, [isInitialized]);
 
   if (!isInitialized) {
-    // Return null or a subtle solid view while the native splash is still covering the app
-    return <View style={styles.splashBackground} />;
+    return null;
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
+      <StatusBar style="light" backgroundColor="#0F172A" translucent />
       <View style={styles.container}>
         {(!isProfileComplete && !userName) ? (
           <ProfileRequiredOverlay />
@@ -108,9 +100,4 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  splashBackground: {
-    flex: 1,
-    backgroundColor: '#0F172A',
-  }
 });
-

@@ -8,12 +8,20 @@ import * as Notifications from 'expo-notifications';
 /**
  * Notification configuration
  */
-interface NotificationConfig {
+export interface NotificationConfig {
   title: string;
   body: string;
   data?: Record<string, any>;
 }
 
+/**
+ * Scheduled notification result
+ */
+export interface ScheduledNotification {
+  id: string;
+  title: string;
+  body: string;
+}
 
 /**
  * Notification trigger options
@@ -30,7 +38,7 @@ export interface NotificationTrigger {
  * Service for managing notifications
  * Wrapper around expo-notifications with typed interfaces
  */
-class NotificationService {
+export class NotificationService {
   private initialized = false;
 
   /**
@@ -99,7 +107,7 @@ class NotificationService {
       let triggerInput: Notifications.NotificationTriggerInput;
 
       if (trigger instanceof Date) {
-        triggerInput = { date: trigger, type: 'date' } as Notifications.NotificationTriggerInput;
+        triggerInput = trigger;
       } else if (typeof trigger === 'string') {
         // Parse HH:MM format - use seconds since midnight for daily trigger
         const [hours, minutes] = trigger.split(':').map(Number);
