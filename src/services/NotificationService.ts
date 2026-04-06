@@ -57,6 +57,8 @@ export class NotificationService {
           shouldShowAlert: true,
           shouldPlaySound: true,
           shouldSetBadge: true,
+          shouldShowBanner: true,
+          shouldShowList: true,
         }),
       });
 
@@ -107,7 +109,7 @@ export class NotificationService {
       let triggerInput: Notifications.NotificationTriggerInput;
 
       if (trigger instanceof Date) {
-        triggerInput = trigger;
+        triggerInput = trigger as any;
       } else if (typeof trigger === 'string') {
         // Parse HH:MM format - use seconds since midnight for daily trigger
         const [hours, minutes] = trigger.split(':').map(Number);

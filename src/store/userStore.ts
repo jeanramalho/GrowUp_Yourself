@@ -64,10 +64,9 @@ export const useUserStore = create<UserState>()(
                 // Cleanup old avatar if it exists and changed
                 if (oldPath && oldPath !== filename) {
                     try {
-                        const fileUri = `${FileSystem.documentDirectory}${oldPath}`;
-                        const fileInfo = await FileSystem.getInfoAsync(fileUri);
-                        if (fileInfo.exists) {
-                            await FileSystem.deleteAsync(fileUri);
+                        const oldFile = new File(Paths.document, oldPath);
+                        if (oldFile.exists) {
+                            oldFile.delete();
                         }
                     } catch (e) {
                         console.error("Error cleaning up old avatar:", e);

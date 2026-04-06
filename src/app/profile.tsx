@@ -36,7 +36,7 @@ export default function ProfileScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaType.Images,
+        mediaTypes: ['images'],
         allowsEditing: true, // Enables cropping
         aspect: [1, 1], // Square aspect ratio
         quality: 1,

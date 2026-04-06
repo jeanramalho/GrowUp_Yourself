@@ -177,6 +177,23 @@ export class Database {
       this.db = null;
     }
   }
+
+  /**
+   * Clear all data from all user tables
+   */
+  async clearAllData(): Promise<void> {
+    const db = this.getDb();
+    // Get all user tables
+    const tables = await db.getAllAsync<{ name: string }>(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'expo_%'"
+    );
+
+    await db.withTransactionAsync(async () => {
+      for (const table of tables) {
+        await db.runAsync(`DELETE FROM ${table.name}`);
+      }
+    });
+  }
 }
 
 /**
