@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import { database } from '@/repositories/Repository';
 import { UserRepository } from '@/repositories/UserRepository';
 
@@ -64,10 +64,10 @@ export const useUserStore = create<UserState>()(
                 // Cleanup old avatar if it exists and changed
                 if (oldPath && oldPath !== filename) {
                     try {
-                        const oldUri = `${FileSystem.documentDirectory}${oldPath}`;
-                        const info = await FileSystem.getInfoAsync(oldUri);
-                        if (info.exists) {
-                            await FileSystem.deleteAsync(oldUri, { idempotent: true });
+                        const fileUri = `${FileSystem.documentDirectory}${oldPath}`;
+                        const fileInfo = await FileSystem.getInfoAsync(fileUri);
+                        if (fileInfo.exists) {
+                            await FileSystem.deleteAsync(fileUri);
                         }
                     } catch (e) {
                         console.error("Error cleaning up old avatar:", e);
@@ -80,7 +80,7 @@ export const useUserStore = create<UserState>()(
             getAvatarUri: () => {
                 const { avatarPath } = get();
                 if (!avatarPath) return null;
-                return `${FileSystem.documentDirectory}${avatarPath}`;
+                return `${Paths.document.uri}${avatarPath}`;
             },
             setProfileComplete: (isProfileComplete) => set({ isProfileComplete }),
             updateProfile: async (data) => {

@@ -76,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
             <View style={styles.topRow}>
                 <View style={styles.greetingContainer}>
                     <Image
-                        source={require('@/assets/Logo Growup Yourself texto.png')}
+                        source={require('../../assets/Logo Growup Yourself texto.png')}
                         style={styles.logoImage}
                         resizeMode="contain"
                     />

@@ -6,7 +6,7 @@ import { useThemeStore } from '@/store/themeStore';
 import { useUserStore } from '@/store/userStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import { PersonalInfoModal } from '@/components/profile/PersonalInfoModal';
 
 export default function ProfileScreen() {
@@ -36,7 +36,7 @@ export default function ProfileScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaType.Images,
         allowsEditing: true, // Enables cropping
         aspect: [1, 1], // Square aspect ratio
         quality: 1,
@@ -47,14 +47,12 @@ export default function ProfileScreen() {
 
         try {
           const fileName = selectedUri.split('/').pop();
-          const newPath = `${FileSystem.documentDirectory}${Date.now()}_${fileName}`;
+          const newFile = new File(Paths.document, `${Date.now()}_${fileName}`);
+          const selectedFile = new File(selectedUri);
 
-          await FileSystem.copyAsync({
-            from: selectedUri,
-            to: newPath
-          });
+          await selectedFile.copy(newFile);
 
-          setAvatar(newPath);
+          setAvatar(newFile.uri);
         } catch (err) {
           console.error('Error saving image:', err);
           // Fallback to original URI if save fails, though it might not persist
