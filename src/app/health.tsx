@@ -27,9 +27,8 @@ interface QuickActionItem {
   color: string;
 }
 
-const MessageBubble = React.memo(({ item, isDarkMode, colors, onOptionSelect }: {
+const MessageBubble = React.memo(({ item, colors, onOptionSelect }: {
   item: ChatMessage;
-  isDarkMode: boolean;
   colors: any;
   onOptionSelect: (opt: any) => void
 }) => {
@@ -72,6 +71,8 @@ const MessageBubble = React.memo(({ item, isDarkMode, colors, onOptionSelect }: 
     </View>
   );
 });
+
+MessageBubble.displayName = 'MessageBubble';
 
 export default function HealthScreen() {
   const { colors, isDarkMode } = useAppTheme();
@@ -197,11 +198,10 @@ export default function HealthScreen() {
   const renderMessage = React.useCallback(({ item }: { item: ChatMessage }) => (
     <MessageBubble 
       item={item} 
-      isDarkMode={isDarkMode} 
       colors={colors} 
       onOptionSelect={onOptionSelect} 
     />
-  ), [isDarkMode, colors, onOptionSelect]);
+  ), [colors, onOptionSelect]);
 
   const keyExtractor = React.useCallback((item: ChatMessage) => item.id, []);
 
