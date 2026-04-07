@@ -14,8 +14,7 @@ export default function ProfileScreen() {
   const { toggleTheme } = useThemeStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const {
-    setAvatar,
-    getAvatarUri,
+    avatarPath,
     notificationsEnabled,
     toggleNotifications,
     userName,
@@ -23,7 +22,13 @@ export default function ProfileScreen() {
     userTitle
   } = useUserStore();
 
+  const [imageError, setImageError] = useState(false);
   const avatarUri = getAvatarUri(); // Reconstruct URI for display
+
+  React.useEffect(() => {
+    // Reset error state when image changes
+    setImageError(false);
+  }, [avatarUri]);
 
   const handlePickImage = async () => {
     // ... logic remains same ...
@@ -74,10 +79,11 @@ export default function ProfileScreen() {
         <View style={styles.headerSection}>
           <TouchableOpacity onPress={handlePickImage} style={styles.avatarWrapper}>
             <View style={[styles.avatarBorder, { borderColor: 'rgba(59, 130, 246, 0.2)' }]}>
-              {avatarUri ? (
+              {avatarUri && !imageError ? (
                 <Image
                   source={{ uri: avatarUri }}
                   style={[styles.avatar, { backgroundColor: colors.surface }]}
+                  onError={() => setImageError(true)}
                 />
               ) : (
                 <View style={[styles.avatar, { backgroundColor: isDarkMode ? colors.gray800 : colors.gray100, justifyContent: 'center', alignItems: 'center' }]}>

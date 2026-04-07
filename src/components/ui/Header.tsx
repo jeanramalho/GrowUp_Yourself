@@ -15,11 +15,16 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onProfilePress }) => {
     const insets = useSafeAreaInsets();
     const { colors, isDarkMode } = useAppTheme();
-    const { userName, getAvatarUri } = useUserStore();
-    const firstName = userName.split(' ')[0];
+    const { userName, avatarPath, getAvatarUri } = useUserStore();
+    const firstName = userName ? userName.split(' ')[0] : 'Usuário';
     const [imageError, setImageError] = useState(false);
 
     const avatarUri = getAvatarUri(); // Reconstruct URI for display
+
+    useEffect(() => {
+        // Reset error state when image changes
+        setImageError(false);
+    }, [avatarUri]);
 
     const [progress, setProgress] = useState({
         'pilar-1': 0,
