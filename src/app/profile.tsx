@@ -14,6 +14,8 @@ export default function ProfileScreen() {
   const { toggleTheme } = useThemeStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const {
+    setAvatar,
+    getAvatarUri,
     avatarPath,
     notificationsEnabled,
     toggleNotifications,
