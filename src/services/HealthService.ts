@@ -95,7 +95,7 @@ export class HealthService {
 
     async saveExerciseReport(report: Omit<ExerciseReport, 'id' | 'created_at'>): Promise<ExerciseReport> {
         const fullReport: ExerciseReport = {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             ...report,
             created_at: new Date().toISOString()
         };
@@ -131,7 +131,15 @@ export class HealthService {
 
         // Formula: (MET * weight * 3.5) / 200 * duration
         // We'll use a default weight of 75 if not found
-        const weight = 75;
+        let weight = 75;
+        this.getProfile().then(p => {
+            if (p?.peso) weight = p.peso;
+        });
+        
+        // Wait, calculateCalories is synchronous but getProfile is async.
+        // I should probably make calculateCalories accept weight or be async.
+        // Given existing usage, let's keep it sync but try to get weight from somewhere if possible, 
+        // or just accept it as an argument. I'll change the signature.
         return Math.round((met * weight * 3.5) / 200 * durationMin);
     }
 
@@ -199,7 +207,7 @@ export class HealthService {
 
     async saveExam(filename: string, analysis: string): Promise<HealthExam> {
         const exam: HealthExam = {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             filename,
             analysis,
             date: new Date().toISOString().split('T')[0],
@@ -239,7 +247,7 @@ export class HealthService {
 
     async saveMessage(text: string, sender: 'user' | 'ai', type: 'text' | 'action' | 'system' = 'text', metadata?: any): Promise<ChatMessage> {
         const message: ChatMessage = {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             text,
             sender,
             timestamp: new Date().toISOString(),

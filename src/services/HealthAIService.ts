@@ -77,7 +77,9 @@ export class HealthAIService {
             // User is answering the exercise report question
             const durationMatch = lowerText.match(/(\d+)\s*(min|m|hora|h)/);
             const duration = durationMatch ? parseInt(durationMatch[1]) : 30;
-            const calories = healthService.calculateCalories(userText, duration);
+            const profile = await healthService.getProfile();
+            const weight = profile?.peso || 75;
+            const calories = healthService.calculateCalories(userText, duration, weight);
             const suggestion = healthService.generateWorkoutSuggestion();
 
             await healthService.saveExerciseReport({
@@ -100,16 +102,22 @@ export class HealthAIService {
 
         else if (lastActionType === 'weekly_diet' && lastAiMsg?.text.includes('o que você tem em casa')) {
             // User is answering the diet inventory question
-            const profile = await healthService.getProfile();
-            if (profile && profile.peso && profile.altura) {
-                const age = 30; // Default or extract from profile if added
+                const now = new Date();
+                const birthYear = profile.updated_at ? new Date(profile.updated_at).getFullYear() - 30 : 1990; // Fallback
+                const age = now.getFullYear() - (profile.preferencias?.birthYear || birthYear);
+                
                 const bmr = healthService.calculateBMR(profile.peso, profile.altura, age, (profile.sexo as any) || 'male');
                 const tdee = healthService.calculateTDEE(bmr, profile.activityLevel || 'moderate');
-                const macros = { protein: profile.peso * 2, fat: profile.peso * 0.8, carb: (tdee - (profile.peso * 2 * 4) - (profile.peso * 0.8 * 9)) / 4 };
+                
+                // Safe macro calculation
+                const protein = profile.peso * 2;
+                const fat = profile.peso * 0.8;
+                const targetCalories = Math.max(1200, tdee - 500); // Floor at 1200 kcal for safety
+                const carb = Math.max(50, (targetCalories - (protein * 4) - (fat * 9)) / 4);
 
                 responseText = healthService.generateWeeklyDiet({
-                    macros,
-                    tdee: tdee - 500, // Suggesting 500 caloric deficit for weight loss
+                    macros: { protein, fat, carb },
+                    tdee: targetCalories,
                     goal: 'loss',
                     inventory: userText
                 });
@@ -133,7 +141,9 @@ export class HealthAIService {
                 const hasExercises = doc.match('(corrida|caminhada|musculação|academia|treino|futebol|natação|pedal|bicicleta)').found || lowerText.length > 20 || this.isExerciseContext(lowerText);
 
                 if (duration && hasExercises) {
-                    const calories = healthService.calculateCalories(userText, duration);
+                    const profile = await healthService.getProfile();
+                    const weight = profile?.peso || 75;
+                    const calories = healthService.calculateCalories(userText, duration, weight);
                     const suggestion = healthService.generateWorkoutSuggestion();
 
                     await healthService.saveExerciseReport({
@@ -162,25 +172,31 @@ export class HealthAIService {
             else if (lowerText.includes('métricas de saúde') || doc.match('(métricas|status|meu corpo|calorias|macros)').found) {
                 const profile = await healthService.getProfile();
                 if (profile && profile.peso && profile.altura) {
-                    const age = 30; // Placeholder age
+                    const now = new Date();
+                    const birthYear = profile.updated_at ? new Date(profile.updated_at).getFullYear() - 30 : 1990;
+                    const age = now.getFullYear() - (profile.preferencias?.birthYear || birthYear);
+                    
                     const bmr = healthService.calculateBMR(profile.peso, profile.altura, age, (profile.sexo as any) || 'male');
                     const tdee = healthService.calculateTDEE(bmr, profile.activityLevel || 'moderate');
                     const bmi = healthService.calculateBMI(profile.peso, profile.altura);
                     const category = healthService.getBMICategory(bmi);
 
-                    const carb = Math.round(((tdee - 500) - (profile.peso * 2 * 4) - (Math.round(profile.peso * 0.8) * 9)) / 4);
-                    const sugar = Math.round(((tdee - 500) * 0.05) / 4); // 5% of TDEE for added sugars
+                    const targetKcal = Math.max(1200, tdee - 500);
+                    const protein = profile.peso * 2;
+                    const fat = Math.round(profile.peso * 0.8);
+                    const carb = Math.max(50, Math.round((targetKcal - (protein * 4) - (fat * 9)) / 4));
+                    const sugar = Math.round((targetKcal * 0.05) / 4); // 5% of TDEE for added sugars
 
                     responseText = `Suas métricas atuais:\n\n` +
                         `- **IMC:** ${bmi} (${category})\n` +
                         `- **TMB (Calorias em repouso):** ${bmr} kcal\n` +
                         `- **Gasto Diário (TDEE):** ${tdee} kcal\n` +
-                        `- **Deficit Sugerido:** ${tdee - 500} kcal\n\n` +
+                        `- **Deficit Sugerido:** ${targetKcal} kcal\n\n` +
                         `Sugestão de ingestão diária (Meta de Perda de Peso):\n` +
                         `- **Água:** ${healthService.calculateWaterGoal(profile.peso)}ml\n` +
-                        `- **Proteína:** ${profile.peso * 2}g\n` +
+                        `- **Proteína:** ${protein}g\n` +
                         `- **Carboidratos:** ${carb}g\n` +
-                        `- **Gordura:** ${Math.round(profile.peso * 0.8)}g\n` +
+                        `- **Gordura:** ${fat}g\n` +
                         `- **Açúcar Máximo:** ${sugar}g`;
 
                     actionType = 'text';
