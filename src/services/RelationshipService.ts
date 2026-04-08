@@ -15,11 +15,15 @@ class RelationshipService {
     }
 
     private generateId(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = Math.random() * 16 | 0;
-            const v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
+        try {
+            return crypto.randomUUID();
+        } catch (e) {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
     }
 
     async getCompromissos(): Promise<Compromisso[]> {
@@ -56,12 +60,10 @@ class RelationshipService {
      * Helper to get upcoming commitments
      */
     async getUpcomingCompromissos(limit: number = 3): Promise<Compromisso[]> {
-        const now = new Date();
-        const all = await this.getCompromissos();
-        return all
-            .filter(c => new Date(c.data_hora) >= now)
-            .sort((a, b) => a.data_hora.localeCompare(b.data_hora))
-            .slice(0, limit);
+        const now = new Date().toISOString();
+        // Use repo with limit
+        const sql = `SELECT * FROM compromisso WHERE data_hora >= ? ORDER BY data_hora ASC LIMIT ?`;
+        return database.getDb().getAllAsync<Compromisso>(sql, [now, limit]);
     }
 
     async getRandomContact(): Promise<ContactSuggestion | null> {

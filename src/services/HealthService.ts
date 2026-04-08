@@ -102,44 +102,20 @@ export class HealthService {
         return this.repo.saveExerciseReport(fullReport);
     }
 
-    calculateCalories(exercise: string, durationMin: number): number {
-        // Basic MET based calculation
-        let met = 5;
-        const lowerEx = exercise.toLowerCase();
+    calculateCalories(exerciseText: string, durationMin: number, userWeight?: number): number {
+        // Simple MET based calculation
+        const lower = exerciseText.toLowerCase();
+        let met = 5.0; // Moderate activity default
 
-        const metMap: Record<string, number> = {
-            'caminha': 3.5,
-            'corrida': 8,
-            'correr': 8,
-            'pedal': 6,
-            'bicicleta': 6,
-            'musculação': 5,
-            'academia': 5,
-            'natação': 7,
-            'futebol': 9,
-            'crossfit': 10,
-            'yoga': 2.5,
-            'pilates': 3
-        };
-
-        for (const [key, value] of Object.entries(metMap)) {
-            if (lowerEx.includes(key)) {
-                met = value;
-                break;
-            }
-        }
+        if (lower.includes('corr') || lower.includes('run')) met = 8.0;
+        else if (lower.includes('caminh') || lower.includes('walk')) met = 3.5;
+        else if (lower.includes('muscul') || lower.includes('lift') || lower.includes('peso')) met = 4.0;
+        else if (lower.includes('futebol') || lower.includes('soccer')) met = 7.0;
+        else if (lower.includes('nata') || lower.includes('swim')) met = 6.0;
+        else if (lower.includes('pedal') || lower.includes('bike') || lower.includes('ciclismo')) met = 6.5;
 
         // Formula: (MET * weight * 3.5) / 200 * duration
-        // We'll use a default weight of 75 if not found
-        let weight = 75;
-        this.getProfile().then(p => {
-            if (p?.peso) weight = p.peso;
-        });
-        
-        // Wait, calculateCalories is synchronous but getProfile is async.
-        // I should probably make calculateCalories accept weight or be async.
-        // Given existing usage, let's keep it sync but try to get weight from somewhere if possible, 
-        // or just accept it as an argument. I'll change the signature.
+        const weight = userWeight || 75;
         return Math.round((met * weight * 3.5) / 200 * durationMin);
     }
 

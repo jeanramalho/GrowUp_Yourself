@@ -76,9 +76,11 @@ class HabitService {
         const bitmask = 1 << dayOfWeek;
         const dateString = date.toISOString().split('T')[0];
 
-        let allMetas = await this.metaRepo.list();
+        let allMetas: Meta[];
         if (pilarId) {
-            allMetas = allMetas.filter(m => m.pilar_id === pilarId);
+            allMetas = await this.metaRepo.getByPilar(pilarId);
+        } else {
+            allMetas = await this.metaRepo.list();
         }
 
         const scheduledMetas = allMetas.filter(m => (m.dias_semana & bitmask) !== 0);

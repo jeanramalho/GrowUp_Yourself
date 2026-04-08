@@ -2,6 +2,7 @@ import { habitService } from './HabitService';
 import { financeService } from './FinanceService';
 import { relationshipService } from './RelationshipService';
 import { DeviceEventEmitter } from 'react-native';
+import { database } from '../repositories/Repository';
 
 
 
@@ -57,23 +58,20 @@ class MetricService {
     }
 
     private async calculateRelationshipsProgress(date: Date): Promise<number> {
-        const allCompromissos = await relationshipService.getCompromissos();
+        const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
+        const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
 
-        const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-        startOfMonth.setHours(0, 0, 0, 0);
+        // Need specialized query for speed
+        const db = database.getDb();
+        const results = await db.getAllAsync<{ status: string }>(
+            'SELECT status FROM compromisso WHERE data_hora BETWEEN ? AND ?',
+            [startOfMonth, endOfMonth]
+        );
 
-        const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-        endOfMonth.setHours(23, 59, 59, 999);
+        if (results.length === 0) return 0;
 
-        const monthCompromissos = allCompromissos.filter(c => {
-            const cDate = new Date(c.data_hora);
-            return cDate >= startOfMonth && cDate <= endOfMonth;
-        });
-
-        if (monthCompromissos.length === 0) return 0;
-
-        const completed = monthCompromissos.filter(c => c.status === 'concluida').length;
-        return Math.round((completed / monthCompromissos.length) * 100);
+        const completed = results.filter(c => c.status === 'concluida').length;
+        return Math.round((completed / results.length) * 100);
     }
 
     notifyMetricsChanged() {

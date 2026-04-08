@@ -45,54 +45,54 @@ export class HealthAIService {
     }
 
     async processMessage(userText: string): Promise<ChatMessage> {
-        // 1. Save user message
+        // 1. Initial setup
         await healthService.saveMessage(userText, 'user', 'text');
-
-        // 2. Artificial Delay (Thinking...) - 1s
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Artificial thinking delay
 
         const lowerText = userText.toLowerCase().trim();
         const history = await healthService.getChatHistory();
-        const lastAiMsg = history.reverse().find(m => m.sender === 'ai');
+        const lastAiMsg = [...history].reverse().find(m => m.sender === 'ai');
         const lastActionType = lastAiMsg?.metadata?.actionType;
+        const profile = await healthService.getProfile();
 
         let responseText = '';
         let actionType: any = 'text';
         let metadata: any = {};
 
         // --- Multi-step Flow Handling ---
+        
+        // 1. Monthly Check-in Response
         if (lastActionType === 'monthly_checkin') {
-            if (lowerText === 'não' || lowerText === 'nao' || lowerText === 'no') {
+            if (lowerText.match(/(n[ãa]o|not|no)/)) {
                 responseText = "Entendido! Vamos continuar com seus dados atuais. Como posso te ajudar hoje?";
-                // Save last checkin date
-                const profile = await healthService.getProfile();
-                if (profile) await healthService.saveProfile({ ...profile, last_monthly_checkin: new Date().toISOString() });
+                if (profile) {
+                    await healthService.saveProfile({ 
+                        ...profile, 
+                        last_monthly_checkin: new Date().toISOString() 
+                    });
+                }
             } else {
                 responseText = "Tudo bem! O que mudou? Pode me falar seu novo peso, altura ou nível de atividade.";
-                // Reset checkin so it asks again if they don't finish
+                // Flow continues via natural intent detection below if they provided data
             }
         }
 
-        else if (lastActionType === 'exercise_report' && lastAiMsg?.text.includes('quais exercícios')) {
-            // User is answering the exercise report question
+        // 2. Exercise Report Follow-up
+        else if (lastActionType === 'exercise_report' && lastAiMsg?.text.toLowerCase().includes('quais exercícios')) {
             const durationMatch = lowerText.match(/(\d+)\s*(min|m|hora|h)/);
             const duration = durationMatch ? parseInt(durationMatch[1]) : 30;
-            const profile = await healthService.getProfile();
             const weight = profile?.peso || 75;
             const calories = healthService.calculateCalories(userText, duration, weight);
             const suggestion = healthService.generateWorkoutSuggestion();
 
             await healthService.saveExerciseReport({
                 exercises: userText,
-                duration: duration,
-                calories: calories,
+                duration,
+                calories,
                 date: new Date().toISOString().split('T')[0]
             });
 
-            // Potential activity level update if they report consistent exercise
-            const profile = await healthService.getProfile();
             if (profile && (!profile.activityLevel || profile.activityLevel === 'sedentary')) {
-                // Proactively suggest updating activity level
                 metadata = { actionType: 'suggest_activity_update' };
                 responseText = `Excelente! Você queimou aproximadamente **${calories} calorias**. No seu próximo treino, sugiro focar em: **${suggestion}**.\n\nNotei que você está se exercitando! Quer que eu atualize seu nível de atividade física para calcular suas metas com mais precisão?`;
             } else {
@@ -100,24 +100,28 @@ export class HealthAIService {
             }
         }
 
-        else if (lastActionType === 'weekly_diet' && lastAiMsg?.text.includes('o que você tem em casa')) {
-            // User is answering the diet inventory question
-                const now = new Date();
-                const birthYear = profile.updated_at ? new Date(profile.updated_at).getFullYear() - 30 : 1990; // Fallback
-                const age = now.getFullYear() - (profile.preferencias?.birthYear || birthYear);
-                
+        // 3. Weekly Diet Follow-up
+        else if (lastActionType === 'weekly_diet' && lastAiMsg?.text.toLowerCase().includes('o que você tem em casa')) {
+            if (profile && profile.peso && profile.altura) {
+                let age = 30;
+                if (profile.data_nascimento) {
+                    const birthDate = new Date(profile.data_nascimento);
+                    const today = new Date();
+                    age = today.getFullYear() - birthDate.getFullYear();
+                    const m = today.getMonth() - birthDate.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+                }
+
                 const bmr = healthService.calculateBMR(profile.peso, profile.altura, age, (profile.sexo as any) || 'male');
                 const tdee = healthService.calculateTDEE(bmr, profile.activityLevel || 'moderate');
-                
-                // Safe macro calculation
+                const targetKcal = Math.max(1200, tdee - 500); 
                 const protein = profile.peso * 2;
-                const fat = profile.peso * 0.8;
-                const targetCalories = Math.max(1200, tdee - 500); // Floor at 1200 kcal for safety
-                const carb = Math.max(50, (targetCalories - (protein * 4) - (fat * 9)) / 4);
+                const fat = Math.round(profile.peso * 0.8);
+                const carb = Math.max(50, Math.round((targetKcal - (protein * 4) - (fat * 9)) / 4));
 
                 responseText = healthService.generateWeeklyDiet({
                     macros: { protein, fat, carb },
-                    tdee: targetCalories,
+                    tdee: targetKcal,
                     goal: 'loss',
                     inventory: userText
                 });
@@ -126,127 +130,95 @@ export class HealthAIService {
             }
         }
 
-        // --- Intent Detection (nlp-compromise) ---
-        else {
+        // --- Intent Detection ---
+        if (!responseText) {
             const doc = nlp(userText);
 
-            // GREETING
             if (doc.match('(oi|olá|hello|hi|bom dia|boa tarde|boa noite)').found) {
                 responseText = this.getRandomResponse('greeting');
             }
-
-            // EXERCISE REPORT (One-shot or multi-step)
             else if (doc.match('(relatório|exercício|treino|fiz|malhei|corri|pedalei|treinei)').found || this.isExerciseContext(lowerText)) {
                 const duration = this.extractDuration(lowerText);
-                const hasExercises = doc.match('(corrida|caminhada|musculação|academia|treino|futebol|natação|pedal|bicicleta)').found || lowerText.length > 20 || this.isExerciseContext(lowerText);
+                const hasExercises = doc.match('(corrida|caminhada|musculação|academia|treino|futebol|natação|pedal|bicicleta)').found || lowerText.length > 20;
 
                 if (duration && hasExercises) {
-                    const profile = await healthService.getProfile();
                     const weight = profile?.peso || 75;
                     const calories = healthService.calculateCalories(userText, duration, weight);
                     const suggestion = healthService.generateWorkoutSuggestion();
 
                     await healthService.saveExerciseReport({
                         exercises: userText,
-                        duration: duration,
-                        calories: calories,
+                        duration,
+                        calories,
                         date: new Date().toISOString().split('T')[0]
                     });
 
                     responseText = `Registro feito! Você queimou cerca de **${calories} calorias**. No seu próximo treino, sugiro: **${suggestion}**.`;
 
-                    // Also check for activity update
-                    const profile = await healthService.getProfile();
                     if (profile && (!profile.activityLevel || profile.activityLevel === 'sedentary')) {
-                        responseText += `\n\nNotei que você está se exercitando! Quer que eu considere isso para ajustar seu nível de atividade física?`;
+                        responseText += `\n\nQuer que eu ajuste seu nível de atividade física no perfil?`;
                         metadata = { actionType: 'suggest_activity_update' };
                     }
                 } else {
                     responseText = "Que bom que você treinou! Quais exercícios você fez e por quanto tempo aproximadamente?";
-                    actionType = 'text';
                     metadata = { actionType: 'exercise_report' };
                 }
             }
-
-            // HEALTH METRICS
             else if (lowerText.includes('métricas de saúde') || doc.match('(métricas|status|meu corpo|calorias|macros)').found) {
-                const profile = await healthService.getProfile();
                 if (profile && profile.peso && profile.altura) {
-                    const now = new Date();
-                    const birthYear = profile.updated_at ? new Date(profile.updated_at).getFullYear() - 30 : 1990;
-                    const age = now.getFullYear() - (profile.preferencias?.birthYear || birthYear);
-                    
+                    let age = 30;
+                    if (profile.data_nascimento) {
+                        const birthDate = new Date(profile.data_nascimento);
+                        const today = new Date();
+                        age = today.getFullYear() - birthDate.getFullYear();
+                        if (today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) age--;
+                    }
+
                     const bmr = healthService.calculateBMR(profile.peso, profile.altura, age, (profile.sexo as any) || 'male');
                     const tdee = healthService.calculateTDEE(bmr, profile.activityLevel || 'moderate');
                     const bmi = healthService.calculateBMI(profile.peso, profile.altura);
                     const category = healthService.getBMICategory(bmi);
-
                     const targetKcal = Math.max(1200, tdee - 500);
                     const protein = profile.peso * 2;
                     const fat = Math.round(profile.peso * 0.8);
                     const carb = Math.max(50, Math.round((targetKcal - (protein * 4) - (fat * 9)) / 4));
-                    const sugar = Math.round((targetKcal * 0.05) / 4); // 5% of TDEE for added sugars
+                    const sugar = Math.round((targetKcal * 0.05) / 4);
 
                     responseText = `Suas métricas atuais:\n\n` +
                         `- **IMC:** ${bmi} (${category})\n` +
-                        `- **TMB (Calorias em repouso):** ${bmr} kcal\n` +
-                        `- **Gasto Diário (TDEE):** ${tdee} kcal\n` +
-                        `- **Deficit Sugerido:** ${targetKcal} kcal\n\n` +
-                        `Sugestão de ingestão diária (Meta de Perda de Peso):\n` +
+                        `- **TMB:** ${bmr} kcal\n` +
+                        `- **TDEE:** ${tdee} kcal\n` +
+                        `- **Meta (Deficit):** ${targetKcal} kcal\n\n` +
+                        `Sugestão diária:\n` +
                         `- **Água:** ${healthService.calculateWaterGoal(profile.peso)}ml\n` +
                         `- **Proteína:** ${protein}g\n` +
                         `- **Carboidratos:** ${carb}g\n` +
                         `- **Gordura:** ${fat}g\n` +
                         `- **Açúcar Máximo:** ${sugar}g`;
-
-                    actionType = 'text';
                     metadata = { actionType: 'health_metrics' };
                 } else {
                     responseText = "Para calcular suas métricas, preciso saber seu peso e altura. Pode me informar?";
                 }
             }
-
-            // WEEKLY DIET
             else if (lowerText.includes('dieta semanal') || doc.match('(dieta|comer|cardápio|alimentação)').found) {
                 responseText = "Com certeza! Para eu montar sua dieta, o que você tem em casa hoje e o que pode comprar para a semana?";
-                actionType = 'text';
                 metadata = { actionType: 'weekly_diet' };
             }
-
-            // EXAM ANALYSIS (Simulated interaction for now)
             else if (lowerText.includes('analisar exame') || doc.match('(exame|laboratório|resultado|sangue)').found) {
-                responseText = "Por favor, anexe seu exame em PDF clicando no botão de anexo. Vou analisar os dados para você.\n\n*Lembre-se: Minha análise não substitui a de um médico.*";
-                actionType = 'text';
+                responseText = "Por favor, anexe seu exame em PDF. Vou analisar os dados para você.";
                 metadata = { actionType: 'analyze_exam' };
             }
-
-            // UPDATE PROFILE (Weight/Height/Activity)
             else if (this.containsProfileData(lowerText)) {
                 responseText = await this.handleProfileUpdate(lowerText);
             }
-
-            // ACTIVITY LEVEL INQUIRY
-            else if (doc.match('(nível|nivel|atividade|frequencia|frequência|exercito|treino)').found && doc.match('(física|dia|semana|sedentario|ativo)').found) {
-                const level = this.detectActivityLevel(lowerText);
-                if (level) {
-                    responseText = await this.handleProfileUpdate(lowerText);
-                } else {
-                    responseText = "Para eu entender melhor seu nível de atividade, me diga: com que frequência você se exercita por semana? (Ex: 3 vezes por semana, todo dia, ou se é sedentário).";
-                }
-            }
-
-            // TOPIC CONSTRAINT CHECK
             else if (!this.isHealthRelated(userText)) {
-                responseText = "Sou uma IA focada em saúde, bem-estar, exercícios e dieta. Sinto muito, mas ainda não fui treinada para falar sobre esse assunto. Como posso te apoiar na sua jornada de saúde hoje?";
+                responseText = "Sou uma IA focada em saúde e bem-estar. Como posso te apoiar hoje?";
             }
-
-            // FALLBACK
             else {
                 responseText = this.getRandomResponse('fallback');
             }
         }
 
-        // 4. Save and return AI response
         return await healthService.saveMessage(responseText, 'ai', actionType, metadata);
     }
 
@@ -257,94 +229,49 @@ export class HealthAIService {
     }
 
     private containsProfileData(text: string): boolean {
-        const weight = this.extractWeight(text);
-        const height = this.extractHeight(text);
-        const activity = this.detectActivityLevel(text);
-
-        return weight !== null || height !== null || activity !== null;
+        return this.extractWeight(text) !== null || this.extractHeight(text) !== null || this.detectActivityLevel(text) !== null;
     }
 
     private detectActivityLevel(text: string): HealthProfile['activityLevel'] | null {
         const lower = text.toLowerCase();
-
-        // Very Active
         if (lower.match(/(todo dia|todos os dias|6 vezes|7 vezes|pesado|atleta|extremamente|diariamente|treino muito)/)) return 'very_active';
-
-        // Active
         if (lower.match(/(4 vezes|5 vezes|frequente|ativo|intensamente|quase todo)/)) return 'active';
-
-        // Moderate
         if (lower.match(/(3 vezes|moderado|regularmente|academia|musculação)/)) return 'moderate';
-
-        // Light
         if (lower.match(/(1 vez|2 vezes|caminhada|leve|pouco|às vezes|de vez em quando)/)) return 'light';
-
-        // Sedentary
         if (lower.match(/(sedentário|sedentario|não faço|nunca|escritório|sentado|parado|nenhum)/)) return 'sedentary';
-
         return null;
     }
 
     private extractWeight(text: string): number | null {
-        // Cases: "70kg", "70 kilos", "peso 70", "meu peso é 70.5"
         const lower = text.toLowerCase();
-
-        // 1. Explicit units
         const withUnit = lower.match(/(?:peso\s+)?(\d+([.,]\d+)?)\s*(kg|kilos|quilos)/);
         if (withUnit) return parseFloat(withUnit[1].replace(',', '.'));
-
-        // 2. Contextual (number follows word 'peso' or 'pesando')
         if (lower.includes('peso') || lower.includes('pesando')) {
             const contextMatch = lower.match(/(?:peso|pesando)(?:.*?)\s+(\d+([.,]\d+)?)/);
             if (contextMatch) {
                 const value = parseFloat(contextMatch[1].replace(',', '.'));
-                // Basic sanity check to avoid matching years/heights by accident
                 if (value > 30 && value < 200) return value;
             }
-
-            // Just raw numbers if "peso" is in phrase
-            const numbers = lower.match(/\b(\d{2,3}(?:[.,]\d)?)\b/g);
-            if (numbers) {
-                for (const num of numbers) {
-                    const val = parseFloat(num.replace(',', '.'));
-                    if (val > 30 && val < 200) return val;
-                }
-            }
         }
-
         return null;
     }
 
     private extractHeight(text: string): number | null {
         const lower = text.toLowerCase();
-
-        // 1. Spoken format "1 metro e 75" or "1 e 75"
         const spoken = lower.match(/(?:1|um)\s*(?:metro[s]?)?\s*e\s*(\d{2})/);
-        if (spoken) {
-            return 100 + parseInt(spoken[1]);
-        }
-
-        // 2. Explicit units (cm or m)
+        if (spoken) return 100 + parseInt(spoken[1]);
         const unitMatch = lower.match(/(\d+([.,]\d+)?)\s*(cm|cent[ií]metros|metros|m\b)/);
         if (unitMatch) {
             const val = parseFloat(unitMatch[1].replace(',', '.'));
             return val < 3 ? Math.round(val * 100) : Math.round(val);
         }
-
-        // 3. Contextual word 'altura'
         if (lower.includes('altura')) {
-            const numbers = lower.match(/\b(\d{3})\b/); // e.g. "175"
+            const numbers = lower.match(/\b(\d{3})\b/);
             if (numbers) {
                 const val = parseInt(numbers[1]);
                 if (val > 100 && val < 250) return val;
             }
-
-            const decimal = lower.match(/\b(1[.,]\d{2})\b/); // e.g. "1.75"
-            if (decimal) {
-                return Math.round(parseFloat(decimal[1].replace(',', '.')) * 100);
-            }
         }
-
         return null;
     }
 
@@ -366,10 +293,7 @@ export class HealthAIService {
     private async handleProfileUpdate(text: string): Promise<string> {
         let profile = await healthService.getProfile();
         if (!profile) {
-            profile = {
-                id: 'current_user',
-                updated_at: new Date().toISOString()
-            } as HealthProfile;
+            profile = { id: 'current_user', updated_at: new Date().toISOString() } as HealthProfile;
         }
 
         const updates: string[] = [];
@@ -379,17 +303,13 @@ export class HealthAIService {
 
         if (weightValue !== null) {
             profile.peso = weightValue;
-            profile.weight = weightValue;
             updates.push(`peso (${weightValue}kg)`);
-            await healthService.addMetric({ id: Date.now().toString(), type: 'weight', value: weightValue, unit: 'kg', date: new Date().toISOString().split('T')[0] });
+            await healthService.addMetric({ id: crypto.randomUUID(), type: 'weight', value: weightValue, unit: 'kg', date: new Date().toISOString().split('T')[0] });
         }
-
         if (heightValue !== null) {
             profile.altura = heightValue;
-            profile.height = heightValue;
             updates.push(`altura (${heightValue}cm)`);
         }
-
         if (extractedActivity) {
             profile.activityLevel = extractedActivity;
             updates.push(`nível de atividade (${healthService.getActivityLevelLabel(extractedActivity)})`);
@@ -399,7 +319,7 @@ export class HealthAIService {
             await healthService.saveProfile(profile);
             return `Entendido! Atualizei seu ${updates.join(', ')}. Isso me ajuda a ser mais preciso nas suas metas.`;
         }
-        return "Consegui identificar que você enviou dados, mas não entendi exatamente o que atualizar. Tente: 'Meu peso é 70kg' ou 'Treino 3 vezes por semana'.";
+        return "Consegui identificar que você enviou dados, mas não entendi exatamente o que atualizar.";
     }
 
     private getRandomResponse(type: 'greeting' | 'fallback'): string {
@@ -421,4 +341,3 @@ export class HealthAIService {
 }
 
 export const healthAIService = new HealthAIService();
-
