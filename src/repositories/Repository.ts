@@ -118,11 +118,34 @@ export class Repository<T extends { id: string }> implements IRepository<T> {
 
   /**
    * Query records with a predicate function
-   * Note: This is an in-memory filter. For large datasets, override to use SQL WHERE clause
+   * Note: This is an in-memory filter. For large datasets, use where() instead
    */
   async query(predicate: (item: T) => boolean): Promise<T[]> {
     const all = await this.list();
     return all.filter(predicate);
+  }
+
+  /**
+   * Efficient query using SQL WHERE clause
+   * @param conditions Object with column names and values to filter by
+   * @param orderBy SQL order by clause (optional)
+   */
+  async where(conditions: Partial<T>, orderBy?: string): Promise<T[]> {
+    const keys = Object.keys(conditions);
+    const values = Object.values(conditions);
+
+    if (keys.length === 0) {
+      return this.list();
+    }
+
+    const whereClause = keys.map(key => `${key} = ?`).join(' AND ');
+    let sql = `SELECT * FROM ${this.tableName} WHERE ${whereClause}`;
+
+    if (orderBy) {
+      sql += ` ORDER BY ${orderBy}`;
+    }
+
+    return this.executeQuery<T>(sql, values);
   }
 
   /**

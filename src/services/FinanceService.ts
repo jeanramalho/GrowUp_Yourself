@@ -48,11 +48,16 @@ class FinanceService {
     }
 
     private generateId(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = Math.random() * 16 | 0;
-            const v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
+        try {
+            return crypto.randomUUID();
+        } catch (e) {
+            // Fallback for older environments
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
     }
 
     // Accounts
@@ -62,10 +67,9 @@ class FinanceService {
 
     async getAccountsWithBalance(): Promise<(Conta & { saldo_atual: number })[]> {
         const accounts = await this.contaRepo.list();
-        const allTransactions = await this.lancamentoRepo.list();
-
-        return accounts.map(account => {
-            const txs = allTransactions.filter(t => t.conta_id === account.id && !t.planejado);
+        
+        const results = await Promise.all(accounts.map(async account => {
+            const txs = await this.lancamentoRepo.where({ conta_id: account.id, planejado: 0 as any });
             const balanceChange = txs.reduce((sum, t) => {
                 return t.tipo === 'receita' ? sum + Number(t.valor) : sum - Number(t.valor);
             }, 0);
@@ -74,7 +78,9 @@ class FinanceService {
                 ...account,
                 saldo_atual: Number(account.saldo_inicial) + balanceChange
             };
-        });
+        }));
+        
+        return results;
     }
 
     async createAccount(conta: Omit<Conta, 'id' | 'created_at'>): Promise<Conta> {
@@ -97,12 +103,11 @@ class FinanceService {
         // Let's assume hard delete of account and unlink transactions for safety, or delete them?
         // Let's unlink them (set conta_id = null) to preserve history but remove connection.
 
-        const allTxs = await this.lancamentoRepo.list();
-        const related = allTxs.filter(t => t.conta_id === id);
+        const related = await this.lancamentoRepo.where({ conta_id: id });
 
         for (const tx of related) {
             await this.lancamentoRepo.update(tx.id, {
-                conta_id: null, // Type definition might need to allow null, let's check models. 
+                conta_id: null,
                 nota: (tx.nota || '') + ' (Conta Excluída)'
             } as any);
         }
@@ -131,8 +136,6 @@ class FinanceService {
         const card = await this.cartaoRepo.read(id);
         if (!card) return false;
 
-        const allTxs = await this.lancamentoRepo.list();
-
         // Logic: Delete Future/Current (Open Invoice onwards), Unlink Past (Closed Invoices)
 
         // Determine "Open Invoice" start date
@@ -155,7 +158,7 @@ class FinanceService {
         // Reset time to start of day
         openInvoiceStart.setHours(0, 0, 0, 0);
 
-        const cardTxs = allTxs.filter(t => t.cartao_id === id);
+        const cardTxs = await this.lancamentoRepo.where({ cartao_id: id });
 
         for (const tx of cardTxs) {
             const txDate = new Date(tx.data);
@@ -229,7 +232,6 @@ class FinanceService {
         const real = await this.getTransactionsByMonth(date);
         const planned = await this.getPlannedByMonth(date);
         const accounts = await this.getAccounts();
-        const allTransactions = await this.lancamentoRepo.list();
 
         const income = real.filter(t => t.tipo === 'receita').reduce((sum, t) => sum + t.valor, 0);
         const expenses = real.filter(t => t.tipo === 'despesa').reduce((sum, t) => sum + t.valor, 0);
@@ -244,7 +246,7 @@ class FinanceService {
         // Calculate balance for each wallet
         let totalWalletBalance = 0;
         for (const account of walletAccounts) {
-            const txs = allTransactions.filter(t => t.conta_id === account.id && !t.planejado);
+            const txs = await this.lancamentoRepo.where({ conta_id: account.id, planejado: 0 as any });
             const bal = txs.reduce((s, t) => t.tipo === 'receita' ? s + t.valor : s - t.valor, 0);
             totalWalletBalance += (account.saldo_inicial + bal);
         }
@@ -253,7 +255,7 @@ class FinanceService {
         const voucherAccounts = accounts.filter(a => ['vale_alimentacao', 'vale_refeicao'].includes(a.tipo));
         let vouchersBalance = 0;
         for (const account of voucherAccounts) {
-            const txs = allTransactions.filter(t => t.conta_id === account.id && !t.planejado);
+            const txs = await this.lancamentoRepo.where({ conta_id: account.id, planejado: 0 as any });
             const bal = txs.reduce((s, t) => t.tipo === 'receita' ? s + t.valor : s - t.valor, 0);
             vouchersBalance += (account.saldo_inicial + bal);
         }
@@ -310,13 +312,12 @@ class FinanceService {
         // Adjust for end of day
         endCycle.setHours(23, 59, 59, 999);
 
-        const all = await this.lancamentoRepo.list();
-        return all.filter(t =>
-            t.cartao_id === cardId &&
-            !t.planejado &&
-            new Date(t.data) >= startCycle &&
-            new Date(t.data) <= endCycle
-        ).sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
+        const cycleTxs = await this.lancamentoRepo.getByDateRange(
+            startCycle.toISOString().split('T')[0],
+            endCycle.toISOString().split('T')[0]
+        );
+        
+        return cycleTxs.filter(t => t.cartao_id === cardId && !t.planejado);
     }
 
     async payInvoice(cardId: string, accountId: string, value: number) {

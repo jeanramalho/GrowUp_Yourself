@@ -126,7 +126,7 @@ export const migration001Init: Migration = {
         )`
       );
 
-      // Create schema_version table to track migrations
+      // Create generic tables for future use
       await db.runAsync(
         `CREATE TABLE IF NOT EXISTS schema_version (
           version INTEGER PRIMARY KEY,
@@ -190,6 +190,82 @@ export const migration002SeedPilares: Migration = {
 };
 
 /**
+ * Migration 003 - Finance Expansion
+ * Adds accounts, cards, and categories, plus missing columns to transactions
+ */
+export const migration003FinanceExpansion: Migration = {
+  version: 3,
+  name: '003_finance_expansion',
+  up: async (db: SQLiteDatabase) => {
+    await db.withTransactionAsync(async () => {
+      // 1. Create missing tables
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS conta (
+          id TEXT PRIMARY KEY,
+          nome TEXT NOT NULL,
+          tipo TEXT NOT NULL,
+          saldo_inicial REAL NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS cartao_credito (
+          id TEXT PRIMARY KEY,
+          nome TEXT NOT NULL,
+          descricao TEXT,
+          limite REAL NOT NULL DEFAULT 0,
+          dia_fechamento INTEGER NOT NULL,
+          dia_vencimento INTEGER NOT NULL,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS categoria_financeira (
+          id TEXT PRIMARY KEY,
+          nome TEXT NOT NULL,
+          icone TEXT NOT NULL,
+          cor TEXT NOT NULL,
+          tipo TEXT NOT NULL,
+          is_permanente INTEGER NOT NULL DEFAULT 1,
+          arquivada INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      // 2. Add columns to lancamento_financeiro (SQLite does not support multiple ADD COLUMN in one statement)
+      // Check if columns exist before adding (idempotency)
+      const tableInfo = await db.getAllAsync<{ name: string }>(`PRAGMA table_info(lancamento_financeiro)`);
+      const existingColumns = tableInfo.map(c => c.name);
+
+      const columnsToAdd = [
+        ['categoria_id', 'TEXT'],
+        ['conta_id', 'TEXT'],
+        ['cartao_id', 'TEXT'],
+        ['parcelas_total', 'INTEGER DEFAULT 1'],
+        ['parcela_atual', 'INTEGER DEFAULT 1'],
+        ['id_grupo_parcela', 'TEXT'],
+        ['recorrencia_id', 'TEXT'],
+        ['status', "TEXT NOT NULL DEFAULT 'pago'"]
+      ];
+
+      for (const [col, type] of columnsToAdd) {
+        if (!existingColumns.includes(col)) {
+          await db.runAsync(`ALTER TABLE lancamento_financeiro ADD COLUMN ${col} ${type}`);
+        }
+      }
+
+      // Record this migration
+      await db.runAsync(
+        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
+        [3, '003_finance_expansion', new Date().toISOString()]
+      );
+    });
+  }
+};
+
+/**
  * Migration runner
  */
 export class MigrationRunner {
@@ -202,6 +278,7 @@ export class MigrationRunner {
     this.migrations = [
       migration001Init,
       migration002SeedPilares,
+      migration003FinanceExpansion,
     ];
   }
 
