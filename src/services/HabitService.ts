@@ -25,11 +25,15 @@ class HabitService {
      * Generate a UUID v4
      */
     private generateId(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = Math.random() * 16 | 0;
-            const v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
+        try {
+            return crypto.randomUUID();
+        } catch (e) {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
     }
 
     /**
@@ -79,17 +83,20 @@ class HabitService {
 
         const scheduledMetas = allMetas.filter(m => (m.dias_semana & bitmask) !== 0);
 
-        const results = [];
-        for (const meta of scheduledMetas) {
-            const execution = await this.execRepo.getByMetaAndDate(meta.id, dateString);
-            results.push({
+        // Fetch all relevant executions in one go
+        const metaIds = scheduledMetas.map(m => m.id);
+        if (metaIds.length === 0) return [];
+
+        const executions = await this.execRepo.getByDate(dateString);
+        
+        return scheduledMetas.map(meta => {
+            const execution = executions.find(e => e.meta_id === meta.id);
+            return {
                 ...meta,
                 completed: !!execution && execution.status === 'concluida',
                 executionId: execution?.id
-            });
-        }
-
-        return results;
+            };
+        });
     }
 
     /**
@@ -132,6 +139,8 @@ class HabitService {
         let totalScheduledDays = 0;
         let totalCompletedDays = 0;
 
+        const completionMap = new Set(executions.filter(e => e.status === 'concluida').map(e => `${e.meta_id}_${e.data}`));
+
         for (let d = new Date(startOfMonth); d <= endOfMonth; d.setDate(d.getDate() + 1)) {
             const dayOfWeek = d.getDay();
             const bitmask = 1 << dayOfWeek;
@@ -140,8 +149,9 @@ class HabitService {
             for (const meta of metas) {
                 if ((meta.dias_semana & bitmask) !== 0) {
                     totalScheduledDays++;
-                    const isDone = executions.some(e => e.meta_id === meta.id && e.data === dateStr && e.status === 'concluida');
-                    if (isDone) totalCompletedDays++;
+                    if (completionMap.has(`${meta.id}_${dateStr}`)) {
+                        totalCompletedDays++;
+                    }
                 }
             }
         }

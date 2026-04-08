@@ -33,6 +33,11 @@ export class ExecucaoRepository extends Repository<Execucao> {
         return this.executeQuery<Execucao>(sql, [startDate, endDate]);
     }
 
+    async getByDate(date: string): Promise<Execucao[]> {
+        const sql = `SELECT * FROM ${this.tableName} WHERE data = ?`;
+        return this.executeQuery<Execucao>(sql, [date]);
+    }
+
     async getByMetaAndDate(metaId: string, date: string): Promise<Execucao | null> {
         const sql = `SELECT * FROM ${this.tableName} WHERE meta_id = ? AND data = ?`;
         const results = await this.executeQuery<Execucao>(sql, [metaId, date]);
