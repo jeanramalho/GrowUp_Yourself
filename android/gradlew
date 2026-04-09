@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Ensure Node.js is in the PATH for Gradle and its plugins
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+
 #
 # Copyright © 2015-2021 the original authors.
 #
