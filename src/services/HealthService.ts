@@ -2,6 +2,8 @@ import { HealthRepository } from '../repositories/HealthRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { HealthMetric, ChatMessage, ExerciseReport, HealthExam, HealthProfile } from '../models/health';
 import { database } from '../repositories/Repository';
+import { generateUUID } from '../utils/uuid';
+
 
 export class HealthService {
     private _repo: HealthRepository | null = null;
@@ -95,7 +97,7 @@ export class HealthService {
 
     async saveExerciseReport(report: Omit<ExerciseReport, 'id' | 'created_at'>): Promise<ExerciseReport> {
         const fullReport: ExerciseReport = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             ...report,
             created_at: new Date().toISOString()
         };
@@ -183,7 +185,7 @@ export class HealthService {
 
     async saveExam(filename: string, analysis: string): Promise<HealthExam> {
         const exam: HealthExam = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             filename,
             analysis,
             date: new Date().toISOString().split('T')[0],
@@ -223,7 +225,7 @@ export class HealthService {
 
     async saveMessage(text: string, sender: 'user' | 'ai', type: 'text' | 'action' | 'system' = 'text', metadata?: any): Promise<ChatMessage> {
         const message: ChatMessage = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             text,
             sender,
             timestamp: new Date().toISOString(),

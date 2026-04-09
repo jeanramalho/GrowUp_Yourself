@@ -2,6 +2,7 @@ import { Meta, Execucao } from '../models';
 import { MetaRepository, ExecucaoRepository } from '../repositories/HabitRepository';
 import { database } from '../repositories/Repository';
 import { DeviceEventEmitter } from 'react-native';
+import { generateUUID } from '../utils/uuid';
 
 class HabitService {
     private _metaRepo: MetaRepository | null = null;
@@ -21,19 +22,8 @@ class HabitService {
         return this._execRepo;
     }
 
-    /**
-     * Generate a UUID v4
-     */
     private generateId(): string {
-        try {
-            return crypto.randomUUID();
-        } catch (e) {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
+        return generateUUID();
     }
 
     /**

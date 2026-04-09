@@ -2,6 +2,7 @@ import { LancamentoFinanceiro, Investimento, Conta, CartaoCredito, CategoriaFina
 import { LancamentoRepository, InvestimentoRepository, ContaRepository, CartaoRepository, FinanceCategoryRepository } from '../repositories/FinanceRepository';
 import { database } from '../repositories/Repository';
 import { DeviceEventEmitter } from 'react-native';
+import { generateUUID } from '../utils/uuid';
 
 class FinanceService {
     private _lancamentoRepo: LancamentoRepository | null = null;
@@ -48,16 +49,7 @@ class FinanceService {
     }
 
     private generateId(): string {
-        try {
-            return crypto.randomUUID();
-        } catch (e) {
-            // Fallback for older environments
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
+        return generateUUID();
     }
 
     // Accounts

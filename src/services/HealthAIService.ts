@@ -1,6 +1,7 @@
 import { healthService } from './HealthService';
 import { ChatMessage, HealthProfile } from '../models/health';
 import nlp from 'compromise';
+import { generateUUID } from '../utils/uuid';
 
 /**
  * HealthAIService
@@ -304,7 +305,7 @@ export class HealthAIService {
         if (weightValue !== null) {
             profile.peso = weightValue;
             updates.push(`peso (${weightValue}kg)`);
-            await healthService.addMetric({ id: crypto.randomUUID(), type: 'weight', value: weightValue, unit: 'kg', date: new Date().toISOString().split('T')[0] });
+            await healthService.addMetric({ id: generateUUID(), type: 'weight', value: weightValue, unit: 'kg', date: new Date().toISOString().split('T')[0] });
         }
         if (heightValue !== null) {
             profile.altura = heightValue;

@@ -3,6 +3,7 @@ import { Compromisso, ContactSuggestion } from '../models';
 import { CompromissoRepository } from '../repositories/CompromissoRepository';
 import { database } from '../repositories/Repository';
 import { DeviceEventEmitter } from 'react-native';
+import { generateUUID } from '../utils/uuid';
 
 class RelationshipService {
     private _compromissoRepo: CompromissoRepository | null = null;
@@ -15,15 +16,7 @@ class RelationshipService {
     }
 
     private generateId(): string {
-        try {
-            return crypto.randomUUID();
-        } catch (e) {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
+        return generateUUID();
     }
 
     async getCompromissos(): Promise<Compromisso[]> {
