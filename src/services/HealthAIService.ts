@@ -9,6 +9,101 @@ import { generateUUID } from '../utils/uuid';
  */
 export class HealthAIService {
 
+    private normalizeText(text: string): string {
+        return text
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/[^\p{L}\p{N}\s?]/gu, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    private containsAny(text: string, phrases: string[]): boolean {
+        return phrases.some(phrase => text.includes(phrase));
+    }
+
+    private isAdviceQuestion(text: string): boolean {
+        const normalized = this.normalizeText(text);
+        return normalized.includes('?') || this.containsAny(normalized, [
+            'como',
+            'qual',
+            'quais',
+            'o que',
+            'me ajuda',
+            'me sugere',
+            'me indica',
+            'devo',
+            'posso',
+            'vale a pena'
+        ]);
+    }
+
+    private isExerciseReportIntent(text: string, doc: any): boolean {
+        const normalized = this.normalizeText(text);
+        const exerciseTerms = doc.match('(corrida|caminhada|musculação|musculacao|academia|treino|futebol|natação|natacao|pedal|bicicleta|crossfit|esteira)').found ||
+            this.containsAny(normalized, ['corrida', 'caminhada', 'musculacao', 'academia', 'treino', 'futebol', 'natacao', 'pedal', 'bicicleta', 'crossfit', 'esteira']);
+
+        const reportingCues = this.containsAny(normalized, [
+            'fiz',
+            'treinei',
+            'malhei',
+            'corri',
+            'pedalei',
+            'caminhei',
+            'nadar',
+            'natei',
+            'hoje',
+            'ontem',
+            'durante'
+        ]) || /\d+\s*(min|minuto|minutos|m|hora|horas|h)\b/.test(normalized);
+
+        return exerciseTerms && reportingCues && !this.isAdviceQuestion(text);
+    }
+
+    private buildGuidedHealthReply(text: string, profile: HealthProfile | null): string {
+        const normalized = this.normalizeText(text);
+        const hasWeight = !!profile?.peso;
+        const hasHeight = !!profile?.altura;
+
+        if (this.containsAny(normalized, ['agua', 'hidrata', 'hidratacao'])) {
+            if (hasWeight) {
+                return `Posso ajudar com sua meta de água: com seu peso atual, uma referência prática é cerca de ${healthService.calculateWaterGoal(profile!.peso!)} ml por dia. Se quiser, também posso ajustar isso ao seu nível de atividade.`;
+            }
+            return 'Posso calcular sua meta de água assim que você me informar seu peso.';
+        }
+
+        if (this.containsAny(normalized, ['sono', 'descanso', 'dormir'])) {
+            return 'Posso te orientar sobre sono e recuperação. Se quiser algo mais preciso, me diga quantas horas você dorme por noite e como se sente ao acordar.';
+        }
+
+        if (this.containsAny(normalized, ['dieta', 'alimentacao', 'comida', 'cardapio', 'macros', 'caloria'])) {
+            if (hasWeight && hasHeight) {
+                return 'Posso montar uma orientação de alimentação mais ajustada ao seu perfil. Me diga seu objetivo principal: perder peso, ganhar massa ou manter.';
+            }
+            return 'Posso ajudar com dieta e macros, mas antes preciso do seu peso e altura para ficar mais preciso.';
+        }
+
+        if (this.containsAny(normalized, ['treino', 'exercicio', 'atividade', 'academia', 'corrida', 'caminhada', 'musculacao'])) {
+            const activityLabel = profile?.activityLevel ? healthService.getActivityLevelLabel(profile.activityLevel) : null;
+            if (activityLabel) {
+                return `Posso sugerir algo alinhado ao seu nível atual (${activityLabel}). Me diga se o foco é emagrecer, resistência ou ganho de massa.`;
+            }
+            return 'Posso sugerir um treino, mas me diga primeiro seu objetivo: emagrecer, ganhar massa ou melhorar condicionamento.';
+        }
+
+        if (this.containsAny(normalized, ['peso', 'altura', 'imc', 'corpo', 'metrica', 'metricas'])) {
+            if (hasWeight && hasHeight) {
+                const bmi = healthService.calculateBMI(profile!.peso!, profile!.altura!);
+                const category = healthService.getBMICategory(bmi);
+                return `Pelas suas métricas atuais, seu IMC está em ${bmi} (${category}). Se quiser, posso detalhar água, calorias e metas diárias.`;
+            }
+            return 'Para eu calcular suas métricas, preciso do seu peso e altura.';
+        }
+
+        return 'Posso te ajudar com peso, IMC, dieta, exercícios, água, sono ou exames. Se quiser, me diga seu objetivo ou uma dúvida específica e eu sigo por esse caminho.';
+    }
+
     /**
      * Proactive check: If profile is missing data, ask for it.
      * Also handle monthly check-in.
@@ -51,9 +146,11 @@ export class HealthAIService {
         await new Promise(resolve => setTimeout(resolve, 1000)); // Artificial thinking delay
 
         const lowerText = userText.toLowerCase().trim();
+        const normalizedText = this.normalizeText(userText);
         const history = await healthService.getChatHistory();
         const lastAiMsg = [...history].reverse().find(m => m.sender === 'ai');
         const lastActionType = lastAiMsg?.metadata?.actionType;
+        const lastAiText = this.normalizeText(lastAiMsg?.text ?? '');
         const profile = await healthService.getProfile();
 
         let responseText = '';
@@ -64,7 +161,7 @@ export class HealthAIService {
         
         // 1. Monthly Check-in Response
         if (lastActionType === 'monthly_checkin') {
-            if (lowerText.match(/(n[ãa]o|not|no)/)) {
+            if (this.containsAny(normalizedText, ['nao', 'not', 'no'])) {
                 responseText = "Entendido! Vamos continuar com seus dados atuais. Como posso te ajudar hoje?";
                 if (profile) {
                     await healthService.saveProfile({ 
@@ -79,8 +176,8 @@ export class HealthAIService {
         }
 
         // 2. Exercise Report Follow-up
-        else if (lastActionType === 'exercise_report' && lastAiMsg?.text.toLowerCase().includes('quais exercícios')) {
-            const durationMatch = lowerText.match(/(\d+)\s*(min|m|hora|h)/);
+        else if (lastActionType === 'exercise_report' && lastAiText.includes('quais exercicios')) {
+            const durationMatch = normalizedText.match(/(\d+)\s*(min|minuto|minutos|m|hora|horas|h)/);
             const duration = durationMatch ? parseInt(durationMatch[1]) : 30;
             const weight = profile?.peso || 75;
             const calories = healthService.calculateCalories(userText, duration, weight);
@@ -102,7 +199,7 @@ export class HealthAIService {
         }
 
         // 3. Weekly Diet Follow-up
-        else if (lastActionType === 'weekly_diet' && lastAiMsg?.text.toLowerCase().includes('o que você tem em casa')) {
+        else if (lastActionType === 'weekly_diet' && lastAiText.includes('o que voce tem em casa')) {
             if (profile && profile.peso && profile.altura) {
                 let age = 30;
                 if (profile.data_nascimento) {
@@ -134,13 +231,17 @@ export class HealthAIService {
         // --- Intent Detection ---
         if (!responseText) {
             const doc = nlp(userText);
+            const questionIntent = this.isAdviceQuestion(userText);
 
             if (doc.match('(oi|olá|hello|hi|bom dia|boa tarde|boa noite)').found) {
                 responseText = this.getRandomResponse('greeting');
             }
-            else if (doc.match('(relatório|exercício|treino|fiz|malhei|corri|pedalei|treinei)').found || this.isExerciseContext(lowerText)) {
+            else if (this.containsProfileData(normalizedText)) {
+                responseText = await this.handleProfileUpdate(normalizedText);
+            }
+            else if (this.isExerciseReportIntent(userText, doc)) {
                 const duration = this.extractDuration(lowerText);
-                const hasExercises = doc.match('(corrida|caminhada|musculação|academia|treino|futebol|natação|pedal|bicicleta)').found || lowerText.length > 20;
+                const hasExercises = doc.match('(corrida|caminhada|musculação|musculacao|academia|treino|futebol|natação|natacao|pedal|bicicleta|crossfit|esteira)').found || this.isExerciseContext(normalizedText);
 
                 if (duration && hasExercises) {
                     const weight = profile?.peso || 75;
@@ -165,7 +266,7 @@ export class HealthAIService {
                     metadata = { actionType: 'exercise_report' };
                 }
             }
-            else if (lowerText.includes('métricas de saúde') || doc.match('(métricas|status|meu corpo|calorias|macros)').found) {
+            else if (normalizedText.includes('metricas de saude') || doc.match('(métricas|status|meu corpo|calorias|macros)').found) {
                 if (profile && profile.peso && profile.altura) {
                     let age = 30;
                     if (profile.data_nascimento) {
@@ -201,16 +302,19 @@ export class HealthAIService {
                     responseText = "Para calcular suas métricas, preciso saber seu peso e altura. Pode me informar?";
                 }
             }
-            else if (lowerText.includes('dieta semanal') || doc.match('(dieta|comer|cardápio|alimentação)').found) {
+            else if (normalizedText.includes('dieta semanal') || doc.match('(dieta|comer|cardápio|alimentação)').found) {
                 responseText = "Com certeza! Para eu montar sua dieta, o que você tem em casa hoje e o que pode comprar para a semana?";
                 metadata = { actionType: 'weekly_diet' };
             }
-            else if (lowerText.includes('analisar exame') || doc.match('(exame|laboratório|resultado|sangue)').found) {
+            else if (normalizedText.includes('analisar exame') || doc.match('(exame|laboratório|resultado|sangue)').found) {
                 responseText = "Por favor, anexe seu exame em PDF. Vou analisar os dados para você.";
                 metadata = { actionType: 'analyze_exam' };
             }
-            else if (this.containsProfileData(lowerText)) {
-                responseText = await this.handleProfileUpdate(lowerText);
+            else if (questionIntent && this.isHealthRelated(userText)) {
+                responseText = this.buildGuidedHealthReply(userText, profile);
+            }
+            else if (this.isHealthRelated(userText)) {
+                responseText = this.buildGuidedHealthReply(userText, profile);
             }
             else if (!this.isHealthRelated(userText)) {
                 responseText = "Sou uma IA focada em saúde e bem-estar. Como posso te apoiar hoje?";
@@ -220,13 +324,14 @@ export class HealthAIService {
             }
         }
 
+        actionType = metadata.actionType || actionType;
         return await healthService.saveMessage(responseText, 'ai', actionType, metadata);
     }
 
     private isHealthRelated(text: string): boolean {
-        const keywords = ['peso', 'altura', 'imc', 'dieta', 'treino', 'exercício', 'água', 'comer', 'saúde', 'dor', 'exame', 'médico', 'caloria', 'fome', 'sono', 'descanso', 'bem estar', 'hidratação', 'atleta', 'musculação', 'corrida', 'caminhada', 'vida', 'corpo', 'mente', 'ansiedade', 'stress', 'estresse'];
-        const lower = text.toLowerCase();
-        return keywords.some(k => lower.includes(k)) || nlp(text).match('(saúde|corpo|vida|bem|mal|doente|médico|remédio|treino|comer|fome)').found;
+        const normalized = this.normalizeText(text);
+        const keywords = ['peso', 'altura', 'imc', 'dieta', 'treino', 'exercicio', 'agua', 'comer', 'saude', 'dor', 'exame', 'medico', 'caloria', 'fome', 'sono', 'descanso', 'bem estar', 'hidratacao', 'atleta', 'musculacao', 'corrida', 'caminhada', 'vida', 'corpo', 'mente', 'ansiedade', 'stress', 'estresse'];
+        return keywords.some(k => normalized.includes(k)) || nlp(text).match('(saúde|corpo|vida|bem|mal|doente|médico|remédio|treino|comer|fome)').found;
     }
 
     private containsProfileData(text: string): boolean {
@@ -234,17 +339,17 @@ export class HealthAIService {
     }
 
     private detectActivityLevel(text: string): HealthProfile['activityLevel'] | null {
-        const lower = text.toLowerCase();
+        const lower = this.normalizeText(text);
         if (lower.match(/(todo dia|todos os dias|6 vezes|7 vezes|pesado|atleta|extremamente|diariamente|treino muito)/)) return 'very_active';
         if (lower.match(/(4 vezes|5 vezes|frequente|ativo|intensamente|quase todo)/)) return 'active';
-        if (lower.match(/(3 vezes|moderado|regularmente|academia|musculação)/)) return 'moderate';
-        if (lower.match(/(1 vez|2 vezes|caminhada|leve|pouco|às vezes|de vez em quando)/)) return 'light';
-        if (lower.match(/(sedentário|sedentario|não faço|nunca|escritório|sentado|parado|nenhum)/)) return 'sedentary';
+        if (lower.match(/(3 vezes|moderado|regularmente|academia|musculacao)/)) return 'moderate';
+        if (lower.match(/(1 vez|2 vezes|caminhada|leve|pouco|as vezes|de vez em quando)/)) return 'light';
+        if (lower.match(/(sedentario|nao faco|nunca|escritorio|sentado|parado|nenhum)/)) return 'sedentary';
         return null;
     }
 
     private extractWeight(text: string): number | null {
-        const lower = text.toLowerCase();
+        const lower = this.normalizeText(text);
         const withUnit = lower.match(/(?:peso\s+)?(\d+([.,]\d+)?)\s*(kg|kilos|quilos)/);
         if (withUnit) return parseFloat(withUnit[1].replace(',', '.'));
         if (lower.includes('peso') || lower.includes('pesando')) {
@@ -258,10 +363,10 @@ export class HealthAIService {
     }
 
     private extractHeight(text: string): number | null {
-        const lower = text.toLowerCase();
+        const lower = this.normalizeText(text);
         const spoken = lower.match(/(?:1|um)\s*(?:metro[s]?)?\s*e\s*(\d{2})/);
         if (spoken) return 100 + parseInt(spoken[1]);
-        const unitMatch = lower.match(/(\d+([.,]\d+)?)\s*(cm|cent[ií]metros|metros|m\b)/);
+        const unitMatch = lower.match(/(\d+([.,]\d+)?)\s*(cm|centimetros|metros|m\b)/);
         if (unitMatch) {
             const val = parseFloat(unitMatch[1].replace(',', '.'));
             return val < 3 ? Math.round(val * 100) : Math.round(val);
@@ -277,7 +382,7 @@ export class HealthAIService {
     }
 
     private extractDuration(text: string): number | null {
-        const lower = text.toLowerCase();
+        const lower = this.normalizeText(text);
         const match = lower.match(/(\d+)\s*(minutos?|min|horas?|h\b)/);
         if (match) {
             const val = parseInt(match[1]);
@@ -287,8 +392,9 @@ export class HealthAIService {
     }
 
     private isExerciseContext(text: string): boolean {
-        const keywords = ['trein', 'academia', 'musculação', 'corri', 'esteira', 'bicicleta', 'crossfit', 'natação', 'malh', 'exercíci', 'exercici'];
-        return keywords.some(k => text.toLowerCase().includes(k));
+        const normalized = this.normalizeText(text);
+        const keywords = ['trein', 'academia', 'musculacao', 'corri', 'esteira', 'bicicleta', 'crossfit', 'natacao', 'malh', 'exercici'];
+        return keywords.some(k => normalized.includes(k));
     }
 
     private async handleProfileUpdate(text: string): Promise<string> {

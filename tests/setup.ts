@@ -22,12 +22,12 @@ jest.mock('expo-notifications', () => ({
   addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
 }));
 
-// Mock react-native
+// Minimal react-native stub for service/unit tests.
+// Component tests can extend this setup later if they need richer primitives.
 jest.mock('react-native', () => ({
-  ...jest.requireActual('react-native'),
   Platform: {
     OS: 'ios',
-    select: jest.fn((obj) => obj.ios),
+    select: jest.fn((options) => options?.ios),
   },
 }));
 

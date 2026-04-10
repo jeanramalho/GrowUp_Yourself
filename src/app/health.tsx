@@ -153,10 +153,11 @@ export default function HealthScreen() {
         await healthAIService.processMessage(`Analise meu exame: ${asset.name}`);
         const updatedHistory = await healthService.getChatHistory();
         setMessages(updatedHistory);
-        setLoading(false);
       }
     } catch (err) {
       console.error('Error picking document:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
