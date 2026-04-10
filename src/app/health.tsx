@@ -19,6 +19,7 @@ import { healthService } from '@/services/HealthService';
 import { healthAIService } from '@/services/HealthAIService';
 import { ChatMessage, HealthProfile } from '@/models/health';
 import * as DocumentPicker from 'expo-document-picker';
+import { getTabBarScreenOffset } from '@/components/ui/tabBarMetrics';
 
 interface QuickActionItem {
   icon: any;
@@ -77,6 +78,7 @@ MessageBubble.displayName = 'MessageBubble';
 export default function HealthScreen() {
   const { colors, isDarkMode } = useAppTheme();
   const insets = useSafeAreaInsets();
+  const screenBottomOffset = getTabBarScreenOffset(insets.bottom);
 
   // State
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -270,8 +272,11 @@ export default function HealthScreen() {
       </View>
 
       {/* INPUT AREA */}
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
-        <View style={styles.inputContainer}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        <View style={[styles.inputContainer, { paddingBottom: screenBottomOffset }]}>
           <View style={[
             styles.inputWrapper,
             {
@@ -288,7 +293,10 @@ export default function HealthScreen() {
               placeholder="Digite sua dúvida de saúde..."
               placeholderTextColor={colors.textSecondary}
               style={[styles.input, { color: colors.text }]}
+              returnKeyType="send"
+              blurOnSubmit={false}
               onSubmitEditing={() => handleSend()}
+              onFocus={() => flatListRef.current?.scrollToEnd({ animated: true })}
               editable={!loading}
             />
             <TouchableOpacity
@@ -412,7 +420,6 @@ const styles = StyleSheet.create({
   inputContainer: {
     paddingHorizontal: 24,
     paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 120 : 100, // Adjust for tab bar
   },
   inputWrapper: {
     flexDirection: 'row',

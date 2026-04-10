@@ -1,11 +1,15 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useAppTheme } from '@/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TAB_BAR_BASE_HEIGHT, getTabBarBottomInset } from './tabBarMetrics';
 
 export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
     const { colors, isDarkMode, shadows } = useAppTheme();
+    const insets = useSafeAreaInsets();
+    const bottomInset = getTabBarBottomInset(insets.bottom);
 
     // Icon mapping
     const getIcon = (routeName: string, isFocused: boolean) => {
@@ -45,8 +49,8 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, 
     };
 
     return (
-        <View style={styles.container}>
-            <View style={[styles.content, dynamicStyles.content, shadows.lg]}>
+        <View style={[styles.container, { paddingBottom: bottomInset }]}>
+            <View style={[styles.content, { height: TAB_BAR_BASE_HEIGHT }, dynamicStyles.content, shadows.lg]}>
                 {state.routes.map((route, index) => {
                     const { options } = descriptors[route.key];
 
@@ -101,7 +105,6 @@ const styles = StyleSheet.create({
         bottom: 0,
         width: '100%',
         alignItems: 'center',
-        paddingBottom: Platform.OS === 'ios' ? 20 : 10,
         backgroundColor: 'transparent',
         zIndex: 100,
     },
@@ -109,7 +112,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: '90%',
         maxWidth: 400,
-        height: 80,
         borderRadius: 40,
         borderWidth: 1,
         justifyContent: 'space-around',
