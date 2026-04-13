@@ -266,6 +266,85 @@ export const migration003FinanceExpansion: Migration = {
 };
 
 /**
+ * Migration 004 - Health AI tables
+ * Creates all health-specific tables used by HealthRepository.
+ */
+export const migration004HealthTables: Migration = {
+  version: 4,
+  name: '004_health_tables',
+  up: async (db: SQLiteDatabase) => {
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_profile (
+          id TEXT PRIMARY KEY,
+          weight REAL,
+          height REAL,
+          birthDate TEXT,
+          gender TEXT,
+          activityLevel TEXT,
+          waterGoal REAL,
+          meta_peso REAL,
+          last_monthly_checkin TEXT,
+          updated_at TEXT NOT NULL
+        )`
+      );
+
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_metrics (
+          id TEXT PRIMARY KEY,
+          type TEXT NOT NULL,
+          value REAL NOT NULL,
+          unit TEXT,
+          date TEXT NOT NULL,
+          notes TEXT,
+          created_at TEXT NOT NULL
+        )`
+      );
+      await db.runAsync(`CREATE INDEX IF NOT EXISTS idx_health_metrics_type_date ON health_metrics(type, date DESC)`);
+
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_exercise_reports (
+          id TEXT PRIMARY KEY,
+          exercises TEXT NOT NULL,
+          duration INTEGER NOT NULL,
+          calories REAL NOT NULL,
+          date TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )`
+      );
+      await db.runAsync(`CREATE INDEX IF NOT EXISTS idx_health_exercise_date ON health_exercise_reports(date DESC)`);
+
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_exams (
+          id TEXT PRIMARY KEY,
+          filename TEXT NOT NULL,
+          analysis TEXT NOT NULL,
+          date TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )`
+      );
+
+      await db.runAsync(
+        `CREATE TABLE IF NOT EXISTS health_chat_history (
+          id TEXT PRIMARY KEY,
+          text TEXT NOT NULL,
+          sender TEXT NOT NULL,
+          timestamp TEXT NOT NULL,
+          type TEXT NOT NULL,
+          metadata TEXT
+        )`
+      );
+      await db.runAsync(`CREATE INDEX IF NOT EXISTS idx_health_chat_timestamp ON health_chat_history(timestamp DESC)`);
+
+      await db.runAsync(
+        `INSERT OR IGNORE INTO schema_version (version, name, applied_at) VALUES (?, ?, ?)`,
+        [4, '004_health_tables', new Date().toISOString()]
+      );
+    });
+  }
+};
+
+/**
  * Migration runner
  */
 export class MigrationRunner {
@@ -279,6 +358,7 @@ export class MigrationRunner {
       migration001Init,
       migration002SeedPilares,
       migration003FinanceExpansion,
+      migration004HealthTables,
     ];
   }
 

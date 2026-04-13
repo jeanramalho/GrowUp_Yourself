@@ -9,12 +9,28 @@ import { generateUUID } from '../utils/uuid';
  */
 export class HealthAIService {
 
+    private supportsUnicodePropertyRegex(): boolean {
+        try {
+            new RegExp('\\p{L}', 'u');
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     private normalizeText(text: string): string {
-        return text
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase()
-            .replace(/[^\p{L}\p{N}\s?]/gu, ' ')
+        const safeText = typeof text === 'string' ? text : String(text ?? '');
+        const normalized = typeof safeText.normalize === 'function'
+            ? safeText.normalize('NFD')
+            : safeText;
+
+        const withoutAccents = normalized.replace(/[\u0300-\u036f]/g, '');
+        const lower = withoutAccents.toLowerCase();
+        const cleaned = this.supportsUnicodePropertyRegex()
+            ? lower.replace(/[^\p{L}\p{N}\s?]/gu, ' ')
+            : lower.replace(/[^a-z0-9\s?]/g, ' ');
+
+        return cleaned
             .replace(/\s+/g, ' ')
             .trim();
     }
